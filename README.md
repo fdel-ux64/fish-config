@@ -10,7 +10,6 @@ List installed RPM packages by install date.
 
 **Usage:**
 
-```fish
 instlist [OPTION]
 
 | Option       | Description                              |
