@@ -20,3 +20,21 @@ instlist [OPTION]
 | `last-week`  | Packages installed in the last 7 days    |
 | `this-month` | Packages installed this calendar month   |
 | `last-month` | Packages installed in the previous month |
+
+| Alias | Expands to |
+| ----- | ---------- |
+| `td`  | today      |
+| `yd`  | yesterday  |
+| `lw`  | last-week  |
+| `tm`  | this-month |
+| `lm`  | last-month |
+
+
+Examples:
+instlist td
+instlist this-month
+instlist --help
+
+Behavior:
+If no option is provided, lists all installed packages.
+If no packages are found for a selected time range, it will prompt to show the full list.
