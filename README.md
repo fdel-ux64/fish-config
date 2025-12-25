@@ -76,6 +76,7 @@ showfunc [OPTION]
 Display the current kernel version, Prompt to visit kernel.org
 
 **Usage:**
+
 kver
 
 ---
