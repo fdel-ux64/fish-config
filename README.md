@@ -38,3 +38,31 @@ instlist --help
 Behavior:
 If no option is provided, lists all installed packages.
 If no packages are found for a selected time range, it will prompt to show the full list.
+
+---
+
+### showfunc
+
+Search, display, and optionally edit Fish shell functions. This function is useful for quickly viewing or modifying your custom shell functions.
+
+**Usage:**
+
+showfunc [OPTION] 
+
+
+| Option          | Description                                      |
+| --------------- | ------------------------------------------------ |
+| `FUNCTION_NAME` | The exact name of the function to show.          |
+| `PATTERN`       | A pattern to search for matching function names. |
+
+
+**Behavior:**
+
+- If you provide a function name (e.g., `showfunc showfunc`), it will display the contents of that function.
+- If you provide a pattern (e.g., `showfunc inst`), it will search for and show all matching functions.
+- If multiple functions are found, you will be prompted to select one using fuzzy search (if `fzf` is installed), or through a numbered list.
+- If the function is user-defined (not loaded by a plugin or autoload), you can choose to edit it using your `$EDITOR`.
+
+
+**Key Binding:**
+- You can trigger `showfunc` using **CTRL+F** in your terminal.
