@@ -5,12 +5,11 @@ function kver
     # Display the current kernel version
     echo "Current Kernel Version: $current_kernel"
 
-    # Use printf for precise cursor control and avoid prompt issues
-    printf "visit kernel.org? (y/n): "
-    read -p "" answer  # Use the -p flag to suppress the read> prompt
+    # Prompt to visit kernel.org 
+     read --prompt-str "visit kernel.org? (y/n): " x
 
     # Handle the response from the user
-    if test $answer = 'y' -o $answer = 'Y'
+    if test $x = 'y' -o $x = 'Y'
         nohup firefox https://kernel.org >/dev/null 2>&1 &
     end
 end
