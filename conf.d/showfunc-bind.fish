@@ -1,2 +1,6 @@
 # CTRL+F to invoke showfunc
-bind \cf showfunc
+
+if status --is-interactive
+    bind \cf showfunc
+end
+
