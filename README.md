@@ -31,9 +31,9 @@ instlist [OPTION]
 
 **Examples:**
 
-instlist td
-instlist this-month
-instlist --help
+- instlist td
+- instlist this-month
+- instlist --help
 
 
 **Behavior:**
