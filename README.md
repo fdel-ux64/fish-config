@@ -69,3 +69,25 @@ showfunc [OPTION]
 
 **Key Binding:**
 - You can trigger `showfunc` using **CTRL+F** in your terminal.
+
+---
+
+### `kver`
+Display the current kernel version, Prompt to visit kernel.org
+
+**Usage:**
+kver
+
+---
+
+### `generate_password`
+Generate a secured password using pwgen, prompt for password length and number of passwords to generate
+
+**Usage:**
+
+generate_password
+
+
+
+
+
