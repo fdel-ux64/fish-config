@@ -41,7 +41,7 @@ If no packages are found for a selected time range, it will prompt to show the f
 
 ---
 
-### showfunc
+### `showfunc`
 
 Search, display, and optionally edit Fish shell functions. This function is useful for quickly viewing or modifying your custom shell functions.
 
