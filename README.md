@@ -29,14 +29,18 @@ instlist [OPTION]
 | `lm`  | last-month |
 
 
-Examples:
+**Examples:**
+
 instlist td
 instlist this-month
 instlist --help
 
-Behavior:
-If no option is provided, lists all installed packages.
-If no packages are found for a selected time range, it will prompt to show the full list.
+
+**Behavior:**
+
+- If no option is provided, lists all installed packages.
+- If no packages are found for a selected time range, it will prompt to show the full list.
+
 
 ---
 
