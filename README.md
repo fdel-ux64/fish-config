@@ -169,7 +169,8 @@ kver
 ---
 
 ### `generate_password`
-Generate a secured password using pwgen, prompt for password length and number of passwords to generate
+Generate a secured password using pwgen, prompt for password length and number of passwords to generate if not provided.
+If pwgen is not installed, will print an error message and exit.
 
 **Installation:**
 
@@ -179,7 +180,13 @@ To use the `generate_password` function, follow these steps:
 
 **Usage:**
 
-generate_password
+- generate_password [password_length number_of_passwords]
+- generate_password
+
+**Example:**
+- generate_password 15 5
+- generate_password
+
 
 
 
