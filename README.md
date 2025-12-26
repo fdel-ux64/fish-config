@@ -193,7 +193,7 @@ kver
 
 ### `generate_password`
 Generate a secured password using pwgen, prompt for password length and number of passwords to generate if not provided.
-If pwgen is not installed, will print an error message and exit.
+Will print an error message and exit if pwgen is not installed.
 
 **Installation:**
 
