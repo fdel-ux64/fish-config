@@ -4,6 +4,29 @@ A collection of custom Fish shell functions and completions, designed to be easi
 
 ## Current Functions
 
+### `install_package`
+
+A Fish shell helper function that installs a package with the correct package manager — automatically detecting your Linux distro (Fedora, Manjaro/Arch, or Ubuntu/Debian).
+If automatic detection fails, it falls back to an interactive menu prompt.
+
+**Usage:**
+
+- Call it from your terminal
+- install_package [package_name]
+
+**Behavior:**
+
+- If your distro can be auto‑identified, it installs immediately. 
+- Otherwise, it will ask.
+  - Please choose your distro:
+   - 1 Fedora
+   - 2 Manjaro
+   - 3 Ubuntu
+  - Enter the number corresponding to your distro: █
+
+
+---
+
 ### `showfunc`
 
 Search, display, and optionally edit Fish shell functions. This function is useful for quickly viewing or modifying your custom shell functions.
