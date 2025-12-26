@@ -25,7 +25,6 @@ function git_sync
         return 1
     end
 
-
     # --- OFFER TO SAVE AS DEFAULT ---
     if test "$ASK_SAVE" = "yes"
         read --prompt-str "💾 Make this repo the default for future runs? (y/n): " save_repo
@@ -56,12 +55,12 @@ function git_sync
     echo "📊 Git status:"
     git status --short --branch
 
-   # --- ABORT IF MODIFIED (IGNORE UNTRACKED FILES) ---
+    # --- ABORT IF MODIFIED (IGNORE UNTRACKED FILES) ---
     set dirty (git status --porcelain --untracked-files=no | string trim)
     if test -n "$dirty"
-    echo "⚠️  Modified or staged files detected. Commit or stash first."
-    echo "$dirty"
-    return 1
+        echo "⚠️  Modified or staged files detected. Commit or stash first."
+        echo "$dirty"
+        return 1
     end
 
     # --- BRANCH DETECTION ---
@@ -83,8 +82,11 @@ function git_sync
     # --- ADD / COMMIT ---
     read --prompt-str "➕ Add & commit files? (y/n): " add_answer
     if test "$add_answer" = "y"
-        echo "Enter files to add (space-separated) or '.' for all:"
-        read files_to_add
+        # Prompt for files to add (with default '.')
+        read --prompt-str "➕ Enter files to add (space-separated) or '.' for all: " files_to_add
+        if test -z "$files_to_add"
+            set files_to_add .
+        end
 
         git add $files_to_add
         or begin
@@ -92,6 +94,7 @@ function git_sync
             return 1
         end
 
+        # Commit message
         read --prompt-str "✏️  Commit message: " commit_msg
         if test -z "$commit_msg"
             echo "❌ Commit message cannot be empty"
