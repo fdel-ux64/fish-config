@@ -83,6 +83,9 @@ search_history [OPTION] or shisto [OPTION]
 **Behavior:**
 - if no option is provided, will display history
 - if you provide a pattern or command, will search in history and show all matching values from history 
+
+**Key Binding:**
+- You can trigger `shisto` using **CTRL+H** in your terminal.
  
 ---
 
