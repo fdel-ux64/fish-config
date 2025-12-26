@@ -9,6 +9,12 @@ A collection of custom Fish shell functions and completions, designed to be easi
 A Fish shell helper function that installs a package with the correct package manager — automatically detecting your Linux distro (Fedora, Manjaro/Arch, or Ubuntu/Debian).
 If automatic detection fails, it falls back to an interactive menu prompt.
 
+**Installation:**
+
+To use the `install_package` function, follow these steps:
+1. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/install_package.fish`).
+2. Reload your shell or restart the terminal to make the function available.
+
 **Usage:**
 
 - Call it from your terminal
@@ -24,6 +30,42 @@ If automatic detection fails, it falls back to an interactive menu prompt.
    - 3 Ubuntu
   - Enter the number corresponding to your distro: █
 
+---
+
+### `advanced_install_package`
+
+The `advanced_install_package` function is a versatile command-line tool designed to simplify package installation across different Linux distributions. It automatically detects your system's distribution (Fedora, Manjaro/Arch, Ubuntu/Debian) and installs the specified package using the appropriate package manager.
+
+- **Automatic Distro Detection**: The function first attempts to auto-detect your Linux distribution by checking the `/etc/os-release` file. It supports Fedora, Manjaro (or any Arch-based distro), and Ubuntu/Debian.
+- **Package Installation**: Once the distro is detected, the function runs the relevant package manager:
+  - `dnf` for Fedora
+  - `pacman` for Manjaro/Arch
+  - `apt` for Ubuntu/Debian
+- **Fallback to Manual Selection**: If the distro cannot be automatically detected, it prompts the user to select their distribution from a simple menu (Fedora, Manjaro, or Ubuntu).
+- **Package Name Input**: You can pass the package name directly as an argument when calling the function, or you will be prompted to enter the package name interactively.
+- **Error Handling**: The function checks the success or failure of each installation command and provides feedback to the user (success or failure messages).
+  
+**Installation:**
+
+To use the `advanced_install_package` function, follow these steps:
+
+1. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/advanced_install_package.fish`).
+2. Reload your shell or restart the terminal to make the function available.
+
+**Usage:**
+
+- With Package Name Argument
+- You can pass one or more package names as arguments to install multiple packages at once. Simply separate the package names with spaces:
+
+  advanced_install_package [package_name]
+
+**Example:**
+- advanced_install_package vim htop curl
+- advanced_install_package vim
+- advanced_install_package
+
+**Behavior:**
+- If you don't provide a package name, the script will prompt you for the name of the package to install
 
 ---
 
@@ -114,6 +156,12 @@ search_history [OPTION] or shisto [OPTION]
 ### `kver`
 Display the current kernel version, Prompt to visit kernel.org
 
+**Installation:**
+
+To use the `kver` function, follow these steps:
+1. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/kver.fish`).
+2. Reload your shell or restart the terminal to make the function available.
+
 **Usage:**
 
 kver
@@ -122,6 +170,12 @@ kver
 
 ### `generate_password`
 Generate a secured password using pwgen, prompt for password length and number of passwords to generate
+
+**Installation:**
+
+To use the `generate_password` function, follow these steps:
+1. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/generate_password.fish`).
+2. Reload your shell or restart the terminal to make the function available.
 
 **Usage:**
 
