@@ -54,7 +54,7 @@ To use the `advanced_install_package` function, follow these steps:
 
 **Usage:**
 
-- With Package Name Argument
+With Package Name Argument:
 - You can pass one or more package names as arguments to install multiple packages at once. Simply separate the package names with spaces:
 
   advanced_install_package [package_name]
@@ -72,6 +72,13 @@ To use the `advanced_install_package` function, follow these steps:
 ### `showfunc`
 
 Search, display, and optionally edit Fish shell functions. This function is useful for quickly viewing or modifying your custom shell functions.
+
+**Installation:**
+
+To use the `showfunc` function, follow these steps:
+1. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/showfunc.fish`).
+2. Copy the function code into your `fish` configuration file (`~/.config/fish/conf.d/showfunc-bind.fish`).
+3. Reload your shell or restart the terminal to make the function available.
 
 **Usage:**
 
@@ -99,7 +106,14 @@ showfunc [OPTION]
 
 ### `instlist`
 
-List installed RPM packages by install date.
+List installed RPM packages by installation date.
+
+**Installation:**
+
+To use the `instlist` function, follow these steps:
+1. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/instlist.fish`).
+2. Copy the function code into your `fish` configuration file (`~/.config/fish/completions/instlist.fish`).
+3. Reload your shell or restart the terminal to make the function available.
 
 **Usage:**
 
@@ -139,6 +153,15 @@ instlist [OPTION]
 ### `search_history` or `shisto`
 
 Search a pattern through history and displays results.
+
+**Installation:**
+
+To use the `search_history` function, follow these steps:
+1. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/search_history.fish`).
+2. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/shisto_prompt.fish`).
+3. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/shisto.fish`).
+4. Copy the function code into your `fish` configuration file (`~/.config/fish/conf.d/shisto-bind.fish`).
+5. Reload your shell or restart the terminal to make the function available.
 
 **Usage:**
 
