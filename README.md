@@ -72,6 +72,20 @@ showfunc [OPTION]
 
 ---
 
+### `search_history` or `shisto`
+
+Search a pattern through history and displays results.
+
+**Usage:**
+
+search_history [OPTION] or shisto [OPTION]
+
+**Behavior:**
+- if no option is provided, will display history
+- if you provide a pattern or command, will search in history and show all matching values from history 
+ 
+---
+
 ### `kver`
 Display the current kernel version, Prompt to visit kernel.org
 
