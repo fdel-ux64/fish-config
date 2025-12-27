@@ -1,11 +1,9 @@
-function shisto_prompt
-    read -P "History search > " query
+function shisto_prompt --description "Prompted history search"
+    read --prompt-str "History search > " query
 
     if test -n "$query"
-        shisto $query
+        shisto "$query"
     else
         history
     end
-
-    commandline -f repaint
 end

@@ -1,100 +1,67 @@
 function showfunc --description "Search, display, and optionally edit fish functions"
-    # Ensure a clean line at start
-    echo ""
-    commandline -f repaint
-
     # Prompt for function name or pattern
-    read -P "Function name or pattern: " query
+    read --prompt-str "Function name or pattern: " query
+    test -z "$query"; and return 1
 
-    if test -z "$query"
-        echo "No input provided."
-        return 1
-    end
-
-    # Add wildcard if no * present
-    if not string match -q '*\**' "$query"
-        set pattern "*$query*"
-    else
-        set pattern "$query"
-    end
+    # Add wildcard if needed
+    string match -q '*\**' -- "$query"
+    or set query "*$query*"
 
     # Find matches
-    set matches (functions -a | string match "$pattern")
-
-    if test (count $matches) -eq 0
+    set -l matches (functions -a | string match "$query")
+    test (count $matches) -gt 0
+    or begin
         echo "No matching functions found."
         return 1
     end
 
-    # Handle multiple matches
+    # Select function
     if test (count $matches) -gt 1
         if type -q fzf
-            # Use fuzzy search
-            echo "Multiple matches found. Use fuzzy search to pick one:"
-            set fname (printf "%s\n" $matches | fzf --prompt="Pick function> " --height 40% --border --ansi)
-            if test -z "$fname"
-                echo "No function selected."
-                return 1
-            end
+            set -l fname (printf "%s\n" $matches | fzf --prompt="Pick function> " --height 40% --border)
+            test -n "$fname"; or return 1
         else
-            # Fallback to numbered selection
-            echo "Multiple matches found. fzf not available, falling back to numbered selection:"
             for i in (seq (count $matches))
                 printf "%2d) %s\n" $i $matches[$i]
             end
-            echo ""
-            commandline -f repaint
-            read -P "Pick a number: " choice
-            if not string match -qr '^[0-9]+$' "$choice"
-                echo "Invalid selection."
-                return 1
-            end
-            if test $choice -lt 1 -o $choice -gt (count $matches)
-                echo "Choice out of range."
-                return 1
-            end
-            set fname $matches[$choice]
+            read --prompt-str "Pick a number: " choice
+            string match -qr '^[0-9]+$' -- "$choice"; or return 1
+            test $choice -ge 1 -a $choice -le (count $matches); or return 1
+            set -l fname $matches[$choice]
         end
     else
-        set fname $matches[1]
+        set -l fname $matches[1]
     end
 
-    # Show the function and its origin
+    # Resolve function file
+    set -l funcfile (status fish-path)/functions/$fname.fish
+
     echo ""
     echo "Function: $fname"
     echo "────────────────────────────"
 
-    set funcfile ~/.config/fish/functions/$fname.fish
-
-    if test -f $funcfile
-        set origin "User-defined: $funcfile"
-    else if functions -q $fname
-        set origin "Defined via plugin or autoload (not in user file)"
+    if test -f "$funcfile"
+        echo "Origin: User-defined ($funcfile)"
     else
-        set origin "Unknown source"
+        echo "Origin: Plugin or autoloaded"
     end
-
-    echo "Origin: $origin"
     echo ""
 
-    # Show content with syntax highlighting
+    # Show content
     if type -q bat
         functions $fname | bat --language fish --style=plain
     else
         functions $fname
     end
 
-    # Ask for editing (only for user-defined functions)
-    echo ""
-    commandline -f repaint
-    if test -f $funcfile
+    # Edit if allowed
+    if test -f "$funcfile"
         read -P "Edit this function? (y/N) " answer
-        if string match -qi 'y' "$answer"
-            $EDITOR $funcfile
-            source $funcfile
-            echo "Function '$fname' reloaded from file."
+        switch $answer
+            case y Y
+                command $EDITOR "$funcfile"
+                source "$funcfile"
+                echo "Function '$fname' reloaded."
         end
-    else
-        echo "Function is managed by plugin or autoload; editing skipped."
     end
 end

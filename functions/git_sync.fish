@@ -1,9 +1,22 @@
-function git_sync
-    # --- DEFAULT CONFIG ---
-    set DEFAULT_REPO ~/git/REPO
-    set REMOTE origin
+function git_sync --description "Synchronize a Git repository: pull, add, commit, and push interactively"
+    set -l DEFAULT_REPO ~/git/REPO
+    set -l REMOTE origin
+    set -l REPO_DIR
+    set -l ASK_SAVE yes
 
-    # --- REPO SELECTION ---
+    # ---- Help flag ----
+    if contains -- $argv[1] "-h" "--help"
+        echo "git_sync — interactively sync a git repository"
+        echo
+        echo "USAGE:"
+        echo "  git_sync [REPO_PATH]"
+        echo
+        echo "If REPO_PATH is not provided, uses the default repo."
+        echo "Prompts for pull, add, commit, and push interactively."
+        return 0
+    end
+
+    # ---- Select repository ----
     if test (count $argv) -ge 1
         set REPO_DIR $argv[1]
         set ASK_SAVE yes
@@ -15,63 +28,58 @@ function git_sync
         set ASK_SAVE yes
     end
 
-    # --- EXPAND ~ AND NORMALIZE PATH ---
+    # ---- Normalize path ----
     set REPO_DIR (string replace -r '^~' $HOME $REPO_DIR)
     set REPO_DIR (realpath $REPO_DIR)
 
-    # --- VALIDATE REPO ---
+    # ---- Validate repo ----
     if not test -d $REPO_DIR
         echo "❌ Repo directory not found: $REPO_DIR"
         return 1
     end
 
-    # --- OFFER TO SAVE AS DEFAULT ---
+    # ---- Offer to save as default ----
     if test "$ASK_SAVE" = "yes"
-        read --prompt-str "💾 Make this repo the default for future runs? (y/n): " save_repo
-        if test "$save_repo" = "y"
+        read --prompt-str "💾 Make this repo the default for future runs? (y/N): " save_repo
+        if string match -qr '^(y|Y)$' "$save_repo"
             # Persistently update DEFAULT_REPO
             functions -c git_sync __git_sync_tmp
-
-            functions __git_sync_tmp | \
-                sed "s|set DEFAULT_REPO .*|set DEFAULT_REPO $REPO_DIR|" | \
-                functions --save git_sync
-
+            functions __git_sync_tmp | string replace -r 'set DEFAULT_REPO .*' "set DEFAULT_REPO $REPO_DIR" | functions --save git_sync
             functions -e __git_sync_tmp
             echo "✅ Default repo updated to $REPO_DIR"
         end
     end
 
-    # --- GO TO REPO ---
     cd $REPO_DIR
     echo "📂 Repo: "(pwd)
 
-    # --- ENSURE GIT REPO ---
+    # ---- Ensure git repo ----
     if not git rev-parse --is-inside-work-tree >/dev/null 2>&1
         echo "❌ Not a git repository"
         return 1
     end
 
-    # --- SHOW STATUS ---
+    # ---- Show status ----
     echo "📊 Git status:"
     git status --short --branch
 
-    # --- ABORT IF MODIFIED (IGNORE UNTRACKED FILES) ---
-    set dirty (git status --porcelain --untracked-files=no | string trim)
+    # ---- Abort if modified (ignore untracked) ----
+    set -l dirty (git status --porcelain --untracked-files=no | string trim)
     if test -n "$dirty"
         echo "⚠️  Modified or staged files detected. Commit or stash first."
         echo "$dirty"
         return 1
     end
 
-    # --- BRANCH DETECTION ---
-    set BRANCH (git symbolic-ref --short HEAD 2>/dev/null)
+    # ---- Detect branch ----
+    set -l BRANCH (git symbolic-ref --short HEAD 2>/dev/null)
     if test -z "$BRANCH"
         set BRANCH main
     end
 
-    # --- GIT PULL ---
-    read --prompt-str "🔄 Pull with rebase from $REMOTE/$BRANCH? (y/n): " sync_answer
-    if test "$sync_answer" = "y"
+    # ---- Git pull ----
+    read --prompt-str "🔄 Pull with rebase from $REMOTE/$BRANCH? (y/N): " sync_answer
+    if string match -qr '^(y|Y)$' "$sync_answer"
         git pull --rebase $REMOTE $BRANCH
         or begin
             echo "❌ git pull failed"
@@ -79,10 +87,10 @@ function git_sync
         end
     end
 
-    # --- ADD / COMMIT ---
-    read --prompt-str "➕ Add & commit files? (y/n): " add_answer
-    if test "$add_answer" = "y"
-        # Prompt for files to add (with default '.')
+    # ---- Add / Commit / Push ----
+    read --prompt-str "➕ Add & commit files? (y/N): " add_answer
+    if string match -qr '^(y|Y)$' "$add_answer"
+        # Prompt for files to add
         read --prompt-str "➕ Enter files to add (space-separated) or '.' for all: " files_to_add
         if test -z "$files_to_add"
             set files_to_add .
@@ -107,9 +115,9 @@ function git_sync
             return 1
         end
 
-        # --- PUSH ---
-        read --prompt-str "🚀 Push to $REMOTE/$BRANCH? (y/n): " push_answer
-        if test "$push_answer" = "y"
+        # Push
+        read --prompt-str "🚀 Push to $REMOTE/$BRANCH? (y/N): " push_answer
+        if string match -qr '^(y|Y)$' "$push_answer"
             git push $REMOTE $BRANCH
             or begin
                 echo "❌ git push failed"
