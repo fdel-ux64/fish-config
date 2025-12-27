@@ -64,7 +64,11 @@ A versatile package installer that supports multiple Linux distributions and pro
 
 ### `showfunc`
 
-Search, display, and optionally edit Fish shell functions. Optional dependencies: bat for paging, fzf for fuzzy selection.
+Search, display, and optionally edit Fish shell functions. 
+
+**Optional dependencies:** 
+
+bat for paging, fzf for fuzzy selection.
 
 **Usage:**
 
