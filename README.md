@@ -1,119 +1,98 @@
 # Fish Various Config Functions
 
-A collection of custom Fish shell functions and completions, designed to be easily shared across machines.
+A collection of custom Fish shell functions, completions, and keybindings, designed to be easily shared across machines.  
+All functions are Fisher-ready and can be installed with one command.
 
-## Current Functions
+
+## Installation
+
+### Using Fisher (recommended)
+
+Once the repository is ready for Fisher, you can install all functions, completions, and keybindings automatically:
+
+fisher install fdel-ux64/fish-config
+
+---
 
 ### `install_package`
 
-A Fish shell helper function that installs a package with the correct package manager — automatically detecting your Linux distro (Fedora, Manjaro/Arch, or Ubuntu/Debian).
-If automatic detection fails, it falls back to an interactive menu prompt.
-
-**Installation:**
-
-To use the `install_package` function, follow these steps:
-1. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/install_package.fish`).
-2. Reload your shell or restart the terminal to make the function available.
+Install a package using the correct package manager by auto-detecting your Linux distro (Fedora, Manjaro/Arch, or Ubuntu/Debian).
 
 **Usage:**
 
-- Call it from your terminal
 - install_package [package_name]
 
 **Behavior:**
 
-- If your distro can be auto‑identified, it installs immediately. 
-- Otherwise, it will ask.
-  - Please choose your distro:
-   - 1 Fedora
-   - 2 Manjaro
-   - 3 Ubuntu
-  - Enter the number corresponding to your distro: █
+- Auto-detects Fedora, Manjaro/Arch, or Ubuntu/Debian
+- If auto-detection fails, it prompts for your distro.
+- If the package name is not provided, it prompts interactively.
+
+**Example:**
+
+install_package vim
 
 ---
 
 ### `advanced_install_package`
 
-The `advanced_install_package` function is a versatile command-line tool designed to simplify package installation across different Linux distributions. It automatically detects your system's distribution (Fedora, Manjaro/Arch, Ubuntu/Debian) and installs the specified package using the appropriate package manager.
+A versatile package installer that supports multiple Linux distributions and provides informative feedback.
 
-- **Automatic Distro Detection**: The function first attempts to auto-detect your Linux distribution by checking the `/etc/os-release` file. It supports Fedora, Manjaro (or any Arch-based distro), and Ubuntu/Debian.
-- **Package Installation**: Once the distro is detected, the function runs the relevant package manager:
-  - `dnf` for Fedora
-  - `pacman` for Manjaro/Arch
-  - `apt` for Ubuntu/Debian
-- **Fallback to Manual Selection**: If the distro cannot be automatically detected, it prompts the user to select their distribution from a simple menu (Fedora, Manjaro, or Ubuntu).
-- **Package Name Input**: You can pass the package name directly as an argument when calling the function, or you will be prompted to enter the package name interactively.
-- **Error Handling**: The function checks the success or failure of each installation command and provides feedback to the user (success or failure messages).
-  
-**Installation:**
+**Optional Dependencies:**
+- sudo (for package installation)
+- Internet connection
 
-To use the `advanced_install_package` function, follow these steps:
-
-1. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/advanced_install_package.fish`).
-2. Reload your shell or restart the terminal to make the function available.
 
 **Usage:**
 
-With Package Name Argument:
-- You can pass one or more package names as arguments to install multiple packages at once. Simply separate the package names with spaces:
-
   advanced_install_package [package_name]
 
-**Example:**
-- advanced_install_package vim htop curl
-- advanced_install_package vim
-- advanced_install_package
-
 **Behavior:**
-- If you don't provide a package name, the script will prompt you for the name of the package to install
+
+- Auto-detects your distro and installs the package.
+- If the package is already installed, it shows a message without reinstalling.
+- If no package name is provided, prompts interactively.
+- Provides error messages if installation fails.
+
+**Example:**
+
+- advanced_install_package vim
+- advanced_install_package vim htop curl
+- advanced_install_package  # interactive prompt
 
 ---
 
 ### `showfunc`
 
-Search, display, and optionally edit Fish shell functions. This function is useful for quickly viewing or modifying your custom shell functions.
-
-**Installation:**
-
-To use the `showfunc` function, follow these steps:
-1. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/showfunc.fish`).
-2. Copy the function code into your `fish` configuration file (`~/.config/fish/conf.d/showfunc-bind.fish`).
-3. Reload your shell or restart the terminal to make the function available.
+Search, display, and optionally edit Fish shell functions. Optional dependencies: bat for paging, fzf for fuzzy selection.
 
 **Usage:**
 
-showfunc [OPTION] 
-
-
-| Option          | Description                                      |
-| --------------- | ------------------------------------------------ |
-| `FUNCTION_NAME` | The exact name of the function to show.          |
-| `PATTERN`       | A pattern to search for matching function names. |
-
+showfunc [FUNCTION_NAME or PATTERN]
 
 **Behavior:**
 
-- If you provide a function name (e.g., `showfunc showfunc`), it will display the contents of that function.
-- If you provide a pattern (e.g., `showfunc inst`), it will search for and show all matching functions.
-- If multiple functions are found, you will be prompted to select one using fuzzy search (if `fzf` is installed), or through a numbered list.
-- If the function is user-defined (not loaded by a plugin or autoload), you can choose to edit it using your `$EDITOR`.
+- Displays the content of a function matching the given name or pattern.
+- If multiple matches are found:
+- Uses fzf for fuzzy selection if installed
+- Falls back to numbered selection
+- Long functions are displayed in a pager (bat or less)
+- Can edit user-defined functions with $EDITOR.
 
 
 **Key Binding:**
-- You can trigger `showfunc` using **CTRL+F** in your terminal.
+- Trigger with CTRL+F in the terminal.
+
+**Example:**
+
+- showfunc kver
+- showfunc inst
 
 ---
 
 ### `instlist`
 
 List installed RPM packages by installation date.
-
-**Installation:**
-
-To use the `instlist` function, follow these steps:
-1. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/instlist.fish`).
-2. Copy the function code into your `fish` configuration file (`~/.config/fish/completions/instlist.fish`).
-3. Reload your shell or restart the terminal to make the function available.
 
 **Usage:**
 
@@ -142,74 +121,63 @@ instlist [OPTION]
 - instlist this-month
 - instlist --help
 
-
-**Behavior:**
-
-- If no option is provided, lists all installed packages.
-- If no packages are found for a selected time range, it will prompt to show the full list.
-
 ---
 
-### `search_history` or `shisto`
+### `search_history / shisto`
 
-Search a pattern through history and displays results.
-
-**Installation:**
-
-To use the `search_history` function, follow these steps:
-1. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/search_history.fish`).
-2. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/shisto_prompt.fish`).
-3. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/shisto.fish`).
-4. Copy the function code into your `fish` configuration file (`~/.config/fish/conf.d/shisto-bind.fish`).
-5. Reload your shell or restart the terminal to make the function available.
+Search a pattern in command history and display results.
+Optional dependency: fzf for interactive selection.
 
 **Usage:**
 
-search_history [OPTION] or shisto [OPTION]
+search_history [PATTERN]
+
+shisto [PATTERN]
+
 
 **Behavior:**
-- if no option is provided, will display history
-- if you provide a pattern or command, will search in history and show all matching values from history 
 
-**Key Binding:**
-- You can trigger `shisto` using **CTRL+H** in your terminal.
+- If no pattern is provided, displays recent history.
+- If a pattern is provided, filters history entries.
+- Can be triggered using CTRL+H.
  
 ---
 
 ### `kver`
-Display the current kernel version, Prompt to visit kernel.org
-
-**Installation:**
-
-To use the `kver` function, follow these steps:
-1. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/kver.fish`).
-2. Reload your shell or restart the terminal to make the function available.
+Display the current kernel version.
 
 **Usage:**
 
 kver
 
+**behavior:**
+
+- Prints the current kernel version.
+- Prompts to visit kernel.org
+
 ---
 
 ### `generate_password`
-Generate a secured password using pwgen, prompt for password length and number of passwords to generate if not provided.
-Will print an error message and exit if pwgen is not installed.
-
-**Installation:**
-
-To use the `generate_password` function, follow these steps:
-1. Copy the function code into your `fish` configuration file (`~/.config/fish/functions/generate_password.fish`).
-2. Reload your shell or restart the terminal to make the function available.
+Generate secure passwords using pwgen.
 
 **Usage:**
 
-- generate_password [password_length number_of_passwords]
-- generate_password
+- generate_password [LENGTH] [COUNT]
+- generate_password  # prompts interactively
 
 **Example:**
-- generate_password 15 5
-- generate_password
 
+- generate_password
+- generate_password 15 5
+
+----
+
+**Keybindings Summary:**
+
+| Keybinding | Function
+|------------|-----------------------|
+| CTRL+F     | showfunc              |
+| CTRL+H	   | shisto/search_history |
 
 
 
