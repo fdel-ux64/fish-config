@@ -1,67 +1,110 @@
 function showfunc --description "Search, display, and optionally edit fish functions"
-    # Prompt for function name or pattern
-    read --prompt-str "Function name or pattern: " query
-    test -z "$query"; and return 1
+    # Accept optional argument as initial query
+    if test (count $argv) -ge 1
+        set query $argv[1]
+    else
+        set query ""
+    end
 
-    # Add wildcard if needed
-    string match -q '*\**' -- "$query"
-    or set query "*$query*"
+    # Prompt for function name or pattern if not provided
+    if test -z "$query"
+        echo ""
+        commandline -f repaint
+        read --prompt-str "Function name or pattern: " query
+        if test -z "$query"
+            echo "No input provided."
+            return 1
+        end
+    end
 
-    # Find matches
-    set -l matches (functions -a | string match "$query")
-    test (count $matches) -gt 0
-    or begin
+    # Add wildcard if no * present
+    if not string match -q '*\**' "$query"
+        set pattern "*$query*"
+    else
+        set pattern "$query"
+    end
+
+    # Find matching functions
+    set matches (functions -a | string match "$pattern")
+
+    if test (count $matches) -eq 0
         echo "No matching functions found."
         return 1
     end
 
-    # Select function
+    # Handle multiple matches
     if test (count $matches) -gt 1
         if type -q fzf
-            set -l fname (printf "%s\n" $matches | fzf --prompt="Pick function> " --height 40% --border)
-            test -n "$fname"; or return 1
+            echo "Multiple matches found. Use fuzzy search to pick one:"
+            set fname (printf "%s\n" $matches | fzf --prompt="Pick function> " --height 40% --border --ansi)
+            if test -z "$fname"
+                echo "No function selected."
+                return 1
+            end
         else
+            echo "Multiple matches found. Choose a number:"
             for i in (seq (count $matches))
                 printf "%2d) %s\n" $i $matches[$i]
             end
+            echo ""
+            commandline -f repaint
             read --prompt-str "Pick a number: " choice
-            string match -qr '^[0-9]+$' -- "$choice"; or return 1
-            test $choice -ge 1 -a $choice -le (count $matches); or return 1
-            set -l fname $matches[$choice]
+            if not string match -qr '^[0-9]+$' "$choice"
+                echo "Invalid selection."
+                return 1
+            end
+            if test $choice -lt 1 -o $choice -gt (count $matches)
+                echo "Choice out of range."
+                return 1
+            end
+            set fname $matches[$choice]
         end
     else
-        set -l fname $matches[1]
+        set fname $matches[1]
     end
 
-    # Resolve function file
-    set -l funcfile (status fish-path)/functions/$fname.fish
-
+    # Show function header and origin
     echo ""
     echo "Function: $fname"
     echo "────────────────────────────"
 
-    if test -f "$funcfile"
-        echo "Origin: User-defined ($funcfile)"
+    set funcfile ~/.config/fish/functions/$fname.fish
+    if test -f $funcfile
+        set origin "User-defined: $funcfile"
+    else if functions -q $fname
+        set origin "Defined via plugin or autoload (not in user file)"
     else
-        echo "Origin: Plugin or autoloaded"
+        set origin "Unknown source"
     end
+
+    echo "Origin: $origin"
     echo ""
 
-    # Show content
+    # Display function content with pager logic
+    set func_content (functions $fname)
     if type -q bat
-        functions $fname | bat --language fish --style=plain
+        # Bat handles paging internally
+        printf "%s\n" $func_content | bat --language fish --style=plain --paging=never
     else
-        functions $fname
+        # Use less only if content exceeds terminal height
+        if test (count (string split \n $func_content)) -gt (tput lines)
+            printf "%s\n" $func_content | less
+        else
+            printf "%s\n" $func_content
+        end
     end
 
-    # Edit if allowed
-    if test -f "$funcfile"
-        read -P "Edit this function? (y/N) " answer
-        switch $answer
-            case y Y
-                command $EDITOR "$funcfile"
-                source "$funcfile"
-                echo "Function '$fname' reloaded."
+    # Optional editing for user-defined functions
+    if test -f $funcfile
+        echo ""
+        commandline -f repaint
+        read --prompt-str "Edit this function? (y/N) " answer
+        if string match -qi 'y' "$answer"
+            $EDITOR $funcfile
+            source $funcfile
+            echo "Function '$fname' reloaded from file."
         end
+    else
+        echo "Function is managed by plugin or autoload; editing skipped."
     end
 end
