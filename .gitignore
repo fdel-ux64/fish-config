@@ -1,1 +1,3 @@
-link-fish.fish
+# Local helper scripts
+link-*.fish
+*.local.fish
