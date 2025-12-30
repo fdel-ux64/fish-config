@@ -1,14 +1,29 @@
+## Personal Fish configuration
+
+This repository contains my personal Fish shell configuration and helper
+functions. While some functions may be useful to others, this repository
+is not intended to be a stable or supported public plugin.
+
+---
+
 # Fish Various Config Functions
 
-A collection of custom Fish shell functions, completions, and keybindings, designed to be easily shared across machines.  
-All functions are Fisher-ready and can be installed with one command.
+A collection of custom Fish shell functions, completions, and keybindings
+used in my personal Fish setup and shared across my own machines.
+
+All functions are Fisher-compatible, but this repository is primarily
+maintained for personal use. 
+
+The functions below are documented for reference; interfaces and behavior
+may change without notice.
+
 
 
 ## Installation
 
 ### Using Fisher (recommended)
 
-Once the repository is ready for Fisher, you can install all functions, completions, and keybindings automatically:
+You can install all functions, completions, and keybindings automatically using Fisher:
 
 fisher install fdel-ux64/fish-config
 
