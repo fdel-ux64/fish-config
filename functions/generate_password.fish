@@ -4,7 +4,7 @@ function generate_password
 
     # ---- Help flag ----
     if contains -- '--help' $argv || contains -- '-h' $argv
-        echo "generate_password — generate secure random passwords using pwgen"
+        echo "generate_password — generate secure random passwords using Fish random"
         echo
         echo "USAGE:"
         echo "  generate_password [LENGTH] [COUNT]"
@@ -16,12 +16,6 @@ function generate_password
         echo "  generate_password          # prompts for length and count"
         echo "  generate_password 20 5     # generate 5 passwords of length 20"
         return 0
-    end
-
-    # Check if pwgen is installed
-    if not type -q pwgen
-        echo "Error: The package 'pwgen' is required to generate passwords, but it is not installed."
-        return 1
     end
 
     # Prompt for password length if not provided
@@ -50,6 +44,9 @@ function generate_password
         return 1
     end
 
-    # Generate passwords
-    pwgen -1 -s -y -c $xx $zz
+    # Generate passwords using Fish random (hex output)
+    for i in (seq $zz)
+        random hex $xx
+        echo
+    end
 end
