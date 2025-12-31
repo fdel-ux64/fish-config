@@ -190,7 +190,7 @@ kver
 ---
 
 ### `generate_password`
-Generate secure passwords using pwgen.
+Generate secure passwords using fish random.
 
 **Usage:**
 
