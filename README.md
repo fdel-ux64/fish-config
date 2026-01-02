@@ -189,17 +189,33 @@ kver
 
 ---
 
-### `generate_password`
-Generate secure passwords using fish random.
+## generate_password
 
+Generate secure random passwords using **Fish shell only** — no external generators required.
+
+### Features
+
+- Cryptographically secure randomness (Fish built-in `random`)
+- Customizable length and count
+- Mixed character set:
+  - lowercase & uppercase letters
+  - digits
+  - symbols (`/-+;:,!&'({*?|}%`)
+- Interactive prompts with sensible defaults
+- Optional **Wayland clipboard support**:
+  - Automatically copies the first password to the clipboard
+  - Auto-clears clipboard after 30 seconds (requires `wl-clipboard`)
+  - Gracefully degrades if not installed
+ 
 **Usage:**
 
 - generate_password [LENGTH] [COUNT]
-- generate_password  # prompts interactively
+- generate_password            # interactive mode
 
 **Example:**
 
 - generate_password
+- generate_password 20
 - generate_password 15 5
 
 ----
