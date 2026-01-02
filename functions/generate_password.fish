@@ -1,52 +1,76 @@
 function generate_password
-    set -l xx $argv[1]
-    set -l zz $argv[2]
+    set -l length $argv[1]
+    set -l count  $argv[2]
 
-    # ---- Help flag ----
+    # Character set
+    set -l charset "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/-+;:,!&'({*?|}%"
+    set -l charset_len (string length $charset)
+
+    # Clipboard timeout (seconds)
+    set -l clipboard_timeout 30
+
+    # Help
     if contains -- '--help' $argv || contains -- '-h' $argv
-        echo "generate_password — generate secure random passwords using Fish random"
+        echo "generate_password — generate secure random passwords"
         echo
-        echo "USAGE:"
-        echo "  generate_password [LENGTH] [COUNT]"
-        echo
-        echo "If LENGTH or COUNT are not provided, you will be prompted."
+        echo "USAGE: generate_password [LENGTH] [COUNT]"
         echo "Defaults: LENGTH=16, COUNT=1"
         echo
-        echo "EXAMPLES:"
-        echo "  generate_password          # prompts for length and count"
-        echo "  generate_password 20 5     # generate 5 passwords of length 20"
+        echo "Wayland: first password is copied to clipboard for $clipboard_timeout seconds."
         return 0
     end
 
-    # Prompt for password length if not provided
-    if test -z "$xx"
-        read --prompt-str "Enter password length [16]: " xx
-        if test -z "$xx"
-            set xx 16
-        end
+    # Prompt for length
+    if test -z "$length"
+        read --prompt-str "Enter password length [16]: " length
+        test -z "$length"; and set length 16
     end
 
-    # Prompt for number of passwords if not provided
-    if test -z "$zz"
-        read --prompt-str "Enter number of passwords [1]: " zz
-        if test -z "$zz"
-            set zz 1
-        end
+    # Prompt for count
+    if test -z "$count"
+        read --prompt-str "Enter number of passwords [1]: " count
+        test -z "$count"; and set count 1
     end
 
-    # Validate inputs
-    if not string match -qr '^[0-9]+$' "$xx"
-        echo "❌ Invalid length: '$xx'. Must be a positive number."
+    # Validate
+    if not string match -qr '^[0-9]+$' "$length"
+        echo "❌ Invalid length: $length"
         return 1
     end
-    if not string match -qr '^[0-9]+$' "$zz"
-        echo "❌ Invalid count: '$zz'. Must be a positive number."
+    if not string match -qr '^[0-9]+$' "$count"
+        echo "❌ Invalid count: $count"
         return 1
     end
 
-    # Generate passwords using Fish random (hex output)
-    for i in (seq $zz)
-        random hex $xx
-        echo
+    set -l first_password ""
+
+    # Generate passwords
+    for i in (seq $count)
+        set -l password ""
+
+        for j in (seq $length)
+            set -l idx (random 1 $charset_len)
+            set password "$password"(string sub -s $idx -l 1 "$charset")
+        end
+
+        if test $i -eq 1
+            set first_password $password
+        end
+
+        echo $password
+    end
+
+    # Wayland clipboard handling
+    if test -n "$first_password"
+        if type -q wl-copy
+            echo -n "$first_password" | wl-copy
+            echo "📋 Copied first password to clipboard (clears in $clipboard_timeout s)"
+
+            # Auto-clear clipboard
+            fish -c "sleep $clipboard_timeout; echo -n '' | wl-copy" >/dev/null 2>&1 &
+        else
+            echo "⚠️  wl-copy not found (sudo dnf install wl-clipboard)"
+        end
     end
 end
+
