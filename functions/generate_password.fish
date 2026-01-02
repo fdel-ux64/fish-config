@@ -16,7 +16,8 @@ function generate_password
         echo "USAGE: generate_password [LENGTH] [COUNT]"
         echo "Defaults: LENGTH=16, COUNT=1"
         echo
-        echo "Wayland: first password is copied to clipboard for $clipboard_timeout seconds."
+        echo "Wayland extra: if wl-clipboard is installed,"
+        echo "the first password is copied to clipboard for $clipboard_timeout seconds."
         return 0
     end
 
@@ -60,16 +61,16 @@ function generate_password
         echo $password
     end
 
-    # Wayland clipboard handling
+    # Wayland clipboard handling (polite & informative)
     if test -n "$first_password"
         if type -q wl-copy
             echo -n "$first_password" | wl-copy
-            echo "📋 Copied first password to clipboard (clears in $clipboard_timeout s)"
+            echo "📋 First password copied to clipboard (clears in $clipboard_timeout s)"
 
             # Auto-clear clipboard
             fish -c "sleep $clipboard_timeout; echo -n '' | wl-copy" >/dev/null 2>&1 &
         else
-            echo "⚠️  wl-copy not found (sudo dnf install wl-clipboard)"
+            echo "ℹ️  Tip: install wl-clipboard to auto-copy the first password to clipboard for $clipboard_timeout seconds"
         end
     end
 end
