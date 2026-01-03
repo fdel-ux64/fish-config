@@ -113,6 +113,9 @@ showfunc [FUNCTION_NAME or PATTERN]
 
 Formerly known as `instlist`. The old name is still supported as a wrapper.
 
+This function is also available as a standalone Fish plugin:
+https://github.com/fdel-ux64/fish-rpm-installed
+
 List installed RPM packages by installation date, with caching for faster repeated queries.
 This function only supports RPM-based distributions (e.g., Fedora, RHEL, CentOS), and ensures consistent date parsing by using the US English locale.
 
