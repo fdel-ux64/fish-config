@@ -1,4 +1,4 @@
-function instlist --description "List installed RPM packages by install date with caching"
+function rpm_installed --description "List installed RPM packages by install date with caching"
     set -l arg $argv[1]
 
     # ---- Refresh cache ----
@@ -11,13 +11,13 @@ function instlist --description "List installed RPM packages by install date wit
     # ---- Help flag ----
     switch $arg
         case -h --help
-            echo "instlist — list installed RPM packages by install date"
+            echo "rpm_installed — list installed RPM packages by install date"
             echo
             echo "USAGE:"
-            echo "  instlist [OPTION]"
-            echo "  instlist since DATE [until DATE]"
-            echo "  instlist count [OPTION] (including 'since … until …')"
-            echo "  instlist --refresh  # rebuild cache"
+            echo "  rpm_installed [OPTION]"
+            echo "  rpm_installed since DATE [until DATE]"
+            echo "  rpm_installed count [OPTION] (including 'since … until …')"
+            echo "  rpm_installed --refresh  # rebuild cache"
             echo
             echo "OPTIONS:"
             echo "  today        Packages installed today"
@@ -34,11 +34,11 @@ function instlist --description "List installed RPM packages by install date wit
             echo "  lm  → last-month"
             echo
             echo "COUNT / STATS:"
-            echo "  instlist count today"
-            echo "  instlist count last-week"
-            echo "  instlist count per-day"
-            echo "  instlist count per-week"
-            echo "  instlist count since DATE [until DATE]"
+            echo "  rpm_installed count today"
+            echo "  rpm_installed count last-week"
+            echo "  rpm_installed count per-day"
+            echo "  rpm_installed count per-week"
+            echo "  rpm_installed count since DATE [until DATE]"
             return 0
     end
 
@@ -182,6 +182,6 @@ function instlist --description "List installed RPM packages by install date wit
 
         case '*'
             echo "❌ Invalid option: '$arg'"
-            echo "Run 'instlist --help' for usage."
+            echo "Run 'rpm_installed --help' for usage."
     end
 end
