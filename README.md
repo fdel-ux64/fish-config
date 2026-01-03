@@ -109,18 +109,20 @@ showfunc [FUNCTION_NAME or PATTERN]
 
 ---
 
-### `instlist`
+### `rpm_installed`
+
+Formerly known as `instlist`. The old name is still supported as a wrapper.
 
 List installed RPM packages by installation date, with caching for faster repeated queries.
 This function only supports RPM-based distributions (e.g., Fedora, RHEL, CentOS), and ensures consistent date parsing by using the US English locale.
 
 **Usage:**
 
-- instlist [OPTION]
-- instlist count [OPTION]
-- instlist since DATE [until DATE]
-- instlist --refresh
-- instlist --help
+- rpm_installed [OPTION]
+- rpm_installed count [OPTION]
+- rpm_installed since DATE [until DATE]
+- rpm_installed --refresh
+- rpm_installed --help
 
 
 
@@ -146,12 +148,12 @@ This function only supports RPM-based distributions (e.g., Fedora, RHEL, CentOS)
 
 **Examples:**
 
-- instlist td
-- instlist last-week
-- instlist count this-month
-- instlist since 2025-12-16 until 2025-12-22
-- instlist --refresh
-- instlist --help
+- rpm_installed td
+- rpm_installed last-week
+- rpm_installed count this-month
+- rpm_installed since 2025-12-16 until 2025-12-22
+- rpm_installed --refresh
+- rpm_installed --help
 
 ---
 
