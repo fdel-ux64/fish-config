@@ -29,29 +29,9 @@ fisher install fdel-ux64/fish-config
 
 ---
 
-### `install_package`
-
-Install a package using the correct package manager by auto-detecting your Linux distro (Fedora, Manjaro/Arch, or Ubuntu/Debian).
-
-**Usage:**
-
-- install_package [package_name]
-
-**Behavior:**
-
-- Auto-detects Fedora, Manjaro/Arch, or Ubuntu/Debian
-- If auto-detection fails, it prompts for your distro.
-- If the package name is not provided, it prompts interactively.
-
-**Example:**
-
-install_package vim
-
----
-
 ### `advanced_install_package`
 
-A versatile package installer that supports multiple Linux distributions and provides informative feedback.
+A versatile package installer that supports multiple Linux distributions Fedora, Manjaro/Arch, or Ubuntu/Debian) and provides informative feedback.
 
 **Optional Dependencies:**
 - sudo (for package installation)
