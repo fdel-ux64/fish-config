@@ -29,66 +29,6 @@ fisher install fdel-ux64/fish-config
 
 ---
 
-### `advanced_install_package`
-
-A versatile package installer that supports multiple Linux distributions Fedora, Manjaro/Arch, or Ubuntu/Debian) and provides informative feedback.
-
-**Optional Dependencies:**
-- sudo (for package installation)
-- Internet connection
-
-
-**Usage:**
-
-  advanced_install_package [package_name]
-
-**Behavior:**
-
-- Auto-detects your distro and installs the package.
-- If the package is already installed, it shows a message without reinstalling.
-- If no package name is provided, prompts interactively.
-- Provides error messages if installation fails.
-
-**Example:**
-
-- advanced_install_package vim
-- advanced_install_package vim htop curl
-- advanced_install_package  # interactive prompt
-
----
-
-### `showfunc`
-
-Search, display, and optionally edit Fish shell functions. 
-
-**Optional dependencies:** 
-
-bat for paging, fzf for fuzzy selection.
-
-**Usage:**
-
-showfunc [FUNCTION_NAME or PATTERN]
-
-**Behavior:**
-
-- Displays the content of a function matching the given name or pattern.
-- If multiple matches are found:
-- Uses fzf for fuzzy selection if installed
-- Falls back to numbered selection
-- Long functions are displayed in a pager (bat or less)
-- Can edit user-defined functions with $EDITOR.
-
-
-**Key Binding:**
-- Trigger with CTRL+F in the terminal.
-
-**Example:**
-
-- showfunc kver
-- showfunc inst
-
----
-
 ### `rpm_installed`
 
 Formerly known as `instlist`. The old name is still supported as a wrapper.
@@ -140,37 +80,61 @@ This function only supports RPM-based distributions (e.g., Fedora, RHEL, CentOS)
 
 ---
 
-### `search_history / shisto`
+### `advanced_install_package`
 
-Search a pattern in command history and display results.
-Optional dependency: fzf for interactive selection.
+A versatile package installer that supports multiple Linux distributions Fedora, Manjaro/Arch, or Ubuntu/Debian) and provides informative feedback.
+
+**Optional Dependencies:**
+- sudo (for package installation)
+- Internet connection
+
 
 **Usage:**
 
-search_history [PATTERN]
-
-shisto [PATTERN]
-
+  advanced_install_package [package_name]
 
 **Behavior:**
 
-- If no pattern is provided, displays recent history.
-- If a pattern is provided, filters history entries.
-- Can be triggered using CTRL+H.
- 
+- Auto-detects your distro and installs the package.
+- If the package is already installed, it shows a message without reinstalling.
+- If no package name is provided, prompts interactively.
+- Provides error messages if installation fails.
+
+**Example:**
+
+- advanced_install_package vim
+- advanced_install_package vim htop curl
+- advanced_install_package  # interactive prompt
+
 ---
 
-### `kver`
-Display the current kernel version.
+### `list_installed_packages_expac`
+
+Interactive Fish shell function that displays packages installed today, yesterday, or in the last week, with installation timestamps using `expac.
+
+**Optional Dependencies:**
+- Arch-based Linux distribution (Manjaro, Arch)
+- `expac` package (usually pre-installed)
+- Fish shell
+
 
 **Usage:**
 
-kver
+  list_installed_packages_expac [optinalpackage_name]
 
-**behavior:**
+**Behavior:**
 
-- Prints the current kernel version.
-- Prompts to visit kernel.org
+- 📅 Filter by time period (today/yesterday/last 7 days)
+- 🕐 Shows exact installation timestamp
+- 📊 Displays package count
+- 🎨 Clean, formatted output with Unicode borders
+- ⚡ Fast execution using `expac`
+
+**Example:**
+
+- list_installed_packages_expac
+- list_installed_packages_expac today
+- list_installed_packages_expac -h
 
 ---
 
@@ -203,7 +167,73 @@ Generate secure random passwords using **Fish shell only** — no external gener
 - generate_password 20
 - generate_password 15 5
 
-----
+---
+
+### `search_history / shisto`
+
+Search a pattern in command history and display results.
+Optional dependency: fzf for interactive selection.
+
+**Usage:**
+
+search_history [PATTERN]
+
+shisto [PATTERN]
+
+
+**Behavior:**
+
+- If no pattern is provided, displays recent history.
+- If a pattern is provided, filters history entries.
+- Can be triggered using CTRL+H.
+
+---
+
+### `showfunc`
+
+Search, display, and optionally edit Fish shell functions. 
+
+**Optional dependencies:** 
+
+bat for paging, fzf for fuzzy selection.
+
+**Usage:**
+
+showfunc [FUNCTION_NAME or PATTERN]
+
+**Behavior:**
+
+- Displays the content of a function matching the given name or pattern.
+- If multiple matches are found:
+- Uses fzf for fuzzy selection if installed
+- Falls back to numbered selection
+- Long functions are displayed in a pager (bat or less)
+- Can edit user-defined functions with $EDITOR.
+
+
+**Key Binding:**
+- Trigger with CTRL+F in the terminal.
+
+**Example:**
+
+- showfunc kver
+- showfunc inst
+
+---
+
+### `kver`
+Display the current kernel version.
+
+**Usage:**
+
+kver
+
+**behavior:**
+
+- Prints the current kernel version.
+- Prompts to visit kernel.org
+
+---
 
 **Keybindings Summary:**
 
@@ -211,7 +241,6 @@ Generate secure random passwords using **Fish shell only** — no external gener
 |------------|-----------------------|
 | CTRL+F     | showfunc              |
 | CTRL+H	   | shisto/search_history |
-
 
 
 
