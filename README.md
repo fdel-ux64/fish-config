@@ -110,7 +110,7 @@ A versatile package installer that supports multiple Linux distributions Fedora,
 
 ### `list_installed_packages_expac`
 
-Interactive Fish shell function that displays packages installed today, yesterday, or in the last week, with installation timestamps using `expac.
+Interactive Fish shell function that displays packages installed today, yesterday, or in the last week, with installation timestamps using `expac`.
 
 **Optional Dependencies:**
 - Arch-based Linux distribution (Manjaro, Arch)
@@ -120,7 +120,15 @@ Interactive Fish shell function that displays packages installed today, yesterda
 
 **Usage:**
 
-  list_installed_packages_expac [optinalpackage_name]
+  list_installed_packages_expac [PERIOD]
+  
+  Valid periods:
+  - today
+  - yesterday
+  - last-week
+  
+**Note:**
+This function relies on GNU `date` for timestamp conversion. If no PERIOD is provided, the function prompts interactively.
 
 **Behavior:**
 
