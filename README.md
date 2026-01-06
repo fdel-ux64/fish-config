@@ -2,7 +2,9 @@
 
 This repository contains my personal Fish shell configuration and helper
 functions. While some functions may be useful to others, this repository
-is not intended to be a stable or supported public plugin.
+is not intended to be a stable or supported public plugin collection.
+
+Interfaces and behavior may change without notice.
 
 ---
 
@@ -38,6 +40,8 @@ https://github.com/fdel-ux64/fish-rpm-installed
 
 List installed RPM packages by installation date, with caching for faster repeated queries.
 This function only supports RPM-based distributions (e.g., Fedora, RHEL, CentOS), and ensures consistent date parsing by using the US English locale.
+
+**Scope:** RPM-based distributions
 
 **Usage:**
 
@@ -82,7 +86,9 @@ This function only supports RPM-based distributions (e.g., Fedora, RHEL, CentOS)
 
 ### `advanced_install_package`
 
-A versatile package installer that supports multiple Linux distributions Fedora, Manjaro/Arch, or Ubuntu/Debian) and provides informative feedback.
+A versatile package installer that supports multiple Linux distributions (Fedora, Manjaro/Arch, or Ubuntu/Debian) and provides informative feedback.
+
+**Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
 **Optional Dependencies:**
 - sudo (for package installation)
@@ -112,8 +118,9 @@ A versatile package installer that supports multiple Linux distributions Fedora,
 
 Interactive Fish shell function that displays packages installed today, yesterday, or in the last week, with installation timestamps using `expac`.
 
+**Scope:** Arch based distributions (Manjaro / Arch)
+
 **Optional Dependencies:**
-- Arch-based Linux distribution (Manjaro, Arch)
 - `expac` package (usually pre-installed)
 - Fish shell
 
@@ -146,11 +153,13 @@ This function relies on GNU `date` for timestamp conversion. If no PERIOD is pro
 
 ---
 
-## generate_password
+### `generate_password`
 
 Generate secure random passwords using **Fish shell only** — no external generators required.
 
-### Features
+**Scope:** Cross-distro (Fedora / Arch / Debian-based)
+
+## Features
 
 - Cryptographically secure randomness (Fish built-in `random`)
 - Customizable length and count
@@ -177,10 +186,44 @@ Generate secure random passwords using **Fish shell only** — no external gener
 
 ---
 
+## History & Shell UX Helpers
+
+### `cleanup_history`
+
+Interactive Fish history cleanup tool.
+
+Search command history for a pattern, preview matching entries, and selectively
+remove individual commands or all matches.
+
+**Scope:** Cross-distro (Fedora / Arch / Debian-based)
+
+**Usage:**
+
+- cleanup_history [PATTERN]
+- cleanup_history            # prompt for pattern
+
+**Behavior:**
+
+- Displays matching history entries with numeric indexes
+- Supports deleting:
+  - selected entries
+  - all matches (`all`)
+- Safe quit without changes (`n`, `q`, empty input)
+- Uses exact, case-sensitive deletion to avoid accidental removals
+
+**Example:**
+
+- cleanup_history git push
+- cleanup_history rpm_installed
+
+---
+
 ### `search_history / shisto`
 
 Search a pattern in command history and display results.
 Optional dependency: fzf for interactive selection.
+
+**Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
 **Usage:**
 
@@ -231,6 +274,8 @@ showfunc [FUNCTION_NAME or PATTERN]
 
 ### `kver`
 Display the current kernel version.
+
+**Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
 **Usage:**
 
