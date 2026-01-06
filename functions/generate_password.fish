@@ -61,17 +61,24 @@ function generate_password
         echo $password
     end
 
-    # Wayland clipboard handling (polite & informative)
+    # Clipboard handling (desktop-aware vs server-aware)
     if test -n "$first_password"
-        if type -q wl-copy
-            echo -n "$first_password" | wl-copy
-            echo "📋 First password copied to clipboard (clears in $clipboard_timeout s)"
+        if set -q WAYLAND_DISPLAY
+            # Wayland session detected
+            if type -q wl-copy
+                echo -n "$first_password" | wl-copy
+                echo "📋 First password copied to clipboard (clears in $clipboard_timeout s)"
 
-            # Auto-clear clipboard
-            fish -c "sleep $clipboard_timeout; echo -n '' | wl-copy" >/dev/null 2>&1 &
+                # Auto-clear clipboard
+                fish -c "sleep $clipboard_timeout; echo -n '' | wl-copy" >/dev/null 2>&1 &
+            else
+                echo "ℹ️  Tip: install wl-clipboard to auto-copy the first password to clipboard for $clipboard_timeout seconds"
+            end
         else
-            echo "ℹ️  Tip: install wl-clipboard to auto-copy the first password to clipboard for $clipboard_timeout seconds"
+            # No Wayland session (server / SSH / TTY)
+            echo "ℹ️  Clipboard copy skipped (no Wayland session detected)"
         end
     end
+    
 end
 
