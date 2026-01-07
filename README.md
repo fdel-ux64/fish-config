@@ -159,7 +159,9 @@ Generate secure random passwords using **Fish shell only** — no external gener
 
 **Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
-## Features
+**Environment-aware:** Desktop-friendly, server-safe
+
+**Features:**
 
 - Cryptographically secure randomness (Fish built-in `random`)
 - Customizable length and count
@@ -168,21 +170,36 @@ Generate secure random passwords using **Fish shell only** — no external gener
   - digits
   - symbols (`/-+;:,!&'({*?|}%`)
 - Interactive prompts with sensible defaults
-- Optional **Wayland clipboard support**:
-  - Automatically copies the first password to the clipboard
-  - Auto-clears clipboard after 30 seconds (requires `wl-clipboard`)
-  - Gracefully degrades if not installed
+- Environment-aware clipboard handling
+  - Automatically copies the first password on Wayland desktops
+  - Auto-clears clipboard after a configurable timeout
+  - Gracefully skips clipboard logic on servers / SSH sessions
+- Zero required dependencies (clipboard support is optional) 
  
 **Usage:**
 
-- generate_password [LENGTH] [COUNT]
+- generate_password [OPTIONS] [LENGTH] [COUNT]
 - generate_password            # interactive mode
 
-**Example:**
+  **Options:**
+  - --no-clipboard
+      Disable clipboard auto-copy entirely
+  - --clipboard-timeout <seconds>
+      Set clipboard clear timeout (default: 30)
+  - -h, --help
+      Show help
 
-- generate_password
-- generate_password 20
-- generate_password 15 5
+**Example:**
+```fish
+ generate_password
+ generate_password 20
+ generate_password 15 5
+ generate_password --no-clipboard
+ generate_password --clipboard-timeout 10
+ generate_password 32 2 --clipboard-timeout 5
+```
+
+Designed to behave sensibly across desktops, servers, and SSH sessions without configuration.
 
 ---
 
@@ -281,7 +298,7 @@ Display the current kernel version.
 
 kver
 
-**behavior:**
+**Behavior:**
 
 - Prints the current kernel version.
 - Prompts to visit kernel.org
@@ -290,7 +307,7 @@ kver
 
 **Keybindings Summary:**
 
-| Keybinding | Function
+| Keybinding | Function              |
 |------------|-----------------------|
 | CTRL+F     | showfunc              |
 | CTRL+H	   | shisto/search_history |
