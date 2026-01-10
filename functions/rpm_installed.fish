@@ -1,4 +1,11 @@
 function rpm_installed --description "List installed RPM packages by install date with caching"
+    # ---- Distro check ----
+    if not command -q rpm
+        echo "❌ This function requires RPM package manager"
+        echo "   Current system does not appear to be RPM-based"
+        return 1
+    end
+
     set -l arg $argv[1]
 
     # ---- Refresh cache ----
