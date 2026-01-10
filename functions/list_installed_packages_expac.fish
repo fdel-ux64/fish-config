@@ -1,10 +1,23 @@
 function list_installed_packages_expac --description "List packages installed in a period using expac"
-
+    # Distro check
+    if not test -f /etc/arch-release
+        echo "Error: This function is designed for Arch-based distributions only."
+        echo "Detected distribution does not appear to be Arch-based."
+        return 1
+    end
+    
+    # Check if expac is installed
+    if not command -q expac
+        echo "Error: expac is not installed."
+        echo "Install it with: sudo pacman -S expac"
+        return 1
+    end
+    
     # NOTE:
     # expac --timefmt=%s is REQUIRED here.
     # %l only becomes epoch seconds with this option.
     # Do NOT remove or change unless expac behavior changes.
-
+    
     # Help
     if test (count $argv) -gt 0
         switch $argv[1]
@@ -15,10 +28,9 @@ function list_installed_packages_expac --description "List packages installed in
                 return
         end
     end
-
+    
     # Resolve period
     set -l period ""
-
     if test (count $argv) -gt 0
         switch $argv[1]
             case today td
@@ -32,7 +44,7 @@ function list_installed_packages_expac --description "List packages installed in
                 return
         end
     end
-
+    
     if test -z "$period"
         echo "Choose period:"
         echo "  1) today"
@@ -48,12 +60,11 @@ function list_installed_packages_expac --description "List packages installed in
                 return
         end
     end
-
+    
     # Time bounds
     set -l now (date +%s)
     set -l from
     set -l header
-
     switch $period
         case today
             set from (date -d "00:00" +%s)
@@ -66,7 +77,7 @@ function list_installed_packages_expac --description "List packages installed in
             set from (date -d "7 days ago" +%s)
             set header "📦 List of packages installed in the last 7 days"
     end
-
+    
     # IMPORTANT:
     # --timefmt=%s makes %l epoch seconds
     set -l output (
@@ -84,7 +95,7 @@ function list_installed_packages_expac --description "List packages installed in
         ' |
         sort -k2,2
     )
-
+    
     if test -n "$output"
         echo
         echo "═══════════════════════════════════════════════════════════"
@@ -99,4 +110,3 @@ function list_installed_packages_expac --description "List packages installed in
         echo "📦 No packages installed $period"
     end
 end
-

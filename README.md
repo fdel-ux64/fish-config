@@ -118,7 +118,7 @@ A versatile package installer that supports multiple Linux distributions (Fedora
 
 Interactive Fish shell function that displays packages installed today, yesterday, or in the last week, with installation timestamps using `expac`.
 
-**Scope:** Arch based distributions (Manjaro / Arch)
+**Scope:** Arch based distributions (Manjaro / Arch). Check the distro and provide information if not Arch based.
 
 **Optional Dependencies:**
 - `expac` package (usually pre-installed)
