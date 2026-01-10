@@ -40,6 +40,7 @@ https://github.com/fdel-ux64/fish-rpm-installed
 
 List installed RPM packages by installation date, with caching for faster repeated queries.
 This function only supports RPM-based distributions (e.g., Fedora, RHEL, CentOS), and ensures consistent date parsing by using the US English locale.
+RPM availability check is done before execution.
 
 **Scope:** RPM-based distributions
 
