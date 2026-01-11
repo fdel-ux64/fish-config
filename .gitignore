@@ -1,3 +1,5 @@
 # Local helper scripts
 link-*.fish
 *.local.fish
+completions/*.local.fish
+functions/*.local.fish
