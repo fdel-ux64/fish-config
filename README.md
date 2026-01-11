@@ -26,9 +26,9 @@ may change without notice.
 ### Using Fisher (recommended)
 
 You can install all functions, completions, and keybindings automatically using Fisher:
-
+```
 fisher install fdel-ux64/fish-config
-
+```
 ---
 
 ### `rpm_installed`
@@ -151,6 +151,50 @@ This function relies on GNU `date` for timestamp conversion. If no PERIOD is pro
 - list_installed_packages_expac
 - list_installed_packages_expac today
 - list_installed_packages_expac -h
+
+---
+
+### `fisher_update_select`
+
+Interactive helper to selectively update installed Fisher plugins.
+
+Instead of updating all plugins at once, this function presents a numbered,alphabetically sorted list of installed Fisher plugins and allows selecting one or multiple plugins to update.
+Designed for safe, intentional plugin maintenance in larger Fish setups.
+
+**Scope:** Fish shell with Fisher plugin manager
+
+
+**Requirements:**
+- Fish shell
+- Fisher (fisher command available)
+
+**Usage:**
+```fish
+fisher_update_select
+```
+
+**Behavior:**
+
+- Displays installed Fisher plugins as a numbered, sorted list
+- Supports updating:
+  - one plugin
+  - multiple plugins (space-separated numbers)
+  - all plugins (`a`)
+- Confirmation prompt before performing updates
+- Safe exit without changes (n or q)
+- Input validation to prevent accidental updates
+
+**Selection examples:**
+
+- `1 3 5` → update selected plugins
+- `a` → update all plugins
+- `q` / `n` → quit without updating
+
+**Notes:**
+
+- Plugin list is retrieved using `fisher list`
+- No version or commit information is shown, as Fisher installs may not reliably expose version metadata
+- Intended as a convenience wrapper around `fisher update`
 
 ---
 
