@@ -156,33 +156,46 @@ This function relies on GNU `date` for timestamp conversion. If no PERIOD is pro
 
 ### `fisher_update_select`
 
-Interactive helper to selectively update installed Fisher plugins.
+Interactive **and non-interactive** helper to update Fisher plugins selectively or in bulk.
 
-Instead of updating all plugins at once, this function presents a numbered,alphabetically sorted list of installed Fisher plugins and allows selecting one or multiple plugins to update.
-Designed for safe, intentional plugin maintenance in larger Fish setups.
+Instead of always updating all plugins, this function presents a numbered, alphabetically
+sorted list of installed Fisher plugins and allows selecting one or multiple plugins to update.
+It also supports fully non-interactive usage for scripting and automation.
 
 **Scope:** Fish shell with Fisher plugin manager
 
 
 **Requirements:**
 - Fish shell
-- Fisher (fisher command available)
+- Fisher (the `fisher` command must be available)
 
 **Usage:**
 ```fish
 fisher_update_select
+fisher_update_select --all
+fisher_update_select --all --yes
 ```
 
 **Behavior:**
 
+**Interactive mode (default):**
 - Displays installed Fisher plugins as a numbered, sorted list
-- Supports updating:
+- Allows selecting:
   - one plugin
   - multiple plugins (space-separated numbers)
   - all plugins (`a`)
 - Confirmation prompt before performing updates
 - Safe exit without changes (n or q)
 - Input validation to prevent accidental updates
+
+**Non-interactive mode:**
+- `--all`
+Update all installed plugins, with confirmation
+
+**Additional flags:**
+- `--yes`
+Automatically confirm update prompts (useful for scripting)
+
 
 **Selection examples:**
 
@@ -192,9 +205,10 @@ fisher_update_select
 
 **Notes:**
 
-- Plugin list is retrieved using `fisher list`
+- Plugin list is retrieved using `fisher list` and sorted alphabetically
 - No version or commit information is shown, as Fisher installs may not reliably expose version metadata
-- Intended as a convenience wrapper around `fisher update`
+- Acts as a thin, safe wrapper around `fisher update`
+- Designed for intentional plugin maintenance in larger Fish setups
 
 ---
 
