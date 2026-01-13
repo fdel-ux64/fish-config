@@ -1,4 +1,21 @@
-function fisher_update_select --description "Interactively update Fisher plugins"
+function fisher_update_select --description "Interactively or non-interactively update Fisher plugins"
+    set non_interactive 0
+    set auto_yes 0
+
+    # Parse flags
+    for arg in $argv
+        switch $arg
+            case --all
+                set non_interactive 1
+            case --yes
+                set auto_yes 1
+            case '*'
+                echo "Unknown option: $arg"
+                echo "Supported options: --all, --yes"
+                return 1
+        end
+    end
+
     set plugins (fisher list | sort)
 
     if test (count $plugins) -eq 0
@@ -6,6 +23,30 @@ function fisher_update_select --description "Interactively update Fisher plugins
         return
     end
 
+    # -------------------------
+    # Non-interactive: --all
+    # -------------------------
+    if test $non_interactive -eq 1
+        if test $auto_yes -eq 1
+            fisher update
+            return
+        end
+
+        echo -n "Update ALL plugins? [y/N]: "
+        read confirm
+
+        switch (string lower -- $confirm)
+            case y yes
+                fisher update
+            case '*'
+                echo "Aborted."
+        end
+        return
+    end
+
+    # -------------------------
+    # Interactive mode
+    # -------------------------
     echo "Installed Fisher plugins:"
     echo
 
@@ -20,7 +61,8 @@ function fisher_update_select --description "Interactively update Fisher plugins
     echo "  - 'n' or 'q' to quit"
     echo
 
-    read -P "Your choice: " choice
+    echo -n "Your choice: "
+    read choice
 
     if test "$choice" = "q" -o "$choice" = "n"
         echo "Aborted. No plugins updated."
@@ -28,8 +70,14 @@ function fisher_update_select --description "Interactively update Fisher plugins
     end
 
     if test "$choice" = "a"
-        echo
-        read -P "Update ALL plugins? [y/N]: " confirm
+        if test $auto_yes -eq 1
+            fisher update
+            return
+        end
+
+        echo -n "Update ALL plugins? [y/N]: "
+        read confirm
+
         switch (string lower -- $confirm)
             case y yes
                 fisher update
@@ -68,7 +116,14 @@ function fisher_update_select --description "Interactively update Fisher plugins
     end
     echo
 
-    read -P "Proceed with update? [y/N]: " confirm
+    if test $auto_yes -eq 1
+        fisher update $selected
+        return
+    end
+
+    echo -n "Proceed with update? [y/N]: "
+    read confirm
+
     switch (string lower -- $confirm)
         case y yes
             fisher update $selected
