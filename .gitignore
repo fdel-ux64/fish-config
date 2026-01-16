@@ -1,4 +1,5 @@
 # Ignore all local-only fish code
 functions/local/
 completions/local/
+conf.d/local/
 link-*.fish
