@@ -1,5 +1,4 @@
-# Local helper scripts
+# Ignore all local-only fish code
+functions/local/
+completions/local/
 link-*.fish
-*.local.fish
-completions/*.local.fish
-functions/*.local.fish
