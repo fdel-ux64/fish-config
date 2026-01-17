@@ -3,3 +3,6 @@ functions/local/
 completions/local/
 conf.d/local/
 link-*.fish
+
+# Ignore private notes
+README.private.md
