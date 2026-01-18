@@ -1,4 +1,11 @@
 function rpm_installed --description "List RPM packages installed within a time period"
+    # ---- Distro check ----
+    if not command -q rpm
+        echo "❌ This function requires RPM package manager"
+        echo "   Current system does not appear to be RPM-based"
+        return 1
+    end
+    
     # Parse arguments
     set -l period ""
     set -l period_desc ""
@@ -39,8 +46,8 @@ function rpm_installed --description "List RPM packages installed within a time 
     end
     
     # Print section title
-    echo -e "\n 📦 List of installed packages $period_desc"
-    echo -e " ╰─────────────────────────────────────────────────────────╯\n"
+    echo -e "\n       📦 List of installed packages $period_desc"
+    echo -e "       ╰─────────────────────────────────────────────────────────╯\n"
     
     # Query RPM database and filter by time
     set -l packages (rpm -qa --queryformat "%{INSTALLTIME} %{INSTALLTID} %{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n" | sort -rn)
