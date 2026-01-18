@@ -298,18 +298,16 @@ remove individual commands or all matches.
 
 ---
 
-### 🔍 `search_history / shisto`
+### 🔍 `search_history`
 
 Search a pattern in command history and display results.
-Optional dependency: fzf for interactive selection.
+
 
 **Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
 **Usage:**
 
 search\_history [PATTERN]
-
-shisto [PATTERN]
 
 **Behavior:**
 
