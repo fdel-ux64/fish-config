@@ -1,8 +1,11 @@
-# Ignore all local-only fish code
+# Ignore private notes
+README.private.md
+
+# Ignore all local-only fish code or backup files
 functions/local/
 completions/local/
 conf.d/local/
 link-*.fish
+*.bak
 
-# Ignore private notes
-README.private.md
+
