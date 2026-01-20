@@ -268,52 +268,76 @@ Designed to behave sensibly across desktops, servers, and SSH sessions without c
 
 ## 📜 History & Shell UX Helpers
 
-### 🧹 `cleanup_history`
+### 🔍 `search_history`
 
-Interactive Fish history cleanup tool.
-
-Search command history for a pattern, preview matching entries, and selectively
-remove individual commands or all matches.
+Search command history with optional interactive cleanup.
 
 **Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
 **Usage:**
 
-* cleanup\_history [PATTERN]
-* cleanup\_history # prompt for pattern
+* `search_history [OPTIONS] [PATTERN]`
+* `search_history` # interactive prompt mode
+* `search_history PATTERN` # search for pattern
+* `search_history -c PATTERN` # search and offer cleanup
+
+**Options:**
+
+* `-c, --cleanup` - Offer to clean up matching entries after search
+* `-h, --help` - Show help
+
+**Features:**
+
+* Uses ripgrep (rg) if available, falls back to grep
+* Case-insensitive search by default
+* Can be triggered using CTRL+H
+* Optional interactive cleanup of search results
+* Choose to delete all matches or select specific entries
+
+**Behavior:**
+
+* If no pattern is provided, displays recent history
+* If a pattern is provided, filters history entries
+* With `-c` flag, offers cleanup options after displaying results:
+  + `all` - Delete all matching entries
+  + `select` - Choose specific entries by number (e.g., `1 3 5`)
+  + `N` - Skip cleanup
+
+**Examples:**
+
+* `search_history git` # find all git commands
+* `search_history -c 'git push'` # search and offer cleanup
+* `search_history rpm install` # find rpm install commands
+* `search_history` # interactive prompt
+
+---
+
+### 🧹 `cleanup_history`
+
+Standalone interactive history cleanup tool.
+
+**Scope:** Cross-distro (Fedora / Arch / Debian-based)
+
+**Usage:**
+
+* `cleanup_history [PATTERN]`
+* `cleanup_history` # prompt for pattern
 
 **Behavior:**
 
 * Displays matching history entries with numeric indexes
 * Supports deleting:
-  + selected entries
+  + selected entries (space-separated numbers)
   + all matches (`all`)
 * Safe quit without changes (`n`, `q`, empty input)
 * Uses exact, case-sensitive deletion to avoid accidental removals
 
 **Example:**
 
-* cleanup\_history git push
-* cleanup\_history rpm\_installed
+* `cleanup_history git push`
+* `cleanup_history rpm_installed`
 
----
-
-### 🔍 `search_history`
-
-Search a pattern in command history and display results.
-
-
-**Scope:** Cross-distro (Fedora / Arch / Debian-based)
-
-**Usage:**
-
-search\_history [PATTERN]
-
-**Behavior:**
-
-* If no pattern is provided, displays recent history.
-* If a pattern is provided, filters history entries.
-* Can be triggered using CTRL+H.
+**Note:** For integrated search and cleanup workflow, use `search_history -c` instead.
 
 ---
 
@@ -327,14 +351,14 @@ bat for paging, fzf for fuzzy selection.
 
 **Usage:**
 
-showfunc [FUNCTION\_NAME or PATTERN]
+showfunc [FUNCTION_NAME or PATTERN]
 
 **Behavior:**
 
 * Displays the content of a function matching the given name or pattern.
 * If multiple matches are found:
-* Uses fzf for fuzzy selection if installed
-* Falls back to numbered selection
+  + Uses fzf for fuzzy selection if installed
+  + Falls back to numbered selection
 * Long functions are displayed in a pager (bat or less)
 * Can edit user-defined functions with $EDITOR.
 
@@ -344,8 +368,8 @@ showfunc [FUNCTION\_NAME or PATTERN]
 
 **Example:**
 
-* showfunc kver
-* showfunc inst
+* `showfunc kver`
+* `showfunc inst`
 
 ---
 
@@ -371,4 +395,4 @@ kver
 | Keybinding | Function |
 | --- | --- |
 | CTRL+F | showfunc |
-| CTRL+H | shisto/search\_history |
+| CTRL+H | search_history |
