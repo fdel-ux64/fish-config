@@ -1,4 +1,4 @@
-function showfunc --description "Search, display, and optionally edit fish functions"
+function inspect_function --description "Search, display, and optionally edit fish functions"
     # Accept optional argument as initial query
     if test (count $argv) -ge 1
         set query $argv[1]

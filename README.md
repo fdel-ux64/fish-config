@@ -341,7 +341,7 @@ Standalone interactive history cleanup tool.
 
 ---
 
-### 🔎 `showfunc`
+### 🔎 `inspect_function`
 
 Search, display, and optionally edit Fish shell functions.
 
@@ -368,8 +368,8 @@ showfunc [FUNCTION_NAME or PATTERN]
 
 **Example:**
 
-* `showfunc kver`
-* `showfunc inst`
+* `inspect_function kver`
+* `inspect_function generate_password`
 
 ---
 
@@ -394,5 +394,5 @@ kver
 
 | Keybinding | Function |
 | --- | --- |
-| CTRL+F | showfunc |
-| CTRL+H | search_history |
+| CTRL+F | inspect_function |
+| CTRL+H | search_history   |
