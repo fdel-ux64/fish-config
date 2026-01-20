@@ -131,8 +131,8 @@ function rpm_installed --description "List installed RPM packages by install dat
         
         # Display header if title provided
         if test -n "$title"
-            echo -e "\n       📦 List of installed packages $title"
-            echo "       ╰─────────────────────────────────────────────────────────╯"
+            echo -e "\n       📦 List of installed package(s): $title"
+            echo "       ╰─────────────────────────────────────────────────────────"
             echo
         end
         
@@ -143,7 +143,8 @@ function rpm_installed --description "List installed RPM packages by install dat
         
         # Display count if title provided
         if test -n "$title"
-            echo -e "\n🔢 Total number of package(s): $pkg_count\n"
+           echo -e "\n────────────────────────────────────"  
+           echo -e "🔢 Total number of package(s): $pkg_count\n"
         end
     end
 

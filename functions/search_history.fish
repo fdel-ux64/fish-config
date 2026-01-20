@@ -37,8 +37,8 @@ function search_history --description "Search fish command history with optional
     # ---- Search with pattern ----
     set -l query (string join ' ' -- $argv)
     
-    echo -e "\n       🔍 Searching history for: \"$query\""
-    echo "       ╰─────────────────────────────────────────────────────────╯"
+    echo -e "\n   🔍 Searching history for: \"$query\""
+    echo "  ╰──────────────────────────────────────────"
     echo
     
     # Use ripgrep if available, otherwise fall back to grep
@@ -52,9 +52,10 @@ function search_history --description "Search fish command history with optional
     # Display results
     if test (count $results) -gt 0
         for line in $results
-            echo $line
+            echo " " $line
         end
-        echo -e "\n🔢 Total matches: "(count $results)"\n"
+        echo -e " \n ─────────────────────────────────"
+        echo -e " 🔢 Total matches: "(count $results)"\n"
     else
         echo "No matches found for \"$query\""
         echo
