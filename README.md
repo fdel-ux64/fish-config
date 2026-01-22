@@ -341,6 +341,57 @@ Standalone interactive history cleanup tool.
 
 ---
 
+### 🧹 `clean_session_history`
+
+Clear the current Fish shell session history with safety features including confirmation prompts and visual countdown.
+
+**Scope:** Cross-distro (Fedora / Arch / Debian-based)
+
+**Usage:**
+
+* `clean_session_history [OPTIONS]`
+* `clean_session_history` # interactive mode with confirmation
+* `clean_session_history --yes` # immediate clearing
+* `clean_session_history --wait 5` # custom countdown time
+
+**Options:**
+
+* `-y, --yes` - Clear immediately without prompt or delay
+* `-w, --wait SECONDS` - Set countdown duration (default: 10 seconds)
+* `-h, --help` - Show help message
+
+**Features:**
+
+* **Safety first**: Requires confirmation before clearing
+* **Visual feedback**: Progress bar countdown before deletion
+* **Non-interactive protection**: Requires `--yes` flag in scripts
+* **Customizable delay**: Adjust countdown time to your preference
+* **Session-only**: Only clears current session, not saved history
+
+**Behavior:**
+
+* In interactive mode (default):
+  + Prompts for confirmation
+  + Shows 10-second countdown with progress bar
+  + Allows cancellation before clearing
+* With `--yes` flag:
+  + Skips confirmation and countdown
+  + Clears immediately (useful for scripts)
+* In non-interactive shells:
+  + Requires `--yes` flag to proceed
+  + Prevents accidental clearing in scripts
+
+**Examples:**
+
+* `clean_session_history` # interactive with 10s countdown
+* `clean_session_history -w 5` # 5-second countdown
+* `clean_session_history --yes` # immediate clearing
+* `clean_session_history -h` # show help
+
+**Note:** This function only clears the current session history. To clear all saved history, use Fish's built-in `history clear` command.
+
+---
+
 ### 🔎 `inspect_function`
 
 Search, display, and optionally edit Fish shell functions.
