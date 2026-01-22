@@ -426,18 +426,38 @@ showfunc [FUNCTION_NAME or PATTERN]
 
 ### 🐧 `kver`
 
-Display the current kernel version.
+Display the current kernel version and optionally compare with the latest stable release.
 
 **Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
 **Usage:**
 
-kver
+```
+kver [-c|--compare] [-h|--help]
+```
+**Options:**
+- `-c, --compare` — Fetch and compare with the latest stable kernel from kernel.org
+- `-h, --help` — Display help information
 
 **Behavior:**
 
-* Prints the current kernel version.
-* Prompts to visit kernel.org
+* Prints the current kernel version (from `uname -r`)
+* With `-c` flag: Fetches the latest stable kernel version from kernel.org and compares
+* Shows whether you're running the latest stable kernel or if an update is available
+* Prompts to visit kernel.org in your default browser
+
+**Examples:**
+```
+$ kver -c
+Current Kernel Version: 6.18.6-200.fc43.x86_64
+
+Fetching latest kernel version from kernel.org...
+Latest Stable Kernel:   6.18.7
+
+ℹ️  A newer kernel version may be available.
+
+Visit kernel.org? (y/N):
+```
 
 ---
 
