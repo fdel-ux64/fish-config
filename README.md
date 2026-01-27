@@ -305,46 +305,57 @@ Designed to behave sensibly across desktops, servers, and SSH sessions without c
 ## 📜 History & Shell UX Helpers
 
 ### 🔍 `search_history`
-
 Search command history with optional interactive cleanup.
 
 **Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
 **Usage:**
-
 * `search_history [OPTIONS] [PATTERN]`
 * `search_history` # interactive prompt mode
 * `search_history PATTERN` # search for pattern
 * `search_history -c PATTERN` # search and offer cleanup
 
 **Options:**
-
 * `-c, --cleanup` - Offer to clean up matching entries after search
 * `-h, --help` - Show help
 
 **Features:**
-
 * Uses ripgrep (rg) if available, falls back to grep
 * Case-insensitive search by default
 * Can be triggered using CTRL+H
 * Optional interactive cleanup of search results
-* Choose to delete all matches or select specific entries
+* Flexible deletion: delete all matches, select interactively, or specify numbers directly
 
 **Behavior:**
-
 * If no pattern is provided, displays recent history
 * If a pattern is provided, filters history entries
 * With `-c` flag, offers cleanup options after displaying results:
-  + `all` - Delete all matching entries
-  + `select` - Choose specific entries by number (e.g., `1 3 5`)
-  + `N` - Skip cleanup
+  + `all` - Delete all matching entries immediately
+  + `select` - Enter interactive mode to choose entries one batch at a time
+  + Direct numbers (e.g., `6` or `2 5 8`) - Delete specific entries immediately
+  + `N` or `q` - Skip cleanup
+
+**Cleanup Workflows:**
+1. **Quick delete:** Type numbers directly (e.g., `6 8 9`) to delete those entries right away
+2. **Interactive mode:** Type `select` to enter a loop where you can delete multiple batches
+3. **Delete all:** Type `all` to remove all matching entries at once
 
 **Examples:**
+```fish
+# Find all git commands
+search_history git
 
-* `search_history git` # find all git commands
-* `search_history -c 'git push'` # search and offer cleanup
-* `search_history rpm install` # find rpm install commands
-* `search_history` # interactive prompt
+# Search and cleanup interactively
+search_history -c 'git push'
+# Then choose: all / select / 6 / 2 5 8 / N
+
+# Quick cleanup of specific entries
+search_history -c rpm
+# Type: 1 3 5  (deletes entries 1, 3, and 5 immediately)
+
+# Interactive prompt mode
+search_history
+```
 
 ---
 

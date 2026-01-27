@@ -5,17 +5,17 @@ function advanced_install_package
     else
         read --prompt-str "Enter package name to install: " package_name
     end
-
+    
     if test -z "$package_name"
         echo "❌ No package name provided."
         return 1
     end
-
+    
     # Detect distro
     if test -f /etc/os-release
         set distro_id (string lower (string match -r '^ID=.*' < /etc/os-release | string replace -r '^ID=' ''))
     end
-
+    
     # Determine installer command
     switch $distro_id
         case fedora
@@ -42,18 +42,21 @@ function advanced_install_package
                     return 1
             end
     end
-
+    
     echo "Installing '$package_name'..."
-
-    # Run installer and capture output (stdout+stderr)
+    
+    # Run installer and capture output AND exit status
     set output (eval $installer_cmd 2>&1)
-
+    set install_status $status  # Capture the status immediately!
+    
     # Check if already installed
     if string match -q '*already installed*' "$output"
         echo "ℹ️  Package '$package_name' is already installed."
     else if string match -q '*Nothing to do*' "$output"
         echo "ℹ️  Package '$package_name' is already installed."
-    else if test $status -eq 0
+    else if string match -q '*Complete!*' "$output"
+        echo "✅ Package '$package_name' installed successfully!"
+    else if test $install_status -eq 0
         echo "✅ Package '$package_name' installed successfully!"
     else
         echo "❌ Installation failed. Check package name or internet connection."
