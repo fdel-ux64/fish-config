@@ -97,8 +97,9 @@ function search_history --description "Search fish command history with optional
     
     # ---- Cleanup integration ----
     if test $cleanup_mode -eq 1
-        read -l -P "🧹 Clean up entries? [all/select/N]: " cleanup_choice
+        read -l -P "🧹 Clean up entries? [all/select/NUMBERS/N]: " cleanup_choice
         
+        # Check if input is 'all'
         switch $cleanup_choice
             case '' 'n' 'N' 'no' 'quit' 'q' 'Q'
                 echo "Skipped cleanup."
@@ -111,10 +112,38 @@ function search_history --description "Search fish command history with optional
                 echo "Done."
                 return 0
             case 'select' 'SELECT' 's' 'S' 'sel'
-                # Continue to interactive selection
-            case '*'
-                echo "Invalid choice. Use 'all', 'select', or 'n' to skip."
+                # Enter interactive selection mode (original workflow)
+                set cleanup_choice ""  # Reset for the loop
+        end
+        
+        # Check if direct numbers were provided
+        set -l initial_nums
+        if test -n "$cleanup_choice"
+            # Try to parse as numbers
+            for num in (string split " " $cleanup_choice)
+                if string match -qr '^[0-9]+$' -- $num
+                    if test $num -ge 1 -a $num -le (count $matches)
+                        set -a initial_nums $num
+                    end
+                end
+            end
+        end
+        
+        # If valid numbers were provided directly, process them
+        if test (count $initial_nums) -gt 0
+            for num in $initial_nums
+                set -l cmd $matches[$num]
+                history delete --exact --case-sensitive $cmd
+                echo "  ✅ Deleted: $cmd"
+            end
+            echo "Deleted "(count $initial_nums)" entries."
+            
+            read -l -P "Continue deleting more? [y/N]: " continue
+            if not string match -qi 'y*' $continue
+                echo "Done."
                 return 0
+            end
+            # If yes, continue to interactive loop below
         end
         
         # Interactive cleanup loop for selective deletion
