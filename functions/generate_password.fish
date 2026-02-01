@@ -77,11 +77,11 @@ function generate_password
     end
 
     # Validate
-    if not string match -qr '^[0-9]+$' "$length"
+    if not string match -qr '^[0-9]+$' -- "$length"
         echo "❌ Invalid length: $length"
         return 1
     end
-    if not string match -qr '^[0-9]+$' "$count"
+    if not string match -qr '^[0-9]+$' -- "$count"
         echo "❌ Invalid count: $count"
         return 1
     end
