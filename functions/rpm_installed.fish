@@ -17,38 +17,43 @@ function rpm_installed --description "List installed RPM packages by install dat
     end
 
     # ---- Help flag ----
-    switch $arg
-        case -h --help
-            echo "rpm_installed — list installed RPM packages by install date"
-            echo
-            echo "USAGE:"
-            echo "  rpm_installed [OPTION]"
-            echo "  rpm_installed since DATE [until DATE]"
-            echo "  rpm_installed count [OPTION] (including 'since … until …')"
-            echo "  rpm_installed --refresh  # rebuild cache"
-            echo
-            echo "OPTIONS:"
-            echo "  today        Packages installed today"
-            echo "  yesterday    Packages installed yesterday"
-            echo "  last-week    Packages installed in the last 7 days"
-            echo "  this-month   Packages installed this calendar month"
-            echo "  last-month   Packages installed in the previous calendar month"
-            echo
-            echo "ALIASES:"
-            echo "  td  → today"
-            echo "  yd  → yesterday"
-            echo "  lw  → last-week"
-            echo "  tm  → this-month"
-            echo "  lm  → last-month"
-            echo
-            echo "COUNT / STATS:"
-            echo "  rpm_installed count today"
-            echo "  rpm_installed count last-week"
-            echo "  rpm_installed count per-day"
-            echo "  rpm_installed count per-week"
-            echo "  rpm_installed count since DATE [until DATE]"
-            return 0
-    end
+    
+   function __rpm_installed_help
+    echo "rpm_installed — list installed RPM packages by install date"
+    echo
+    echo "USAGE:"
+    echo "  rpm_installed [OPTION]"
+    echo "  rpm_installed since DATE [until DATE]"
+    echo "  rpm_installed count [OPTION] (including 'since … until …')"
+    echo "  rpm_installed --refresh  # rebuild cache"
+    echo
+    echo "OPTIONS:"
+    echo "  today        Packages installed today"
+    echo "  yesterday    Packages installed yesterday"
+    echo "  last-week    Packages installed in the last 7 days"
+    echo "  this-month   Packages installed this calendar month"
+    echo "  last-month   Packages installed in the previous calendar month"
+    echo
+    echo "ALIASES:"
+    echo "  td  → today"
+    echo "  yd  → yesterday"
+    echo "  lw  → last-week"
+    echo "  tm  → this-month"
+    echo "  lm  → last-month"
+    echo
+    echo "COUNT / STATS:"
+    echo "  rpm_installed count today"
+    echo "  rpm_installed count last-week"
+    echo "  rpm_installed count per-day"
+    echo "  rpm_installed count per-week"
+    echo "  rpm_installed count since DATE [until DATE]"
+  end
+    
+  switch $arg
+    case -h --help
+        __rpm_installed_help
+        return 0
+  end
 
     # ---- Alias normalization ----
     switch $arg
@@ -225,9 +230,10 @@ function rpm_installed --description "List installed RPM packages by install dat
 
         case per-week
             printf "%s\n" $__instlist_cache | awk '{count[strftime("%Y-W%V",$1)]++} END{for(w in count) printf "%s  %d\n", w, count[w]}' | sort
-
         case '*'
-            echo "❌ Invalid option: '$arg'"
-            echo "Run 'rpm_installed --help' for usage."
+           echo "❌ Invalid option: '$arg'"
+           echo
+            __rpm_installed_help
+          return 1
     end
 end
