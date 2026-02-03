@@ -105,6 +105,9 @@ function rpm_installed --description "List installed RPM packages by install dat
             set since_epoch (env LC_ALL=en_US.UTF-8 date -d "$argv[$idx] 00:00" +%s 2>/dev/null)
             if test -z "$since_epoch"
                 echo "❌ Invalid date: $argv[$idx]"
+                echo "   Expected a format understood by 'date -d' (e.g. YYYY-MM-DD)"
+                echo
+                __rpm_installed_help
                 return 1
             end
         else if test $argv[$i] = until
@@ -112,6 +115,9 @@ function rpm_installed --description "List installed RPM packages by install dat
             set until_epoch (env LC_ALL=en_US.UTF-8 date -d "$argv[$idx] 00:00" +%s 2>/dev/null)
             if test -z "$until_epoch"
                 echo "❌ Invalid date: $argv[$idx]"
+                echo "   Expected a format understood by 'date -d' (e.g. YYYY-MM-DD)"
+                echo
+                __rpm_installed_help
                 return 1
             end
         end
