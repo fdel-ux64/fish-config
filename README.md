@@ -115,41 +115,89 @@ advanced\_install\_package [package\_name]
 
 ### 📋 `list_installed_packages_expac`
 
-Interactive Fish shell function that displays packages installed today, yesterday, or in the last week, with installation timestamps using `expac`.
+Fish shell function that lists **installed Arch packages by installation date**, with caching, flexible time ranges, and statistical views — powered by `expac`.
 
-**Scope:** Arch based distributions (Manjaro / Arch). Check the distro and provide information if not Arch based.
+Designed to provide **feature parity with** rpm_installed on RPM-based systems.
 
-**Optional Dependencies:**
+**Scope:** 
+
+Arch-based distributions (Arch Linux, Manjaro, EndeavourOS, etc.)
+The function detects non-Arch systems and exits with a helpful message.
+
+**Dependencies:**
 
 * `expac` package (usually pre-installed)
 * Fish shell
+* GNU date (for date parsing and epoch conversion)
 
 **Usage:**
+```
+list_installed_packages_expac [OPTION]
+list_installed_packages_expac since DATE [until DATE]
+list_installed_packages_expac count [OPTION]
+list_installed_packages_expac --refresh
+```
 
-list\_installed\_packages\_expac [PERIOD]
+**Time Range Options**
 
-Valid periods:
+- today — packages installed today
+- yesterday — packages installed yesterday
+- last-week — packages installed in the last 7 days
+- this-month — packages installed this calendar month
+- last-month — packages installed in the previous calendar month
 
-* today
-* yesterday
-* last-week
+**Aliases:**
 
-**Note:**
-This function relies on GNU `date` for timestamp conversion. If no PERIOD is provided, the function prompts interactively.
+- td → today
+- yd → yesterday
+- lw → last-week
+- tm → this-month
+- lm → last-month
+
+
+**Custom Date Ranges**
+```
+list_installed_packages_expac since 2024-01-01
+list_installed_packages_expac since 2024-01-01 until 2024-02-01
+```
+Dates must be in a format understood by `date -d`.
+
+**Count / Statistics Mode**
+```
+list_installed_packages_expac count today
+list_installed_packages_expac count last-week
+list_installed_packages_expac count since 2024-01-01
+list_installed_packages_expac per-day
+list_installed_packages_expac per-week
+```
+
+**Cache Management**
+
+The package list is cached for fast repeated queries.
+```
+list_installed_packages_expac --refresh
+```
+Clears and rebuilds the cache on the next run.
+
 
 **Behavior:**
 
 * 📅 Filter by time period (today/yesterday/last 7 days)
-* 🕐 Shows exact installation timestamp
-* 📊 Displays package count
-* 🎨 Clean, formatted output with Unicode borders
-* ⚡ Fast execution using `expac`
+* 🕐 Displays installation timestamps
+* 📊 Count and aggregation modes (per day / per week)
+* ⚡ Cached backend for fast repeated queries
+* 🎨 Clean, consistent output formatting
+* Script-friendly (no interactive prompts)
 
 **Example:**
-
-* list\_installed\_packages\_expac
-* list\_installed\_packages\_expac today
-* list\_installed\_packages\_expac -h
+```
+list_installed_packages_expac
+list_installed_packages_expac today
+list_installed_packages_expac count last-week
+list_installed_packages_expac since 2024-01-01 until 2024-01-31
+list_installed_packages_expac --refresh
+list_installed_packages_expac -h
+```
 
 ---
 
