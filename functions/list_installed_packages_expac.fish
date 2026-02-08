@@ -71,7 +71,7 @@ function list_installed_packages_expac --description "List installed Arch packag
     # ---- Backend helper ----
     function __instlist_arch
         # %l = install time, requires --timefmt=%s
-        expac --timefmt=%s '%l (%l:date): %n-%v'
+        expac --timefmt=%s '%l %n-%v'
     end
 
     # ---- Cache ----
@@ -111,16 +111,25 @@ function list_installed_packages_expac --description "List installed Arch packag
 
     # ---- Display helper (shared UX) ----
     function __display_packages
-        set -l title $argv[1]
-        set -l pkgs  $argv[2..-1]
+    set -l title $argv[1]
+    set -l pkgs  $argv[2..-1]
 
-        echo -e "\n       📦 List of installed package(s): $title"
-        echo "     ╰─────────────────────────────────────────────────────────"
-        echo
-        printf " %s\n" $pkgs
-        echo -e "\n ────────────────────────────────────"
-        echo " 🔢 Total number of package(s): "(count $pkgs)
-        echo
+    echo -e "\n       📦 List of installed package(s): $title"
+    echo "       ╰─────────────────────────────────────────────────────────"
+    echo
+
+    for line in $pkgs
+        set -l ts  (string split ' ' $line)[1]
+        set -l pkg (string split ' ' $line)[2]
+
+        set -l datestr (date -d @$ts "+%Y-%m-%d %T")
+        echo " $datestr: $pkg"
+    end
+
+    echo
+    echo " ────────────────────────────────────"
+    echo " 🔢 Total number of package(s): "(count $pkgs)
+    echo
     end
 
     # ---- Custom ranges ----
