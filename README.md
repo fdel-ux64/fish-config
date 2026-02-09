@@ -83,6 +83,71 @@ RPM availability check is done before execution.
 
 ---
 
+### 📦 `arch_installed`
+
+Arch Linux equivalent of rpm_installed.
+
+Lists installed Arch packages by installation date, with caching for faster repeated queries.
+Designed to provide **feature parity with** rpm_installed, using expac as the backend.
+
+**Note:**
+Formerly known as list_installed_packages_expac.
+The old name is kept as a compatibility wrapper and may be removed in a future release.
+
+**Scope:** Arch-based distributions (Arch Linux, Manjaro, EndeavourOS, etc.)
+
+**Dependencies:**
+
+* `expac` package (usually pre-installed)
+* Fish shell
+* GNU date (for date parsing and epoch conversion)
+
+**Usage:**
+
+* arch_installed [OPTION]
+* arch_installed count [OPTION]
+* arch_installed since DATE [until DATE]
+* arch_installed per-day
+* arch_installed per-week
+* arch_installed --refresh
+* arch_installed --help
+
+| Option       | Description                              |
+| ------------ | ---------------------------------------- |
+| `today`      | Packages installed today                 |
+| `yesterday`  | Packages installed yesterday             |
+| `last-week`  | Packages installed in the last 7 days    |
+| `this-month` | Packages installed this calendar month   |
+| `last-month` | Packages installed in the previous month |
+| `per-day`    | Count packages per day                   |
+| `per-week`   | Count packages per week                  |
+
+| Alias | Expands to |
+| ----- | ---------- |
+| `td`  | today      |
+| `yd`  | yesterday  |
+| `lw`  | last-week  |
+| `tm`  | this-month |
+| `lm`  | last-month |
+
+**Example:**
+
+* arch_installed td
+* arch_installed last-week
+* arch_installed count this-month
+* arch_installed since 2024-01-01 until 2024-02-01
+* arch_installed --refresh
+* arch_installed --help
+
+---
+
+> ℹ️ **Note:**
+> A future `installed_packages` function may be added as a generic dispatcher
+> that automatically selects `rpm_installed` or `arch_installed` based on
+> the detected distribution.
+
+---
+
 ### 🚀 `advanced_install_package`
 
 A versatile package installer that supports multiple Linux distributions (Fedora, Manjaro/Arch, or Ubuntu/Debian) and provides informative feedback.
@@ -110,98 +175,6 @@ advanced\_install\_package [package\_name]
 * advanced\_install\_package vim
 * advanced\_install\_package vim htop curl
 * advanced\_install\_package # interactive prompt
-
----
-
-### 📋 `arch_installed`
-
-Fish shell function that lists **installed Arch packages by installation date**, with caching, flexible time ranges, and statistical views — powered by `expac`.
-
-Designed to provide **feature parity with** rpm_installed on RPM-based systems.
-
-**Note:**
-
-`list_installed_packages_expac` is kept as a compatibility alias and may be removed in a future release.
-
-**Scope:** 
-
-Arch-based distributions (Arch Linux, Manjaro, EndeavourOS, etc.)
-The function detects non-Arch systems and exits with a helpful message.
-
-**Dependencies:**
-
-* `expac` package (usually pre-installed)
-* Fish shell
-* GNU date (for date parsing and epoch conversion)
-
-**Usage:**
-```
-arch_installed [OPTION]
-arch_installed since DATE [until DATE]
-arch_installed count [OPTION]
-arch_installed --refresh
-```
-
-**Time Range Options**
-
-- today — packages installed today
-- yesterday — packages installed yesterday
-- last-week — packages installed in the last 7 days
-- this-month — packages installed this calendar month
-- last-month — packages installed in the previous calendar month
-
-**Aliases:**
-
-- td → today
-- yd → yesterday
-- lw → last-week
-- tm → this-month
-- lm → last-month
-
-
-**Custom Date Ranges**
-```
-arch_installed since 2024-01-01
-arch_installed since 2024-01-01 until 2024-02-01
-```
-Dates must be in a format understood by `date -d`.
-
-**Count / Statistics Mode**
-```
-arch_installed count today
-arch_installed count last-week
-arch_installed count since 2024-01-01
-arch_installed per-day
-arch_installed per-week
-```
-
-**Cache Management**
-
-The package list is cached for fast repeated queries.
-```
-arch_installed --refresh
-```
-Clears and rebuilds the cache on the next run.
-
-
-**Behavior:**
-
-* 📅 Filter by time period (today/yesterday/last 7 days)
-* 🕐 Displays installation timestamps
-* 📊 Count and aggregation modes (per day / per week)
-* ⚡ Cached backend for fast repeated queries
-* 🎨 Clean, consistent output formatting
-* Script-friendly (no interactive prompts)
-
-**Example:**
-```
-arch_installed
-arch_installed today
-arch_installed count last-week
-arch_installed since 2024-01-01 until 2024-01-31
-arch_installed --refresh
-arch_installed -h
-```
 
 ---
 
@@ -501,7 +474,7 @@ bat for paging, fzf for fuzzy selection.
 
 **Usage:**
 
-showfunc [FUNCTION_NAME or PATTERN]
+inspect_function [FUNCTION_NAME or PATTERN]
 
 **Behavior:**
 
