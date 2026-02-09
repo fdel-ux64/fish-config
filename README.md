@@ -113,11 +113,15 @@ advanced\_install\_package [package\_name]
 
 ---
 
-### 📋 `list_installed_packages_expac`
+### 📋 `arch_installed`
 
 Fish shell function that lists **installed Arch packages by installation date**, with caching, flexible time ranges, and statistical views — powered by `expac`.
 
 Designed to provide **feature parity with** rpm_installed on RPM-based systems.
+
+**Note:**
+
+`list_installed_packages_expac` is kept as a compatibility alias and may be removed in a future release.
 
 **Scope:** 
 
@@ -132,10 +136,10 @@ The function detects non-Arch systems and exits with a helpful message.
 
 **Usage:**
 ```
-list_installed_packages_expac [OPTION]
-list_installed_packages_expac since DATE [until DATE]
-list_installed_packages_expac count [OPTION]
-list_installed_packages_expac --refresh
+arch_installed [OPTION]
+arch_installed since DATE [until DATE]
+arch_installed count [OPTION]
+arch_installed --refresh
 ```
 
 **Time Range Options**
@@ -157,25 +161,25 @@ list_installed_packages_expac --refresh
 
 **Custom Date Ranges**
 ```
-list_installed_packages_expac since 2024-01-01
-list_installed_packages_expac since 2024-01-01 until 2024-02-01
+arch_installed since 2024-01-01
+arch_installed since 2024-01-01 until 2024-02-01
 ```
 Dates must be in a format understood by `date -d`.
 
 **Count / Statistics Mode**
 ```
-list_installed_packages_expac count today
-list_installed_packages_expac count last-week
-list_installed_packages_expac count since 2024-01-01
-list_installed_packages_expac per-day
-list_installed_packages_expac per-week
+arch_installed count today
+arch_installed count last-week
+arch_installed count since 2024-01-01
+arch_installed per-day
+arch_installed per-week
 ```
 
 **Cache Management**
 
 The package list is cached for fast repeated queries.
 ```
-list_installed_packages_expac --refresh
+arch_installed --refresh
 ```
 Clears and rebuilds the cache on the next run.
 
@@ -191,12 +195,12 @@ Clears and rebuilds the cache on the next run.
 
 **Example:**
 ```
-list_installed_packages_expac
-list_installed_packages_expac today
-list_installed_packages_expac count last-week
-list_installed_packages_expac since 2024-01-01 until 2024-01-31
-list_installed_packages_expac --refresh
-list_installed_packages_expac -h
+arch_installed
+arch_installed today
+arch_installed count last-week
+arch_installed since 2024-01-01 until 2024-01-31
+arch_installed --refresh
+arch_installed -h
 ```
 
 ---
