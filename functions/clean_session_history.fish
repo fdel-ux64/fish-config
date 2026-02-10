@@ -57,17 +57,21 @@ function clean_session_history --description "Clear fish session history with co
     # ---- Countdown progress bar ----
     echo "Clearing session history..."
     set -l width 30
+
     for elapsed in (seq 0 (math $wait_time - 1))
         set percent (math --scale=0 "($elapsed * 100) / $wait_time")
         set filled (math --scale=0 "($elapsed * $width) / $wait_time")
         set empty (math --scale=0 "$width - $filled")
-        printf "\r[%s%s] %3d%%" \
+
+        command printf "\r[%s%s] %3d%%\033[K" \
             (string repeat -n $filled "=") \
             (string repeat -n $empty " ") \
             $percent
+
         sleep 1
     end
-    printf "\r[%s] 100%%\n" (string repeat -n $width "=")
+
+    command printf "\r[%s] 100%%\033[K\n" (string repeat -n $width "=")
     # ---- Clear history ----
     history clear-session
     echo "Session history cleared."
