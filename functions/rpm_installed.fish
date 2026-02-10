@@ -1,13 +1,13 @@
 function rpm_installed --description "List installed RPM packages by install date with caching"
 
-   # ---- Distro check ----
+    # ---- Distro check ----
     if not command -q rpm
         echo "❌ This function requires RPM package manager"
         echo "   Current system does not appear to be RPM-based"
         return 1
     end
 
-    set -l arg $argv[1]
+    set -l arg (string lower -- $argv[1])
 
     # ---- Refresh cache ----
     if test "$arg" = "--refresh"
@@ -17,61 +17,71 @@ function rpm_installed --description "List installed RPM packages by install dat
     end
 
     # ---- Help flag ----
-    
-   function __rpm_installed_help
-    echo "rpm_installed — list installed RPM packages by install date"
-    echo
-    echo "USAGE:"
-    echo "  rpm_installed [OPTION]"
-    echo "  rpm_installed since DATE [until DATE]"
-    echo "  rpm_installed count [OPTION] (including 'since … until …')"
-    echo "  rpm_installed --refresh  # rebuild cache"
-    echo
-    echo "OPTIONS:"
-    echo "  today        Packages installed today"
-    echo "  yesterday    Packages installed yesterday"
-    echo "  last-week    Packages installed in the last 7 days"
-    echo "  this-month   Packages installed this calendar month"
-    echo "  last-month   Packages installed in the previous calendar month"
-    echo
-    echo "ALIASES:"
-    echo "  td  → today"
-    echo "  yd  → yesterday"
-    echo "  lw  → last-week"
-    echo "  tm  → this-month"
-    echo "  lm  → last-month"
-    echo
-    echo "COUNT / STATS:"
-    echo "  rpm_installed count today"
-    echo "  rpm_installed count last-week"
-    echo "  rpm_installed count per-day"
-    echo "  rpm_installed count per-week"
-    echo "  rpm_installed count since DATE [until DATE]"
-  end
-    
-  switch $arg
-    case -h --help
-        __rpm_installed_help
-        return 0
-  end
+
+    function __rpm_installed_help
+        echo "rpm_installed — list installed RPM packages by install date"
+        echo
+        echo "USAGE:"
+        echo "  rpm_installed [OPTION]"
+        echo "  rpm_installed since DATE [until DATE]"
+        echo "  rpm_installed count [OPTION] (including 'since … until …')"
+        echo "  rpm_installed --refresh  # rebuild cache"
+        echo
+        echo "OPTIONS:"
+        echo "  today        Packages installed today"
+        echo "  yesterday    Packages installed yesterday"
+        echo "  last-week    Packages installed in the last 7 days"
+        echo "  this-month   Packages installed this calendar month"
+        echo "  last-month   Packages installed in the previous calendar month"
+        echo
+        echo "ALIASES:"
+        echo "  td  → today"
+        echo "  yd  → yesterday"
+        echo "  lw  → last-week"
+        echo "  tm  → this-month"
+        echo "  lm  → last-month"
+        echo
+        echo "COUNT / STATS:"
+        echo "  rpm_installed count today"
+        echo "  rpm_installed count last-week"
+        echo "  rpm_installed count per-day"
+        echo "  rpm_installed count per-week"
+        echo "  rpm_installed count since DATE [until DATE]"
+    end
+
+    switch $arg
+        case -h --help
+            __rpm_installed_help
+            return 0
+    end
 
     # ---- Alias normalization ----
     switch $arg
-        case td; set arg today
-        case yd; set arg yesterday
-        case lw; set arg last-week
-        case tm; set arg this-month
-        case lm; set arg last-month
+        case td
+            set arg today
+        case yd
+            set arg yesterday
+        case lw
+            set arg last-week
+        case tm
+            set arg this-month
+        case lm
+            set arg last-month
     end
 
     # ---- Heading ----
     set -l heading
     switch $arg
-        case today;       set heading "today"
-        case yesterday;   set heading "yesterday"
-        case last-week;   set heading "in the last week"
-        case this-month;  set heading "this month"
-        case last-month;  set heading "last month"
+        case today
+            set heading today
+        case yesterday
+            set heading yesterday
+        case last-week
+            set heading "in the last week"
+        case this-month
+            set heading "this month"
+        case last-month
+            set heading "last month"
     end
 
     # ---- Backend helper ----
@@ -94,13 +104,15 @@ function rpm_installed --description "List installed RPM packages by install dat
     if test -n "$arg"
         if test "$arg" = count; or test "$arg" = stats
             set count_mode 1
-            set arg $argv[2]
+            set arg (string lower -- $argv[2])
         end
     end
 
     # ---- Detect since/until ----
     for i in (seq (count $argv))
-        if test $argv[$i] = since
+        set -l token (string lower -- $argv[$i])
+
+        if test $token = since
             set idx (math $i + 1)
             set since_epoch (env LC_ALL=en_US.UTF-8 date -d "$argv[$idx] 00:00" +%s 2>/dev/null)
             if test -z "$since_epoch"
@@ -110,7 +122,7 @@ function rpm_installed --description "List installed RPM packages by install dat
                 __rpm_installed_help
                 return 1
             end
-        else if test $argv[$i] = until
+        else if test $token = until
             set idx (math $i + 1)
             set until_epoch (env LC_ALL=en_US.UTF-8 date -d "$argv[$idx] 00:00" +%s 2>/dev/null)
             if test -z "$until_epoch"
@@ -121,13 +133,14 @@ function rpm_installed --description "List installed RPM packages by install dat
                 return 1
             end
         end
+
     end
 
     # ---- Time boundaries ----
-    set -l today_start      (env LC_ALL=en_US.UTF-8 date -d 'today 00:00' +%s)
-    set -l tomorrow_start   (env LC_ALL=en_US.UTF-8 date -d 'tomorrow 00:00' +%s)
-    set -l yesterday_start  (env LC_ALL=en_US.UTF-8 date -d 'yesterday 00:00' +%s)
-    set -l last_week_start  (env LC_ALL=en_US.UTF-8 date -d '7 days ago 00:00' +%s)
+    set -l today_start (env LC_ALL=en_US.UTF-8 date -d 'today 00:00' +%s)
+    set -l tomorrow_start (env LC_ALL=en_US.UTF-8 date -d 'tomorrow 00:00' +%s)
+    set -l yesterday_start (env LC_ALL=en_US.UTF-8 date -d 'yesterday 00:00' +%s)
+    set -l last_week_start (env LC_ALL=en_US.UTF-8 date -d '7 days ago 00:00' +%s)
     set -l this_month_start (env LC_ALL=en_US.UTF-8 date -d (date +%Y-%m-01) +%s)
     set -l last_month_start (env LC_ALL=en_US.UTF-8 date -d (date +%Y-%m-01)' -1 month' +%s)
 
@@ -136,26 +149,26 @@ function rpm_installed --description "List installed RPM packages by install dat
         # First argument is the title, rest are the package lines
         set -l title $argv[1]
         set -l packages $argv[2..-1]
-        
+
         # Count packages
         set -l pkg_count (count $packages)
-        
+
         # Display header if title provided
         if test -n "$title"
             echo -e "\n       📦 List of installed package(s): $title"
             echo "       ╰─────────────────────────────────────────────────────────"
             echo
         end
-        
+
         # Display packages
         for pkg in $packages
             echo $pkg
         end
-        
+
         # Display count if title provided
         if test -n "$title"
-           echo -e "\n────────────────────────────────────"  
-           echo -e "🔢 Total number of package(s): $pkg_count\n"
+            echo -e "\n────────────────────────────────────"
+            echo -e "🔢 Total number of package(s): $pkg_count\n"
         end
     end
 
@@ -237,9 +250,9 @@ function rpm_installed --description "List installed RPM packages by install dat
         case per-week
             printf "%s\n" $__instlist_cache | awk '{count[strftime("%Y-W%V",$1)]++} END{for(w in count) printf "%s  %d\n", w, count[w]}' | sort
         case '*'
-           echo "❌ Invalid option: '$arg'"
-           echo
+            echo "❌ Invalid option: '$arg'"
+            echo
             __rpm_installed_help
-          return 1
+            return 1
     end
 end
