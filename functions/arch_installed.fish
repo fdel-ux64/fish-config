@@ -13,10 +13,10 @@ function arch_installed --description "List installed Arch packages by install d
         return 1
     end
 
-    set -l arg $argv[1]
+    set -l arg (string lower -- $argv[1])
 
     # ---- Refresh cache ----
-    if test "$arg" = "--refresh"
+    if test "$arg" = --refresh
         set -e __instlist_cache
         echo " ♻️ Cache cleared and will be rebuilt on next command."
         return 0
@@ -61,11 +61,16 @@ function arch_installed --description "List installed Arch packages by install d
 
     # ---- Alias normalization ----
     switch $arg
-        case td; set arg today
-        case yd; set arg yesterday
-        case lw; set arg last-week
-        case tm; set arg this-month
-        case lm; set arg last-month
+        case td
+            set arg today
+        case yd
+            set arg yesterday
+        case lw
+            set arg last-week
+        case tm
+            set arg this-month
+        case lm
+            set arg last-month
     end
 
     # ---- Backend helper ----
@@ -79,11 +84,13 @@ function arch_installed --description "List installed Arch packages by install d
         set -g __instlist_cache (__instlist_arch)
     end
 
-    # ---- Count / stats mode ----
     set -l count_mode 0
-    if test "$arg" = count -o "$arg" = stats
-        set count_mode 1
-        set arg $argv[2]
+    # ---- Count / stats mode ----
+    if test -n "$arg"
+        if test "$arg" = count; or test "$arg" = stats
+            set count_mode 1
+            set arg (string lower -- $argv[2])
+        end
     end
 
     # ---- Detect since / until ----
@@ -91,51 +98,53 @@ function arch_installed --description "List installed Arch packages by install d
     set -l until_epoch ""
 
     for i in (seq (count $argv))
-        switch $argv[$i]
+        set -l token (string lower -- $argv[$i])
+        switch $token
             case since
                 set idx (math $i + 1)
                 set since_epoch (date -d "$argv[$idx] 00:00" +%s 2>/dev/null)
-            case until
+            case until untill
                 set idx (math $i + 1)
-                set until_epoch (date -d "$argv[$idx] 00:00" +%s 2>/dev/null)
+                set until_epoch (date -d "$argv[$idx] +1 day 00:00" +%s)
         end
     end
 
     # ---- Time boundaries ----
-    set -l today_start      (date -d 'today 00:00' +%s)
-    set -l tomorrow_start   (date -d 'tomorrow 00:00' +%s)
-    set -l yesterday_start  (date -d 'yesterday 00:00' +%s)
-    set -l last_week_start  (date -d '7 days ago 00:00' +%s)
+    set -l today_start (date -d 'today 00:00' +%s)
+    set -l tomorrow_start (date -d 'tomorrow 00:00' +%s)
+    set -l yesterday_start (date -d 'yesterday 00:00' +%s)
+    set -l last_week_start (date -d '7 days ago 00:00' +%s)
     set -l this_month_start (date -d (date +%Y-%m-01) +%s)
     set -l last_month_start (date -d (date +%Y-%m-01)' -1 month' +%s)
 
     # ---- Display helper (shared UX) ----
     function __display_packages
-    set -l title $argv[1]
-    set -l pkgs  $argv[2..-1]
+        set -l title $argv[1]
+        set -l pkgs $argv[2..-1]
 
-    echo -e "\n       📦 List of installed package(s): $title"
-    echo "       ╰─────────────────────────────────────────────────────────"
-    echo
+        echo -e "\n       📦 List of installed package(s): $title"
+        echo "       ╰─────────────────────────────────────────────────────────"
+        echo
 
-    for line in $pkgs
-        set -l ts  (string split ' ' $line)[1]
-        set -l pkg (string split ' ' $line)[2]
+        for line in $pkgs
+            set -l parts (string split -m1 ' ' $line)
+            set -l ts $parts[1]
+            set -l pkg $parts[2]
 
-        set -l datestr (date -d @$ts "+%Y-%m-%d %T")
-        echo " $datestr: $pkg"
-    end
+            set -l datestr (date -d @$ts "+%Y-%m-%d %T")
+            echo " $datestr: $pkg"
+        end
 
-    echo
-    echo " ────────────────────────────────────"
-    echo " 🔢 Total number of package(s): "(count $pkgs)
-    echo
+        echo
+        echo " ────────────────────────────────────"
+        echo " 🔢 Total number of package(s): "(count $pkgs)
+        echo
     end
 
     # ---- Custom ranges ----
     if test -n "$since_epoch"
         if test $count_mode -eq 1
-            printf " %s\n" $__instlist_cache |
+            printf "%s\n" $__instlist_cache |
                 awk -v s="$since_epoch" -v e="$until_epoch" '
                     $1>=s && (!e || $1<e) {
                         d=strftime("%Y-%m-%d",$1); c[d]++
@@ -144,7 +153,7 @@ function arch_installed --description "List installed Arch packages by install d
                 ' | sort
         else
             set -l res (
-                printf " %s\n" $__instlist_cache |
+                printf "%s\n" $__instlist_cache |
                 awk -v s="$since_epoch" -v e="$until_epoch" '$1>=s && (!e || $1<e)' |
                 sort -n
             )
@@ -164,15 +173,18 @@ function arch_installed --description "List installed Arch packages by install d
             end
 
         case today
-            set s $today_start; set e $tomorrow_start
+            set s $today_start
+            set e $tomorrow_start
         case yesterday
-            set s $yesterday_start; set e $today_start
+            set s $yesterday_start
+            set e $today_start
         case last-week
             set s $last_week_start
         case this-month
             set s $this_month_start
         case last-month
-            set s $last_month_start; set e $this_month_start
+            set s $last_month_start
+            set e $this_month_start
         case per-day
             printf "%s\n" $__instlist_cache |
                 awk '{d=strftime("%Y-%m-%d",$1);c[d]++} END{for(d in c) print d,c[d]}' | sort
