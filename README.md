@@ -31,9 +31,78 @@ fisher install fdel-ux64/fish-config
 
 ---
 
+✨ Multi-distro support via unified `installed_packages` dispatcher
+
+### 📦 installed_packages (Unified dispatcher)
+
+Automatically lists installed packages using the appropriate backend for the current distribution.
+
+This function detects your system and transparently calls:
+
+- rpm_installed on RPM-based systems (Fedora, RHEL, CentOS…)
+- arch_installed on Arch-based systems (Arch, Manjaro, EndeavourOS…)
+
+It provides a single portable entry point while preserving full feature parity with the backend functions.
+
+**Usage:**
+
+- installed_packages [OPTION]
+- installed_packages count [OPTION]
+- installed_packages since DATE [until DATE]
+- installed_packages --refresh
+- installed_packages --backend
+
+**Options**
+
+All options supported by the backend functions are available, including:
+
+| Option       | Description                              |
+| ------------ | ---------------------------------------- |
+| `today`      | Packages installed today                 |
+| `yesterday`  | Packages installed yesterday             |
+| `last-week`  | Packages installed in the last 7 days    |
+| `this-month` | Packages installed this calendar month   |
+| `last-month` | Packages installed in the previous month |
+| `per-day`    | Count packages per day                   |
+| `per-week`   | Count packages per week                  |
+
+
+**Aliases**
+
+| Alias | Expands to |
+| ----- | ---------- |
+| `td`  | today      |
+| `yd`  | yesterday  |
+| `lw`  | last-week  |
+| `tm`  | this-month |
+| `lm`  | last-month |
+
+Aliases are case-insensitive (TD, Td, etc.).
+
+**Extra flags**
+
+| Flag        | Description                          |
+| ----------- | ------------------------------------ |
+| `--backend` | Show detected backend                |
+| `--refresh` | Refresh cache (delegated to backend) |
+
+
+**Examples**
+```
+installed_packages today
+installed_packages td
+installed_packages count last-week
+installed_packages since 2026-02-01
+installed_packages --backend
+```
+
+---
+
 ### 📦 `rpm_installed`
 
 Formerly known as `instlist`. The old name is still supported as a wrapper.
+
+Backend implementation used by `installed_packages` on RPM-based systems.
 
 This function is also available as a standalone Fish plugin:
 <https://github.com/fdel-ux64/fish-rpm-installed>
@@ -87,6 +156,8 @@ RPM availability check is done before execution.
 
 Arch Linux equivalent of rpm_installed.
 
+Backend implementation used by `installed_packages` on Arch-based systems.
+
 Lists installed Arch packages by installation date, with caching for faster repeated queries.
 Designed to provide **feature parity with** rpm_installed, using expac as the backend.
 
@@ -138,13 +209,6 @@ The old name is kept as a compatibility wrapper and may be removed in a future r
 * arch_installed since 2024-01-01 until 2024-02-01
 * arch_installed --refresh
 * arch_installed --help
-
----
-
-> ℹ️ **Note:**
-> A future `installed_packages` function may be added as a generic dispatcher
-> that automatically selects `rpm_installed` or `arch_installed` based on
-> the detected distribution.
 
 ---
 
