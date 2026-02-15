@@ -455,23 +455,21 @@ Standalone interactive history cleanup tool.
 **Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
 **Usage:**
-
-* `cleanup_history [PATTERN]`
-* `cleanup_history` # prompt for pattern
+* `cleanup_history PATTERN`
+* `cleanup_history -h` # show help
 
 **Behavior:**
-
 * Displays matching history entries with numeric indexes
 * Supports deleting:
-  + selected entries (space-separated numbers)
-  + all matches (`all`)
+  + Selected entries (space-separated numbers)
+  + All matches (`all`)
 * Safe quit without changes (`n`, `q`, empty input)
 * Uses exact, case-sensitive deletion to avoid accidental removals
 
-**Example:**
-
-* `cleanup_history git push`
+**Examples:**
+* `cleanup_history 'git push'`
 * `cleanup_history rpm_installed`
+* `cleanup_history cd`
 
 **Note:** For integrated search and cleanup workflow, use `search_history -c` instead.
 
