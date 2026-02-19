@@ -59,7 +59,7 @@ function cleanup_history -d "Interactive history cleanup with pattern argument"
             case all ALL
                 read -l -P "Delete ALL "(count $matches)" matching entries? [y/N]: " confirm
                 if string match -qi 'y*' $confirm
-                    echo all | history delete --contains --case-sensitive $pattern 2>/dev/null >/dev/null
+                    history delete --contains --case-sensitive $pattern 2>/dev/null >/dev/null
                     echo "Deleted all matching entries."
                 else
                     echo "Aborted."
@@ -86,7 +86,7 @@ function cleanup_history -d "Interactive history cleanup with pattern argument"
             for num in $valid_nums
                 set -l cmd $matches[$num]
                 # Try to delete by the specific line content, suppress output
-                echo all | history delete --contains --case-sensitive "$cmd" 2>/dev/null >/dev/null
+                history delete --contains --case-sensitive "$cmd" 2>/dev/null >/dev/null
                 echo "Deleted: $cmd"
             end
             echo "Deleted "(count $valid_nums)" entries."
