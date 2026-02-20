@@ -31,7 +31,6 @@ function cleanup_history -d "Interactive history cleanup with pattern argument"
     set -l all_matches (history search --contains $pattern --max 100)
     set -l matches
     for match in $all_matches
-        # Skip if this is a cleanup_history command with the same pattern
         if not string match -q "cleanup_history *$pattern*" -- $match
             set -a matches $match
         end
@@ -51,7 +50,6 @@ function cleanup_history -d "Interactive history cleanup with pattern argument"
         echo "Enter numbers (space-separated), 'all', or 'n/q' to quit:"
         read -l selection
         
-        # Check quit FIRST - before numeric processing
         switch $selection
             case '' n N q Q quit exit
                 echo "Aborted."
@@ -59,7 +57,9 @@ function cleanup_history -d "Interactive history cleanup with pattern argument"
             case all ALL
                 read -l -P "Delete ALL "(count $matches)" matching entries? [y/N]: " confirm
                 if string match -qi 'y*' $confirm
-                    history delete --contains --case-sensitive $pattern 2>/dev/null >/dev/null
+                    for match in $matches
+                        history delete --exact --case-sensitive -- $match
+                    end
                     echo "Deleted all matching entries."
                 else
                     echo "Aborted."
@@ -67,7 +67,6 @@ function cleanup_history -d "Interactive history cleanup with pattern argument"
                 break
         end
         
-        # Only process numbers if not quit/all
         set -l valid_nums
         set -l invalid_nums
         for num in (string split " " $selection)
@@ -85,12 +84,10 @@ function cleanup_history -d "Interactive history cleanup with pattern argument"
         if test (count $valid_nums) -gt 0
             for num in $valid_nums
                 set -l cmd $matches[$num]
-                # Try to delete by the specific line content, suppress output
-                history delete --contains --case-sensitive "$cmd" 2>/dev/null >/dev/null
+                history delete --exact --case-sensitive -- $cmd
                 echo "Deleted: $cmd"
             end
             echo "Deleted "(count $valid_nums)" entries."
-            # Use read with prompt
             read -l -P "Continue deleting more? [y/N]: " continue
             if not string match -qi 'y*' $continue
                 break
