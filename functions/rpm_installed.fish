@@ -2,7 +2,7 @@ function rpm_installed --description "List installed RPM packages by install dat
 
     # ---- Distro check ----
     if not command -q rpm
-        echo "❌ This function requires RPM package manager"
+        echo " ❌ This function requires RPM package manager"
         echo "   Current system does not appear to be RPM-based"
         return 1
     end
@@ -12,7 +12,7 @@ function rpm_installed --description "List installed RPM packages by install dat
     # ---- Refresh cache ----
     if test "$arg" = "--refresh"
         set -e __instlist_cache
-        echo "♻️ Cache cleared and will be rebuilt on next command."
+        echo " ♻️ Cache cleared and will be rebuilt on next command."
         return 0
     end
 
@@ -86,7 +86,7 @@ function rpm_installed --description "List installed RPM packages by install dat
 
     # ---- Backend helper ----
     function __instlist_rpm
-        rpm -qa --qf '%{INSTALLTIME} (%{INSTALLTIME:date}): %{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n'
+        rpm -qa --qf ' %{INSTALLTIME} (%{INSTALLTIME:date}): %{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n'
     end
 
     set backend_func __instlist_rpm
@@ -116,7 +116,7 @@ function rpm_installed --description "List installed RPM packages by install dat
             set idx (math $i + 1)
             set since_epoch (env LC_ALL=en_US.UTF-8 date -d "$argv[$idx] 00:00" +%s 2>/dev/null)
             if test -z "$since_epoch"
-                echo "❌ Invalid date: $argv[$idx]"
+                echo " ❌ Invalid date: $argv[$idx]"
                 echo "   Expected a format understood by 'date -d' (e.g. YYYY-MM-DD)"
                 echo
                 __rpm_installed_help
@@ -126,7 +126,7 @@ function rpm_installed --description "List installed RPM packages by install dat
             set idx (math $i + 1)
             set until_epoch (env LC_ALL=en_US.UTF-8 date -d "$argv[$idx] 00:00" +%s 2>/dev/null)
             if test -z "$until_epoch"
-                echo "❌ Invalid date: $argv[$idx]"
+                echo " ❌ Invalid date: $argv[$idx]"
                 echo "   Expected a format understood by 'date -d' (e.g. YYYY-MM-DD)"
                 echo
                 __rpm_installed_help
@@ -155,8 +155,8 @@ function rpm_installed --description "List installed RPM packages by install dat
 
         # Display header if title provided
         if test -n "$title"
-            echo -e "\n       📦 List of installed package(s): $title"
-            echo "       ╰─────────────────────────────────────────────────────────"
+            echo -e "\n    📦 List of installed package(s): $title"
+            echo "    ╰─────────────────────────────────────────────────────────"
             echo
         end
 
@@ -167,8 +167,8 @@ function rpm_installed --description "List installed RPM packages by install dat
 
         # Display count if title provided
         if test -n "$title"
-            echo -e "\n────────────────────────────────────"
-            echo -e "🔢 Total number of package(s): $pkg_count\n"
+            echo -e "\n ────────────────────────────────────"
+            echo -e " 🔢 Total number of package(s): $pkg_count\n"
         end
     end
 
