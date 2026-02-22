@@ -118,28 +118,36 @@ function arch_installed --description "List installed Arch packages by install d
     set -l last_month_start (date -d (date +%Y-%m-01)' -1 month' +%s)
 
     # ---- Display helper (shared UX) ----
-    function __display_packages
-        set -l title $argv[1]
-        set -l pkgs $argv[2..-1]
+function __display_packages
+    set -l title $argv[1]
+    set -l pkgs $argv[2..-1]
 
-        echo -e "\n       📦 List of installed package(s): $title"
-        echo "       ╰─────────────────────────────────────────────────────────"
+    if test (count $pkgs) -eq 0
         echo
-
-        for line in $pkgs
-            set -l parts (string split -m1 ' ' $line)
-            set -l ts $parts[1]
-            set -l pkg $parts[2]
-
-            set -l datestr (date -d @$ts "+%Y-%m-%d %T")
-            echo " $datestr: $pkg"
-        end
-
+        echo "     📭 No packages installed: $title"
+        echo "        Try: installed_packages last-week or installed_packages this-month"
         echo
-        echo " ────────────────────────────────────"
-        echo " 🔢 Total number of package(s): "(count $pkgs)
-        echo
+        return
     end
+
+    echo -e "\n       📦 List of installed package(s): $title"
+    echo "       ╰─────────────────────────────────────────────────────────"
+    echo
+
+    for line in $pkgs
+        set -l parts (string split -m1 ' ' $line)
+        set -l ts $parts[1]
+        set -l pkg $parts[2]
+
+        set -l datestr (date -d @$ts "+%Y-%m-%d %T")
+        echo " $datestr: $pkg"
+    end
+
+    echo
+    echo " ────────────────────────────────────"
+    echo " 🔢 Total number of package(s): "(count $pkgs)
+    echo
+end
 
     # ---- Custom ranges ----
     if test -n "$since_epoch"

@@ -10,7 +10,7 @@ function rpm_installed --description "List installed RPM packages by install dat
     set -l arg (string lower -- $argv[1])
 
     # ---- Refresh cache ----
-    if test "$arg" = "--refresh"
+    if test "$arg" = --refresh
         set -e __instlist_cache
         echo " ♻️ Cache cleared and will be rebuilt on next command."
         return 0
@@ -146,26 +146,29 @@ function rpm_installed --description "List installed RPM packages by install dat
 
     # ---- Helper function to display with formatting ----
     function __display_packages
-        # First argument is the title, rest are the package lines
         set -l title $argv[1]
         set -l packages $argv[2..-1]
 
-        # Count packages
         set -l pkg_count (count $packages)
 
-        # Display header if title provided
+        if test $pkg_count -eq 0
+            echo
+            echo "     📭 No packages installed: $title"
+            echo "        Try: installed_packages last-week or installed_packages this-month"
+            echo
+            return
+        end
+
         if test -n "$title"
             echo -e "\n    📦 List of installed package(s): $title"
             echo "    ╰─────────────────────────────────────────────────────────"
             echo
         end
 
-        # Display packages
         for pkg in $packages
             echo $pkg
         end
 
-        # Display count if title provided
         if test -n "$title"
             echo -e "\n ────────────────────────────────────"
             echo -e " 🔢 Total number of package(s): $pkg_count\n"
