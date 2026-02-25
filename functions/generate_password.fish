@@ -2,11 +2,11 @@ function generate_password
     # Clipboard defaults
     set -l no_clipboard 0
     set -l clipboard_timeout 30
+    set -l no_ambiguous 0
 
     # Parse flags
     set -l clean_argv
     set -l expect_timeout 0
-
     for arg in $argv
         if test $expect_timeout -eq 1
             if string match -qr '^[0-9]+$' "$arg"
@@ -18,12 +18,13 @@ function generate_password
                 return 1
             end
         end
-
         switch $arg
             case '--no-clipboard'
                 set no_clipboard 1
             case '--clipboard-timeout'
                 set expect_timeout 1
+            case '--no-ambiguous'
+                set no_ambiguous 1
             case '--help' '-h'
                 set clean_argv $clean_argv $arg
             case '*'
@@ -37,13 +38,8 @@ function generate_password
     end
 
     set argv $clean_argv
-
     set -l length $argv[1]
     set -l count  $argv[2]
-
-    # Character set
-    set -l charset "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/-+;:,!&'({*?|}%"
-    set -l charset_len (string length $charset)
 
     # Help
     if contains -- '--help' $argv || contains -- '-h' $argv
@@ -54,9 +50,10 @@ function generate_password
         echo "Options:"
         echo "  --no-clipboard              Disable clipboard auto-copy"
         echo "  --clipboard-timeout <sec>   Clipboard clear timeout (default: 30)"
+        echo "  --no-ambiguous              Exclude visually similar chars (0,O,l,1,|,I)"
         echo "  -h, --help                  Show this help"
         echo
-        echo "Defaults: LENGTH=16, COUNT=1"
+        echo "Defaults: LENGTH=16, COUNT=1 — minimum length is 3, recommended minimum is 12"
         echo
         echo "Wayland extra:"
         echo "If wl-clipboard is installed and clipboard is enabled,"
@@ -85,22 +82,74 @@ function generate_password
         echo "❌ Invalid count: $count"
         return 1
     end
+    if test $length -lt 3
+        echo "❌ Length must be at least 3"
+        return 1
+    end
+
+    # Entropy warning
+    if test $length -lt 12
+        echo "⚠️  Warning: length $length is below the recommended minimum of 12"
+    end
+
+    # Character sets — expanded specials, ambiguous chars flagged
+    set -l ambiguous "0Ol1|I"
+
+    set -l charset  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/-+;:,!&'({*?|}%@#\$^~=_.<>[])\""
+    set -l digits   "23456789"                    # ambiguous digits pre-removed
+    set -l specials "/-+;:,!&'({*?|}%@#\$^~=_.<>[])\""
+
+    if test $no_ambiguous -eq 0
+        # Restore ambiguous digits into the digit pool
+        set digits "0123456789"
+    else
+        # Strip ambiguous chars from the full charset too
+        set charset (string replace -a -r "[0Ol1|I]" "" $charset)
+        set specials (string replace -a -r "[|]" "" $specials)
+        echo "ℹ️  Ambiguous characters excluded (0,O,l,1,|,I)"
+    end
+
+    set -l charset_len  (string length $charset)
+    set -l digits_len   (string length $digits)
+    set -l specials_len (string length $specials)
+
+    # Secure random char from a pool via /dev/urandom
+    function _secure_rand_char --no-scope-shadowing
+        set -l pool $argv[1]
+        set -l pool_len (string length $pool)
+        set -l raw (od -A n -N 2 -t u2 /dev/urandom | string trim)
+        set -l idx (math "$raw % $pool_len + 1")
+        string sub -s $idx -l 1 $pool
+    end
 
     set -l first_password ""
 
-    # Generate passwords
     for i in (seq $count)
-        set -l password ""
+        # Guarantee one digit + one special, fill rest from full charset
+        set -l g_digit   (_secure_rand_char $digits)
+        set -l g_special (_secure_rand_char $specials)
 
-        for j in (seq $length)
-            set -l idx (random 1 $charset_len)
-            set password "$password"(string sub -s $idx -l 1 "$charset")
+        set -l remaining (math $length - 2)
+        set -l chars $g_digit $g_special
+        for j in (seq $remaining)
+            set chars $chars (_secure_rand_char $charset)
         end
+
+        # Fisher-Yates shuffle
+        set -l len (count $chars)
+        for k in (seq $len -1 2)
+            set -l raw (od -A n -N 2 -t u2 /dev/urandom | string trim)
+            set -l j_idx (math "$raw % $k + 1")
+            set -l tmp $chars[$k]
+            set chars[$k] $chars[$j_idx]
+            set chars[$j_idx] $tmp
+        end
+
+        set -l password (string join "" $chars)
 
         if test $i -eq 1
             set first_password $password
         end
-
         echo $password
     end
 
@@ -112,9 +161,13 @@ function generate_password
             if type -q wl-copy
                 echo -n "$first_password" | wl-copy
                 echo "📋 First password copied to clipboard (clears in $clipboard_timeout s)"
-
-                # Auto-clear clipboard
-                fish -c "sleep $clipboard_timeout; echo -n '' | wl-copy" >/dev/null 2>&1 &
+                # systemd-run hands the clear job to systemd — survives terminal close
+                if type -q systemd-run
+                    systemd-run --user --no-block -- \
+                        sh -c "sleep $clipboard_timeout; echo -n '' | wl-copy" >/dev/null 2>&1
+                else
+                    nohup fish -c "sleep $clipboard_timeout; echo -n '' | wl-copy" >/dev/null 2>&1 &
+                end
             else
                 echo "ℹ️  Tip: install wl-clipboard to auto-copy the first password to clipboard"
             end
@@ -123,4 +176,3 @@ function generate_password
         end
     end
 end
-

@@ -348,7 +348,6 @@ Generate secure random passwords using **Fish shell only** — no external gener
 **Environment-aware:** Desktop-friendly, server-safe
 
 **Features:**
-
 * Cryptographically secure randomness (Fish built-in `random`)
 * Customizable length and count
 * Mixed character set:
@@ -363,21 +362,18 @@ Generate secure random passwords using **Fish shell only** — no external gener
 * Zero required dependencies (clipboard support is optional)
 
 **Usage:**
-
 * generate\_password [OPTIONS] [LENGTH] [COUNT]
 * generate\_password # interactive mode
 
-  **Options:**
-
+**Options:**
   + --no-clipboard
     Disable clipboard auto-copy entirely
   + --clipboard-timeout
     Set clipboard clear timeout (default: 30)
   + -h, --help
     Show help
-
+    
 **Example:**
-
 ```
  generate_password
  generate_password 20
@@ -386,7 +382,6 @@ Generate secure random passwords using **Fish shell only** — no external gener
  generate_password --clipboard-timeout 10
  generate_password 32 2 --clipboard-timeout 5
 ```
-
 Designed to behave sensibly across desktops, servers, and SSH sessions without configuration.
 
 ---
