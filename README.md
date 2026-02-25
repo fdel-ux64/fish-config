@@ -340,48 +340,55 @@ fisher_update_select --all --yes
 ---
 
 ### 🔐 `generate_password`
-
 Generate secure random passwords using **Fish shell only** — no external generators required.
 
 **Scope:** Cross-distro (Fedora / Arch / Debian-based)
-
 **Environment-aware:** Desktop-friendly, server-safe
 
 **Features:**
-* Cryptographically secure randomness (Fish built-in `random`)
+* Cryptographically secure randomness via `/dev/urandom` (replaces Fish built-in `random`)
 * Customizable length and count
-* Mixed character set:
+* Entropy warning when length is below the recommended minimum of 12
+* Guaranteed character class coverage — every password contains at least one digit and one special character, shuffled into random positions
+* Expanded mixed character set:
   + lowercase & uppercase letters
   + digits
-  + symbols (`/-+;:,!&'({*?|}%`)
+  + symbols: `/-+;:,!&'({*?|}%@#$^~=_.<>[])`
+* Optional ambiguous character exclusion (`--no-ambiguous`) for passwords meant to be typed manually — removes visually similar characters (`0`, `O`, `l`, `1`, `|`, `I`)
 * Interactive prompts with sensible defaults
 * Environment-aware clipboard handling
   + Automatically copies the first password on Wayland desktops
   + Auto-clears clipboard after a configurable timeout
+  + Clear job is handed to `systemd` when available — survives terminal close
+  + Falls back to `nohup` if `systemd-run` is not present
   + Gracefully skips clipboard logic on servers / SSH sessions
 * Zero required dependencies (clipboard support is optional)
 
 **Usage:**
-* generate\_password [OPTIONS] [LENGTH] [COUNT]
-* generate\_password # interactive mode
+* `generate_password [OPTIONS] [LENGTH] [COUNT]`
+* `generate_password` — interactive mode
 
 **Options:**
-  + --no-clipboard
-    Disable clipboard auto-copy entirely
-  + --clipboard-timeout
-    Set clipboard clear timeout (default: 30)
-  + -h, --help
-    Show help
-    
-**Example:**
+
+| Flag | Description |
+|---|---|
+| `--no-clipboard` | Disable clipboard auto-copy entirely |
+| `--clipboard-timeout <sec>` | Set clipboard clear timeout (default: 30) |
+| `--no-ambiguous` | Exclude visually similar characters (`0`,`O`,`l`,`1`,`\|`,`I`) |
+| `-h, --help` | Show help |
+
+**Examples:**
 ```
- generate_password
- generate_password 20
- generate_password 15 5
- generate_password --no-clipboard
- generate_password --clipboard-timeout 10
- generate_password 32 2 --clipboard-timeout 5
+generate_password
+generate_password 20
+generate_password 15 5
+generate_password --no-clipboard
+generate_password --no-ambiguous
+generate_password --clipboard-timeout 10
+generate_password 32 2 --clipboard-timeout 5
+generate_password 16 3 --no-ambiguous --no-clipboard
 ```
+
 Designed to behave sensibly across desktops, servers, and SSH sessions without configuration.
 
 ---
