@@ -1,29 +1,33 @@
 # 🐟 Personal Fish configuration
 
-This repository contains my personal Fish shell configuration and helper
-functions. While some functions may be useful to others, this repository
-is not intended to be a stable or supported public plugin collection.
+A curated personal Fish shell setup with a growing collection of reusable, portable helper functions.
 
-Interfaces and behavior may change without notice.
+Primarily maintained for personal use, but many utilities are **cross-distro compatible**, working on Arch, Debian/Ubuntu, and RPM-based Linux systems.
+
+Not intended as a fully stable public plugin suite, yet mature tools are documented and may be useful to others.
+
+Interfaces and behavior may evolve over time as the repository grows.
+
+> 🐧 Works on Arch, Debian/Ubuntu, and RPM-based Linux distributions
 
 ---
 
-# 🔧 Fish Various Config Functions
+## ✨ Highlights
 
-A collection of custom Fish shell functions, completions, and keybindings
-used in my personal Fish setup and shared across my own machines.
+- **Multi-distro package inspection**: unified `installed_packages` for Arch, Debian/Ubuntu, and RPM systems
+- **Consistent package history** across distributions
+- **Interactive Fish shell helpers**: search & cleanup history, inspect functions
+- **Secure password generation** with environment-aware clipboard handling
+- **Cross-platform kernel version checks**
+- **Fisher-compatible** functions, completions, and keybindings
 
-All functions are Fisher-compatible, but this repository is primarily
-maintained for personal use.
-
-The functions below are documented for reference; interfaces and behavior
-may change without notice.
+---
 
 ## 📥 Installation
 
 ### 🎣 Using Fisher (recommended)
 
-You can install all functions, completions, and keybindings automatically using Fisher:
+Install all functions, completions, and keybindings automatically:
 
 ```
 fisher install fdel-ux64/fish-config
@@ -31,7 +35,7 @@ fisher install fdel-ux64/fish-config
 
 ---
 
-✨ Multi-distro support (Arch, Debian, RPM) via unified `installed_packages`
+> 🛠️ Cross-distro tools: Works on Arch, Debian/Ubuntu, and RPM-based Linux distributions
 
 ### 📦 installed_packages (Unified dispatcher)
 
