@@ -549,10 +549,6 @@ inspect_function [FUNCTION_NAME or PATTERN]
 * Long functions are displayed in a pager (bat or less)
 * Can edit user-defined functions with $EDITOR.
 
-**Key Binding:**
-
-* Trigger with CTRL+F in the terminal.
-
 **Example:**
 
 * `inspect_function kver`
@@ -564,5 +560,4 @@ inspect_function [FUNCTION_NAME or PATTERN]
 
 | Keybinding | Function |
 | --- | --- |
-| CTRL+F | inspect_function |
 | CTRL+H | search_history   |
