@@ -1,6 +1,6 @@
 # 🐟 Personal Fish configuration
 
-A curated personal Fish shell setup with a growing collection of reusable, portable helper functions.
+A curated Fish shell toolkit with cross-distro utilities and reusable helpers.
 
 Primarily maintained for personal use, but many utilities are **cross-distro compatible**, working on Arch, Debian/Ubuntu, and RPM-based Linux systems.
 
