@@ -1,12 +1,14 @@
-function installed_packages --description "Unified installed package viewer (auto-detect Arch/RPM distros)"
+function installed_packages --description "Unified installed package viewer (auto-detect Arch/Debian/RPM distros)"
 
-    # ---- Backend detection ----
+    # ---- Backend detection (order matters) ----
     set -l backend ""
 
-    if command -q rpm
-        set backend rpm
+    if test -f /etc/debian_version
+        set backend deb
     else if test -f /etc/arch-release
         set backend arch
+    else if command -q rpm
+        set backend rpm
     end
 
     # ---- Optional: show detected backend ----
@@ -22,11 +24,12 @@ function installed_packages --description "Unified installed package viewer (aut
 
     # ---- Dispatch ----
     switch $backend
-        case rpm
-            if functions -q rpm_installed
-                rpm_installed $argv
+
+        case deb
+            if functions -q deb_installed
+                deb_installed $argv
             else
-                echo " ❌ Missing function: rpm_installed"
+                echo " ❌ Missing function: deb_installed"
                 return 1
             end
 
@@ -38,12 +41,21 @@ function installed_packages --description "Unified installed package viewer (aut
                 return 1
             end
 
+        case rpm
+            if functions -q rpm_installed
+                rpm_installed $argv
+            else
+                echo " ❌ Missing function: rpm_installed"
+                return 1
+            end
+
         case '*'
             echo " ❌ Unsupported distribution"
             echo
-            echo " This function currently supports:"
-            echo "  • Arch-based systems"
-            echo "  • RPM-based systems"
+            echo " Supported backends:"
+            echo "  • Debian-based (Ubuntu, Mint, etc.)"
+            echo "  • Arch-based"
+            echo "  • RPM-based (Fedora, RHEL, openSUSE, etc.)"
             echo
             return 1
     end

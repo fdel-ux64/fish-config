@@ -31,7 +31,7 @@ fisher install fdel-ux64/fish-config
 
 ---
 
-✨ Multi-distro support via unified `installed_packages` dispatcher
+✨ Multi-distro support (Arch, Debian, RPM) via unified `installed_packages`
 
 ### 📦 installed_packages (Unified dispatcher)
 
@@ -40,6 +40,7 @@ Automatically lists installed packages using the appropriate backend for the cur
 This function detects your system and transparently calls:
 
 - rpm_installed on RPM-based systems (Fedora, RHEL, CentOS…)
+- deb_installed on Debian-based systems (Debian, Ubuntu, Mint, Pop!_OS…)
 - arch_installed on Arch-based systems (Arch, Manjaro, EndeavourOS…)
 
 It provides a single portable entry point while preserving full feature parity with the backend functions.
@@ -209,6 +210,74 @@ The old name is kept as a compatibility wrapper and may be removed in a future r
 * arch_installed since 2024-01-01 until 2024-02-01
 * arch_installed --refresh
 * arch_installed --help
+
+---
+
+### 📦 `deb_installed`
+
+Debian/Ubuntu equivalent of rpm_installed and arch_installed.
+
+Backend implementation used by `installed_packages` on Debian-based systems.
+
+Lists installed packages by installation date using dpkg logs, with caching for fast repeated queries.
+Designed to provide **feature parity with** rpm_installed and arch_installed.
+
+**Scope:** Debian-based distributions (Ubuntu, Debian, Linux Mint, Pop!_OS, etc.)
+
+**Backend details:**
+
+Uses dpkg installation logs:
+* /var/log/dpkg.log
+* Rotated logs (dpkg.log.*, including .gz)
+Install timestamps are reconstructed from log entries.
+
+**Dependencies:**
+
+* Fish shell
+* awk
+* GNU date
+* zcat (for rotated logs)
+
+**Limitations:**
+
+- Does **not include**:
+* Snap packages
+* Flatpak packages
+* Very old installs may be missing if logs were rotated or deleted
+
+**Usage:**
+
+* deb_installed [OPTION]
+* deb_installed count [OPTION]
+* deb_installed since DATE [until DATE]
+* deb_installed --refresh
+* deb_installed --help
+
+| Option       | Description                              |
+| ------------ | ---------------------------------------- |
+| `today`      | Packages installed today                 |
+| `yesterday`  | Packages installed yesterday             |
+| `last-week`  | Packages installed in the last 7 days    |
+| `this-month` | Packages installed this calendar month   |
+| `last-month` | Packages installed in the previous month |
+
+
+| Alias | Expands to |
+| ----- | ---------- |
+| `td`  | today      |
+| `yd`  | yesterday  |
+| `lw`  | last-week  |
+| `tm`  | this-month |
+| `lm`  | last-month |
+
+**Example:**
+
+* deb_installed td
+* deb_installed last-week
+* deb_installed count this-month
+* deb_installed since 2024-01-01 until 2024-02-01
+* deb_installed --refresh
+* deb_installed --help
 
 ---
 
