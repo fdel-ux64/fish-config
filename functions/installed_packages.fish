@@ -1,3 +1,6 @@
+complete -c installed_packages -f
+complete -c installed_packages -l backend -d "Show detected backend"
+
 function installed_packages --description "Unified installed package viewer (auto-detect Arch/Debian/RPM distros)"
 
     # ---- Backend detection (order matters) ----
