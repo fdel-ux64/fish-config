@@ -466,6 +466,44 @@ Designed to behave sensibly across desktops, servers, and SSH sessions without c
 
 ---
 
+## 🖼️  Image Utilities
+
+### 🖼️ `resize_image`
+Resize a single image or a batch of images in a directory by percentage or max dimension.
+
+**Scope:** Cross-distro (Fedora / Arch / Debian-based)
+
+**Dependencies:**
+* `ImageMagick` (`magick` command, v7+)
+
+**Usage:**
+* `resize_image <image|dir> [size]`
+* `resize_image` — interactive prompt for path and size
+* `resize_image photo.jpg` — interactive size selection
+* `resize_image photo.jpg 50` — resize to 50%
+* `resize_image photo.jpg 1200` — resize to max 1200px
+* `resize_image ./photos` — batch resize, interactive size
+* `resize_image ./photos 75` — batch resize to 75%
+
+**Notes:**
+* size ≤ 100 → percentage resize
+* size > 100 → max dimension (preserves aspect ratio, never upscales)
+* Output files are saved alongside the originals with a `-resized` suffix
+* In batch mode, files already named `*-resized.*` are skipped automatically
+* Supported formats: jpg, jpeg, png, gif, webp, tiff, bmp
+
+**Examples:**
+```
+resize_image photo.jpg
+resize_image photo.jpg 50
+resize_image photo.jpg 1200
+resize_image ~/Pictures/trip/
+resize_image ~/Pictures/trip/ 800
+```
+
+---
+
+
 ## 📜 History & Shell UX Helpers
 
 ### 🔍 `search_history`
