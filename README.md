@@ -316,39 +316,40 @@ advanced\_install\_package [package\_name]
 ---
 
 ### 🐧 `kver`
-
 Display the current kernel version and optionally compare with the latest stable release.
 
 **Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
 **Usage:**
-
 ```
 kver [-c|--compare] [-h|--help]
 ```
+
 **Options:**
 - `-c, --compare` — Fetch and compare with the latest stable kernel from kernel.org
 - `-h, --help` — Display help information
 
 **Behavior:**
-
 * Prints the current kernel version (from `uname -r`)
 * With `-c` flag: Fetches the latest stable kernel version from kernel.org and compares
-* Shows whether you're running the latest stable kernel or if an update is available
-* Prompts to visit kernel.org in your default browser
+* Version comparison is numeric per segment (avoids lexicographic issues e.g. `6.9` vs `6.10`)
+* Fetch has a 5s timeout — falls back gracefully if kernel.org is unreachable
+* Prompts to visit kernel.org only if the fetch succeeded
 
 **Examples:**
 ```
-$ kver -c
-Current Kernel Version: 6.18.6-200.fc43.x86_64
-
-Fetching latest kernel version from kernel.org...
-Latest Stable Kernel:   6.18.7
-
-ℹ️  A newer kernel is available.
-
+$ kver
+Current Kernel Version: 6.19.7-200.fc43.x86_64
 Visit kernel.org? (y/N):
-```
+
+$ kver -c
+Current Kernel Version: 6.19.7-200.fc43.x86_64
+Fetching latest kernel version from kernel.org...
+Latest Stable Kernel:   6.19.8
+ℹ️  A newer kernel is available.
+Visit kernel.org? (y/N):
+````
+
 ---
 
 ### 🔄 `fisher_update_select`
