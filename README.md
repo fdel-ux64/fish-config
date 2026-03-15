@@ -345,7 +345,7 @@ Current Kernel Version: 6.18.6-200.fc43.x86_64
 Fetching latest kernel version from kernel.org...
 Latest Stable Kernel:   6.18.7
 
-ℹ️  A newer kernel version may be available.
+ℹ️  A newer kernel is available.
 
 Visit kernel.org? (y/N):
 ```
