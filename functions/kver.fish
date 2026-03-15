@@ -43,7 +43,7 @@ function kver --description "Display current kernel version and optionally open 
             if test "$current_version" = "$latest_kernel"
                 echo "✅ You're running the latest stable kernel!"
             else
-                echo "ℹ️  A newer kernel version may be available."
+                echo "ℹ️  A newer kernel is available."
             end
         else
             echo "❌ Could not retrieve latest kernel version."
