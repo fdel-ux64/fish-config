@@ -75,9 +75,9 @@ function kver --description "Display current kernel version and optionally open 
             read --prompt-str "Visit kernel.org? (y/N): " visit
             if string match -qr '^(y|Y)$' "$visit"
                 if type -q xdg-open
-                    xdg-open https://kernel.org &; disown
+                    xdg-open https://kernel.org >/dev/null 2>&1 &; disown
                 else if type -q firefox
-                    firefox https://kernel.org &; disown
+                    firefox https://kernel.org >/dev/null 2>&1 &; disown
                 else
                     echo "❌ No browser command found. Please open https://kernel.org manually."
                 end
