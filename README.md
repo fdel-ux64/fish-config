@@ -105,8 +105,6 @@ installed_packages --backend
 
 ### 📦 `rpm_installed`
 
-Formerly known as `instlist`. The old name is still supported as a wrapper.
-
 Backend implementation used by `installed_packages` on RPM-based systems.
 
 This function is also available as a standalone Fish plugin:
