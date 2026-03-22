@@ -1,7 +1,7 @@
 function fisher_update_select --description "Interactively or non-interactively update Fisher plugins"
-    set non_interactive 0
-    set auto_yes 0
-    # Parse flags
+    set -l non_interactive 0
+    set -l auto_yes 0
+
     for arg in $argv
         switch $arg
             case --all
@@ -14,30 +14,30 @@ function fisher_update_select --description "Interactively or non-interactively 
                 return 1
         end
     end
-    set plugins (fisher list | sort)
+
+    set -l plugins (fisher list | sort)
     if test (count $plugins) -eq 0
         echo "No Fisher plugins installed."
-        return
+        return 0
     end
-    # -------------------------
-    # Non-interactive: --all
-    # -------------------------
+
+    # --all: update everything, skip confirmation unless --yes is absent
+    # Rationale: --all means "I want all of them"; the extra confirmation adds
+    # friction without safety. --yes makes it fully non-interactive.
     if test $non_interactive -eq 1
-        if test $auto_yes -eq 1
-            fisher update
-            return
+        if test $auto_yes -eq 0
+            read -P "Update ALL plugins? [y/N]: " confirm
+            switch (string lower -- $confirm)
+                case y yes
+                case '*'
+                    echo "Aborted."
+                    return 0
+            end
         end
-        echo -n "Update ALL plugins? [y/N]: "
-        echo  # Force flush
-        read confirm
-        switch (string lower -- $confirm)
-            case y yes
-                fisher update
-            case '*'
-                echo "Aborted."
-        end
-        return
+        fisher update
+        return 0
     end
+
     # -------------------------
     # Interactive mode
     # -------------------------
@@ -52,61 +52,81 @@ function fisher_update_select --description "Interactively or non-interactively 
     echo "  - 'a' to update all"
     echo "  - 'n' or 'q' to quit"
     echo
+
     read -P "Your choice: " choice
-    
-    if test "$choice" = "q" -o "$choice" = "n"
-        echo "Aborted. No plugins updated."
-        return
+
+    # Empty input
+    if test -z "$choice"
+        echo "No input provided. Aborted."
+        return 0
     end
-    if test "$choice" = "a"
-        if test $auto_yes -eq 1
-            fisher update
-            return
-        end
-        read -P "Update ALL plugins? [y/N]: " confirm
-        switch (string lower -- $confirm)
-            case y yes
-                fisher update
-            case '*'
-                echo "Aborted."
-        end
-        return
-    end
-    set choices (string split ' ' -- $choice)
-    set selected
-    for idx in $choices
-        if string match -qr '^[0-9]+$' -- $idx
-            if test $idx -ge 1 -a $idx -le (count $plugins)
-                set selected $selected $plugins[$idx]
-            else
-                echo "Invalid selection: $idx"
-                return 1
+
+    switch (string lower -- $choice)
+        case q n
+            echo "Aborted. No plugins updated."
+            return 0
+        case a
+            if test $auto_yes -eq 0
+                read -P "Update ALL plugins? [y/N]: " confirm
+                switch (string lower -- $confirm)
+                    case y yes
+                    case '*'
+                        echo "Aborted."
+                        return 0
+                end
             end
-        else
+            fisher update
+            return 0
+    end
+
+    # Numeric selection
+    set -l raw_indices (string split ' ' -- $choice)
+    set -l seen_indices
+    set -l selected
+
+    for idx in $raw_indices
+        # Skip extra whitespace tokens from split
+        test -z "$idx"; and continue
+
+        if not string match -qr '^[0-9]+$' -- $idx
             echo "Invalid input: $idx"
             return 1
         end
+
+        if test $idx -lt 1 -o $idx -gt (count $plugins)
+            echo "Invalid selection: $idx (valid range: 1–"(count $plugins)")"
+            return 1
+        end
+
+        # Deduplicate
+        if contains -- $idx $seen_indices
+            continue
+        end
+        set seen_indices $seen_indices $idx
+        set selected $selected $plugins[$idx]
     end
+
     if test (count $selected) -eq 0
         echo "No valid plugins selected."
-        return
+        return 0
     end
+
     echo
     echo "Selected plugins:"
     for p in $selected
         echo "  - $p"
     end
     echo
-    if test $auto_yes -eq 1
-        fisher update $selected
-        return
+
+    if test $auto_yes -eq 0
+        read -P "Proceed with update? [y/N]: " confirm
+        switch (string lower -- $confirm)
+            case y yes
+            case '*'
+                echo "Aborted."
+                return 0
+        end
     end
-    
-    read -P "Proceed with update? [y/N]: " confirm
-    switch (string lower -- $confirm)
-        case y yes
-            fisher update $selected
-        case '*'
-            echo "Aborted."
-    end
+
+    fisher update $selected
 end
