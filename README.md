@@ -135,7 +135,6 @@ RPM availability check is done before execution.
 | `per-week` | Count packages per week |
 
 
-
 | Alias | Expands to |
 | --- | --- |
 | `td` | today |
@@ -143,6 +142,16 @@ RPM availability check is done before execution.
 | `lw` | last-week |
 | `tm` | this-month |
 | `lm` | last-month |
+
+**Output:**
+
+When the result contains more than 25 packages, the filter criteria is repeated in the footer alongside the total count, so context is preserved after scrolling:
+```
+ ────────────────────────────────────
+ 🔢 Total number of package(s): 111
+ ↑  Showing 111 package(s) installed: since 2026-03-17 until 2026-03-24
+```
+The threshold is controlled by the global variable `__rpm_summary_threshold` (default: `25`).
 
 **Examples:**
 
