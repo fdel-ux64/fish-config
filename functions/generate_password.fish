@@ -37,6 +37,12 @@ function generate_password
         return 1
     end
 
+    # FIX: reject --clipboard-timeout 0
+    if test $clipboard_timeout -lt 1
+        echo "❌ --clipboard-timeout must be at least 1 second"
+        return 1
+    end
+
     set argv $clean_argv
     set -l length $argv[1]
     set -l count  $argv[2]
@@ -49,7 +55,7 @@ function generate_password
         echo
         echo "Options:"
         echo "  --no-clipboard              Disable clipboard auto-copy"
-        echo "  --clipboard-timeout <sec>   Clipboard clear timeout (default: 30)"
+        echo "  --clipboard-timeout <sec>   Clipboard clear timeout in seconds (default: 30, min: 1)"
         echo "  --no-ambiguous              Exclude visually similar chars (0,O,l,1,|,I)"
         echo "  -h, --help                  Show this help"
         echo
@@ -73,17 +79,23 @@ function generate_password
         test -z "$count"; and set count 1
     end
 
-    # Validate
+    # Validate length
     if not string match -qr '^[0-9]+$' -- "$length"
         echo "❌ Invalid length: $length"
         return 1
     end
+    if test $length -lt 3
+        echo "❌ Length must be at least 3"
+        return 1
+    end
+
+    # Validate count — FIX: reject 0
     if not string match -qr '^[0-9]+$' -- "$count"
         echo "❌ Invalid count: $count"
         return 1
     end
-    if test $length -lt 3
-        echo "❌ Length must be at least 3"
+    if test $count -lt 1
+        echo "❌ Count must be at least 1"
         return 1
     end
 
@@ -92,20 +104,15 @@ function generate_password
         echo "⚠️  Warning: length $length is below the recommended minimum of 12"
     end
 
-    # Character sets — expanded specials, ambiguous chars flagged
-    set -l ambiguous "0Ol1|I"
-
+    # Character sets
     set -l charset  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/-+;:,!&'({*?|}%@#\$^~=_.<>[])\""
-    set -l digits   "23456789"                    # ambiguous digits pre-removed
+    set -l digits   "0123456789"
     set -l specials "/-+;:,!&'({*?|}%@#\$^~=_.<>[])\""
 
-    if test $no_ambiguous -eq 0
-        # Restore ambiguous digits into the digit pool
-        set digits "0123456789"
-    else
-        # Strip ambiguous chars from the full charset too
-        set charset (string replace -a -r "[0Ol1|I]" "" $charset)
-        set specials (string replace -a -r "[|]" "" $specials)
+    if test $no_ambiguous -eq 1
+        set charset  (string replace -a -r '[0Ol1|I]' "" $charset)
+        set digits   (string replace -a -r '[01]'     "" $digits)
+        set specials (string replace -a -r '[|I]'     "" $specials)
         echo "ℹ️  Ambiguous characters excluded (0,O,l,1,|,I)"
     end
 
@@ -113,13 +120,21 @@ function generate_password
     set -l digits_len   (string length $digits)
     set -l specials_len (string length $specials)
 
-    # Secure random char from a pool via /dev/urandom
-    function _secure_rand_char --no-scope-shadowing
+    # FIX: rejection-sampling to eliminate modulo bias
+    # Reads 2 bytes (0–65535) and rejects values that would cause bias.
+    # The rejection threshold is (65536 % pool_len): values in that tail are dropped.
+    function _secure_rand_char
         set -l pool $argv[1]
         set -l pool_len (string length $pool)
-        set -l raw (od -A n -N 2 -t u2 /dev/urandom | string trim)
-        set -l idx (math "$raw % $pool_len + 1")
-        string sub -s $idx -l 1 $pool
+        set -l limit (math "65536 - (65536 % $pool_len)")
+        while true
+            set -l raw (od -A n -N 2 -t u2 /dev/urandom | string trim)
+            if test $raw -lt $limit
+                set -l idx (math "$raw % $pool_len + 1")
+                string sub -s $idx -l 1 $pool
+                return
+            end
+        end
     end
 
     set -l first_password ""
@@ -138,11 +153,18 @@ function generate_password
         # Fisher-Yates shuffle
         set -l len (count $chars)
         for k in (seq $len -1 2)
-            set -l raw (od -A n -N 2 -t u2 /dev/urandom | string trim)
-            set -l j_idx (math "$raw % $k + 1")
-            set -l tmp $chars[$k]
-            set chars[$k] $chars[$j_idx]
-            set chars[$j_idx] $tmp
+            set -l pool_len $k
+            set -l limit (math "65536 - (65536 % $pool_len)")
+            while true
+                set -l raw (od -A n -N 2 -t u2 /dev/urandom | string trim)
+                if test $raw -lt $limit
+                    set -l j_idx (math "$raw % $pool_len + 1")
+                    set -l tmp $chars[$k]
+                    set chars[$k] $chars[$j_idx]
+                    set chars[$j_idx] $tmp
+                    break
+                end
+            end
         end
 
         set -l password (string join "" $chars)
@@ -153,26 +175,30 @@ function generate_password
         echo $password
     end
 
+    # FIX: clean up the internal helper so it doesn't leak into the global scope
+    functions -e _secure_rand_char
+
     # Clipboard handling
-    if test -n "$first_password"
-        if test $no_clipboard -eq 1
-            echo "ℹ️  Clipboard copy disabled (--no-clipboard)"
-        else if set -q WAYLAND_DISPLAY
-            if type -q wl-copy
-                echo -n "$first_password" | wl-copy
-                echo "📋 First password copied to clipboard (clears in $clipboard_timeout s)"
-                # systemd-run hands the clear job to systemd — survives terminal close
-                if type -q systemd-run
-                    systemd-run --user --no-block -- \
-                        sh -c "sleep $clipboard_timeout; echo -n '' | wl-copy" >/dev/null 2>&1
-                else
-                    nohup fish -c "sleep $clipboard_timeout; echo -n '' | wl-copy" >/dev/null 2>&1 &
+    if test $no_clipboard -eq 1
+        echo "ℹ️  Clipboard copy disabled (--no-clipboard)"
+    else if set -q WAYLAND_DISPLAY
+        if type -q wl-copy
+            echo -n "$first_password" | wl-copy
+            echo "📋 First password copied to clipboard (clears in $clipboard_timeout s)"
+            if type -q systemd-run
+                systemd-run --user --no-block -- \
+                    sh -c "sleep $clipboard_timeout; echo -n '' | wl-copy" >/dev/null 2>&1
+                # FIX: warn if systemd-run fails (non-zero exit)
+                if test $status -ne 0
+                    echo "⚠️  systemd-run failed — clipboard may not be cleared automatically"
                 end
             else
-                echo "ℹ️  Tip: install wl-clipboard to auto-copy the first password to clipboard"
+                nohup fish -c "sleep $clipboard_timeout; echo -n '' | wl-copy" >/dev/null 2>&1 &
             end
         else
-            echo "ℹ️  Clipboard copy skipped (no Wayland session detected)"
+            echo "ℹ️  Tip: install wl-clipboard to auto-copy the first password to clipboard"
         end
+    else
+        echo "ℹ️  Clipboard copy skipped (no Wayland session detected)"
     end
 end
