@@ -1,5 +1,7 @@
 # ---- Global helpers — defined once, outside main function ----
 
+set -g __rpm_summary_threshold 25
+
 function __rpm_installed_help
     echo "rpm_installed — list installed RPM packages by install date"
     echo
@@ -43,7 +45,7 @@ function __display_rpm_packages
     if test $pkg_count -eq 0
         echo
         echo "     📭 No packages installed: $title"
-        echo "        Try: rpm_installed last-week or rpm_installed this-month"  # FIX: correct function name
+        echo "        Try: rpm_installed last-week or rpm_installed this-month"
         echo
         return
     end
@@ -63,6 +65,9 @@ function __display_rpm_packages
         echo
         echo " ────────────────────────────────────"
         echo " 🔢 Total number of package(s): $pkg_count"
+        if test $pkg_count -gt $__rpm_summary_threshold
+            echo " ↑  Showing $pkg_count package(s) installed: $title"
+        end
         echo
     end
 end
@@ -88,15 +93,13 @@ function rpm_installed --description "List installed RPM packages by install dat
 
     # ---- Refresh cache ----
     if test "$arg" = --refresh
-        set -e __rpm_instlist_cache                      # FIX: renamed, no collision
+        set -e __rpm_instlist_cache
         echo "♻️  Cache cleared. Will rebuild on next call."
         return 0
     end
 
     # ---- Build cache if missing ----
-    # FIX: was ($backend_func) — indirect call doesn't work in Fish,
-    # cache was always empty. Now calls __instlist_rpm directly.
-    if not set -q __rpm_instlist_cache                   # FIX: renamed
+    if not set -q __rpm_instlist_cache
         set -g __rpm_instlist_cache (__instlist_rpm)
     end
 
@@ -114,7 +117,6 @@ function rpm_installed --description "List installed RPM packages by install dat
     if test "$arg" = count; or test "$arg" = stats
         set count_mode 1
         set arg (string lower -- $argv[2])
-        # re-normalize alias after shift
         switch $arg
             case td; set arg today
             case yd; set arg yesterday
@@ -142,9 +144,9 @@ function rpm_installed --description "List installed RPM packages by install dat
         case yesterday
             set s $yesterday_start;  set e $today_start
         case last-week
-            set s $last_week_start;  set e $today_start   # FIX: added upper bound
+            set s $last_week_start;  set e $today_start
         case this-month
-            set s $this_month_start; set e $tomorrow_start # FIX: added upper bound
+            set s $this_month_start; set e $tomorrow_start
         case last-month
             set s $last_month_start; set e $this_month_start
         case per-day
@@ -172,16 +174,13 @@ function rpm_installed --description "List installed RPM packages by install dat
             return 1
     end
 
-    # ---- since / until override — writes directly into s and e ----
-    # FIX: until-only queries now work; previously ignored if since was absent.
-    # FIX: until now uses +1 day to be inclusive of the specified date,
-    #      consistent with deb and arch versions.
+    # ---- since / until override ----
     for i in (seq (count $argv))
         set -l token (string lower -- $argv[$i])
         switch $token
             case since
                 set -l next (math $i + 1)
-                if test $next -gt (count $argv)          # FIX: explicit bounds check
+                if test $next -gt (count $argv)
                     echo "❌ 'since' requires a date argument" >&2
                     return 1
                 end
@@ -194,11 +193,11 @@ function rpm_installed --description "List installed RPM packages by install dat
                 set s $parsed
             case until
                 set -l next (math $i + 1)
-                if test $next -gt (count $argv)          # FIX: explicit bounds check
+                if test $next -gt (count $argv)
                     echo "❌ 'until' requires a date argument" >&2
                     return 1
                 end
-                set -l parsed (env LC_ALL=en_US.UTF-8 date -d "$argv[$next] +1 day 00:00" +%s 2>/dev/null) # FIX: inclusive
+                set -l parsed (env LC_ALL=en_US.UTF-8 date -d "$argv[$next] +1 day 00:00" +%s 2>/dev/null)
                 if test -z "$parsed"
                     echo "❌ Invalid date for 'until': $argv[$next]" >&2
                     echo "   Expected a format understood by 'date -d' (e.g. YYYY-MM-DD)"
@@ -223,8 +222,6 @@ function rpm_installed --description "List installed RPM packages by install dat
             awk -v s="$s" -v e="$e" '$1>=s && (e=="" || $1<e)' |
             sort -n
         )
-        # FIX: build heading here instead of pre-computing above,
-        # since/until heading now handled uniformly
         set -l heading "$arg"
         if test -n (printf "%s" $s) -a $s -gt 0
             set heading "since "(env LC_ALL=en_US.UTF-8 date -d @$s +%Y-%m-%d)
