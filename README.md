@@ -213,6 +213,16 @@ The old name is kept as a compatibility wrapper and may be removed in a future r
 | `tm`  | this-month |
 | `lm`  | last-month |
 
+**Output:**
+
+When the result contains more than 25 packages, the filter criteria is repeated in the footer alongside the total count, so context is preserved after scrolling:
+```
+ ────────────────────────────────────
+ 🔢 Total number of package(s): 310
+ ↑  Showing 310 package(s) installed: last-month
+```
+The threshold is controlled by the global variable `__arch_summary_threshold` (default: `25`).
+
 **Example:**
 
 * arch_installed td
@@ -280,6 +290,17 @@ Install timestamps are reconstructed from log entries.
 | `lw`  | last-week  |
 | `tm`  | this-month |
 | `lm`  | last-month |
+
+**Output:**
+
+When the result contains more than 25 packages, the filter criteria is repeated in the footer alongside the total count, so context is preserved after scrolling:
+```
+ ────────────────────────────────────
+ 🔢 Total number of package(s): 50
+ ↑  Showing 50 package(s) installed: last-week
+```
+The threshold is controlled by the global variable `__deb_summary_threshold` (default: `25`).
+
 
 **Example:**
 

@@ -1,6 +1,6 @@
 # Global helpers defined ONCE outside the main function — fixes scope leak
 
-set -g __rpm_summary_threshold 25
+set -g __deb_summary_threshold 25
 
 function __deb_installed_help
     echo "deb_installed — list installed packages (Debian/Ubuntu)"
@@ -57,8 +57,9 @@ function __display_packages
     end
 
     echo
+    echo " ─────────────────────────────────────────────"
     echo " 🔢 Total: $pkg_count"
-    if test $pkg_count -gt $__rpm_summary_threshold
+    if test $pkg_count -gt $__deb_summary_threshold
         echo " ↑  Showing $pkg_count package(s) installed: $title"
     end
     echo

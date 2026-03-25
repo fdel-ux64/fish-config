@@ -1,6 +1,6 @@
 # ---- Global helpers — defined once, outside main function ----
 
-set -g __rpm_summary_threshold 25
+set -g __arch_summary_threshold 25
 
 function __arch_installed_help
     echo "arch_installed — list installed Arch packages by install date"
@@ -65,7 +65,7 @@ function __display_arch_packages
     echo
     echo " ────────────────────────────────────"
     echo " 🔢 Total number of package(s): $pkg_count"
-    if test $pkg_count -gt $__rpm_summary_threshold
+    if test $pkg_count -gt $__arch_summary_threshold
         echo " ↑  Showing $pkg_count package(s) installed: $title"
     end
     echo
