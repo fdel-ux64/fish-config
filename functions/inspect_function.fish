@@ -4,14 +4,12 @@ function inspect_function --description "Search, display, and optionally edit fi
         echo "inspect_function requires an interactive terminal."
         return 1
     end
-
     # Accept optional argument as initial query
     if test (count $argv) -ge 1
         set query $argv[1]
     else
         set query ""
     end
-
     # Prompt for function name or pattern if not provided
     if test -z "$query"
         echo ""
@@ -21,21 +19,18 @@ function inspect_function --description "Search, display, and optionally edit fi
             return 1
         end
     end
-
-    # Add wildcard if no * present (use regex to check)
+    # Add wildcard if no * present
     if not string match -qr '\*' "$query"
         set pattern "*$query*"
     else
         set pattern "$query"
     end
-
     # Find matching functions
     set matches (functions -a | string match "$pattern")
     if test (count $matches) -eq 0
         echo "No matching functions found."
         return 1
     end
-
     # Handle multiple matches
     if test (count $matches) -gt 1
         if type -q fzf
@@ -65,16 +60,13 @@ function inspect_function --description "Search, display, and optionally edit fi
     else
         set fname $matches[1]
     end
-
     # Validate selected function (fzf could return anything)
     if not functions -q "$fname"
         echo "Invalid function: $fname"
         return 1
     end
-
     # Resolve actual source file via fish's own lookup
     set funcfile (functions --details $fname)
-
     # Show function header and origin
     echo ""
     echo "Function: $fname"
@@ -90,8 +82,7 @@ function inspect_function --description "Search, display, and optionally edit fi
     end
     echo "Origin: $origin"
     echo ""
-
-    # Display function content — pipe directly to avoid list/newline issues
+    # Display function content
     if type -q bat
         functions $fname | bat --language fish --style=plain --paging=never
     else
@@ -102,15 +93,25 @@ function inspect_function --description "Search, display, and optionally edit fi
             functions $fname
         end
     end
-
     # Optional editing — only for real files we own
     if test -n "$funcfile"
         echo ""
-        # Default $EDITOR if unset
-        set -q EDITOR; or set -l EDITOR vim
+        # Resolve editor: honour $EDITOR if set, else nano > vim > vi
+        if set -q EDITOR; and command -q "$EDITOR"
+            set editor $EDITOR
+        else if command -q nano
+            set editor nano
+        else if command -q vim
+            set editor vim
+        else if command -q vi
+            set editor vi
+        else
+            echo "No usable editor found (tried \$EDITOR, nano, vim, vi)."
+            return 1
+        end
         read --prompt-str "Edit this function? (y/N) " answer
-        if string match -qi 'y' "$answer"
-            $EDITOR $funcfile
+        if string match -qi y "$answer"
+            $editor $funcfile
             # Syntax-check before sourcing
             if fish --no-execute $funcfile 2>/dev/null
                 source $funcfile
