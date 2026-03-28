@@ -110,7 +110,7 @@ Backend implementation used by `installed_packages` on RPM-based systems.
 This function is also available as a standalone Fish plugin:
 <https://github.com/fdel-ux64/fish-rpm-installed>
 
-List installed RPM packages by installation date, with caching for faster repeated queries.
+List installed RPM packages by installation date, grouped by day, with caching for faster repeated queries.
 This function only supports RPM-based distributions (e.g., Fedora, RHEL, CentOS), and ensures consistent date parsing by using the US English locale.
 RPM availability check is done before execution.
 
@@ -122,6 +122,8 @@ RPM availability check is done before execution.
 * rpm\_installed count [OPTION]
 * rpm\_installed since DATE [until DATE]
 * rpm\_installed --refresh
+* rpm\_installed --cache on|off
+* rpm\_installed --cache
 * rpm\_installed --help
 
 | Option | Description |
@@ -134,7 +136,6 @@ RPM availability check is done before execution.
 | `per-day` | Count packages per day |
 | `per-week` | Count packages per week |
 
-
 | Alias | Expands to |
 | --- | --- |
 | `td` | today |
@@ -143,15 +144,40 @@ RPM availability check is done before execution.
 | `tm` | this-month |
 | `lm` | last-month |
 
+| Flag | Description |
+| --- | --- |
+| `--refresh` | Clear and rebuild the cache on next call (caching stays enabled) |
+| `--cache on` | Enable caching (default) |
+| `--cache off` | Disable caching — RPM is queried live on every call |
+| `--cache` | Show current cache status (enabled/disabled, populated or empty) |
+
 **Output:**
 
-When the result contains more than 25 packages, the filter criteria is repeated in the footer alongside the total count, so context is preserved after scrolling:
+Packages are grouped by installation date. Each date group shows a header with the package count, followed by the package names:
+
+```
+    📦 Installed packages — last-week
+ 📆 Wed 2026-03-18  (5 packages)
+    onnx-libs-1.17.0-12.fc43.x86_64
+    zlib-ng-2.3.3-2.fc43.x86_64
+    zlib-ng-compat-2.3.3-2.fc43.x86_64
+ 📆 Thu 2026-03-19  (9 packages)
+    firefox-148.0.2-2.fc43.x86_64
+    libtasn1-4.21.0-1.fc43.x86_64
+    ...
+ ────────────────────────────────────
+ 🔢 Total: 14 packages
+```
+
+When the result exceeds 100 packages, the filter criteria is repeated in the footer alongside the total count, so context is preserved after scrolling:
+
 ```
  ────────────────────────────────────
- 🔢 Total number of package(s): 111
- ↑  Showing 111 package(s) installed: since 2026-03-17 until 2026-03-24
+ 🔢 Total: 111 packages
+ ↑  Showing 111 packages installed: last-month
 ```
-The threshold is controlled by the global variable `__rpm_summary_threshold` (default: `25`).
+
+The threshold is controlled by the global variable `__rpm_summary_threshold` (default: `100`).
 
 **Examples:**
 
@@ -160,6 +186,8 @@ The threshold is controlled by the global variable `__rpm_summary_threshold` (de
 * rpm\_installed count this-month
 * rpm\_installed since 2025-12-16 until 2025-12-22
 * rpm\_installed --refresh
+* rpm\_installed --cache off
+* rpm\_installed --cache
 * rpm\_installed --help
 
 ---
