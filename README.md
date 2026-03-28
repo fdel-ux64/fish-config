@@ -293,7 +293,7 @@ Debian/Ubuntu equivalent of rpm_installed and arch_installed.
 
 Backend implementation used by `installed_packages` on Debian-based systems.
 
-Lists installed packages by installation date using dpkg logs, with caching for fast repeated queries.
+Lists installed packages by installation date using dpkg logs, grouped by day, with caching for fast repeated queries.
 Designed to provide **feature parity with** rpm_installed and arch_installed.
 
 **Scope:** Debian-based distributions (Ubuntu, Debian, Linux Mint, Pop!_OS, etc.)
@@ -303,6 +303,7 @@ Designed to provide **feature parity with** rpm_installed and arch_installed.
 Uses dpkg installation logs:
 * /var/log/dpkg.log
 * Rotated logs (dpkg.log.*, including .gz)
+
 Install timestamps are reconstructed from log entries.
 
 **Dependencies:**
@@ -315,53 +316,84 @@ Install timestamps are reconstructed from log entries.
 **Limitations:**
 
 - Does **not include**:
-* Snap packages
-* Flatpak packages
-* Very old installs may be missing if logs were rotated or deleted
+  * Snap packages
+  * Flatpak packages
+  * Very old installs may be missing if logs were rotated or deleted
 
 **Usage:**
 
 * deb_installed [OPTION]
 * deb_installed count [OPTION]
 * deb_installed since DATE [until DATE]
+* deb_installed per-day
+* deb_installed per-week
 * deb_installed --refresh
+* deb_installed --cache on|off
+* deb_installed --cache
 * deb_installed --help
 
-| Option       | Description                              |
-| ------------ | ---------------------------------------- |
-| `today`      | Packages installed today                 |
-| `yesterday`  | Packages installed yesterday             |
-| `last-week`  | Packages installed in the last 7 days    |
-| `this-month` | Packages installed this calendar month   |
+| Option | Description |
+| --- | --- |
+| `today` | Packages installed today |
+| `yesterday` | Packages installed yesterday |
+| `last-week` | Packages installed in the last 7 days |
+| `this-month` | Packages installed this calendar month |
 | `last-month` | Packages installed in the previous month |
-
+| `per-day` | Count packages per day |
+| `per-week` | Count packages per week |
 
 | Alias | Expands to |
-| ----- | ---------- |
-| `td`  | today      |
-| `yd`  | yesterday  |
-| `lw`  | last-week  |
-| `tm`  | this-month |
-| `lm`  | last-month |
+| --- | --- |
+| `td` | today |
+| `yd` | yesterday |
+| `lw` | last-week |
+| `tm` | this-month |
+| `lm` | last-month |
+
+| Flag | Description |
+| --- | --- |
+| `--refresh` | Clear and rebuild the cache on next call (caching stays enabled) |
+| `--cache on` | Enable caching (default) |
+| `--cache off` | Disable caching — dpkg logs are queried live on every call |
+| `--cache` | Show current cache status (enabled/disabled, populated or empty) |
 
 **Output:**
 
-When the result contains more than 25 packages, the filter criteria is repeated in the footer alongside the total count, so context is preserved after scrolling:
+Packages are grouped by installation date. Each date group shows a header with the package count, followed by the package names:
+
+```
+    📦 Installed packages — last-week
+ 📆 Wed 2026-03-18  (5 packages)
+    curl
+    libcurl4
+    wget
+ 📆 Thu 2026-03-19  (3 packages)
+    firefox
+    libtasn1-6
+    libtasn1-doc
+ ────────────────────────────────────
+ 🔢 Total: 8 packages
+```
+
+When the result exceeds 100 packages, the filter criteria is repeated in the footer so context is preserved after scrolling:
+
 ```
  ────────────────────────────────────
- 🔢 Total number of package(s): 50
- ↑  Showing 50 package(s) installed: last-week
+ 🔢 Total: 50 packages
+ ↑  Showing 50 packages installed: last-week
 ```
-The threshold is controlled by the global variable `__deb_summary_threshold` (default: `25`).
 
+The threshold is controlled by the global variable `__deb_summary_threshold` (default: `100`).
 
-**Example:**
+**Examples:**
 
 * deb_installed td
 * deb_installed last-week
 * deb_installed count this-month
 * deb_installed since 2024-01-01 until 2024-02-01
 * deb_installed --refresh
+* deb_installed --cache off
+* deb_installed --cache
 * deb_installed --help
 
 ---
