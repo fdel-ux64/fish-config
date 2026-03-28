@@ -198,12 +198,8 @@ Arch Linux equivalent of rpm_installed.
 
 Backend implementation used by `installed_packages` on Arch-based systems.
 
-Lists installed Arch packages by installation date, with caching for faster repeated queries.
+Lists installed Arch packages by installation date, grouped by day, with caching for faster repeated queries.
 Designed to provide **feature parity with** rpm_installed, using expac as the backend.
-
-**Note:**
-Formerly known as list_installed_packages_expac.
-The old name is kept as a compatibility wrapper and may be removed in a future release.
 
 **Scope:** Arch-based distributions (Arch Linux, Manjaro, EndeavourOS, etc.)
 
@@ -221,43 +217,72 @@ The old name is kept as a compatibility wrapper and may be removed in a future r
 * arch_installed per-day
 * arch_installed per-week
 * arch_installed --refresh
+* arch_installed --cache on|off
+* arch_installed --cache
 * arch_installed --help
 
-| Option       | Description                              |
-| ------------ | ---------------------------------------- |
-| `today`      | Packages installed today                 |
-| `yesterday`  | Packages installed yesterday             |
-| `last-week`  | Packages installed in the last 7 days    |
-| `this-month` | Packages installed this calendar month   |
+| Option | Description |
+| --- | --- |
+| `today` | Packages installed today |
+| `yesterday` | Packages installed yesterday |
+| `last-week` | Packages installed in the last 7 days |
+| `this-month` | Packages installed this calendar month |
 | `last-month` | Packages installed in the previous month |
-| `per-day`    | Count packages per day                   |
-| `per-week`   | Count packages per week                  |
+| `per-day` | Count packages per day |
+| `per-week` | Count packages per week |
 
 | Alias | Expands to |
-| ----- | ---------- |
-| `td`  | today      |
-| `yd`  | yesterday  |
-| `lw`  | last-week  |
-| `tm`  | this-month |
-| `lm`  | last-month |
+| --- | --- |
+| `td` | today |
+| `yd` | yesterday |
+| `lw` | last-week |
+| `tm` | this-month |
+| `lm` | last-month |
+
+| Flag | Description |
+| --- | --- |
+| `--refresh` | Clear and rebuild the cache on next call (caching stays enabled) |
+| `--cache on` | Enable caching (default) |
+| `--cache off` | Disable caching — expac is queried live on every call |
+| `--cache` | Show current cache status (enabled/disabled, populated or empty) |
 
 **Output:**
 
-When the result contains more than 25 packages, the filter criteria is repeated in the footer alongside the total count, so context is preserved after scrolling:
+Packages are grouped by installation date. Each date group shows a header with the package count, followed by the package names:
+
+```
+    📦 Installed packages — last-week
+ 📆 Wed 2026-03-18  (5 packages)
+    onnx-libs-1.17.0-12
+    zlib-ng-2.3.3-2
+    zlib-ng-compat-2.3.3-2
+ 📆 Thu 2026-03-19  (3 packages)
+    firefox-148.0.2-2
+    libtasn1-4.21.0-1
+    libtasn1-tools-4.21.0-1
+ ────────────────────────────────────
+ 🔢 Total: 8 packages
+```
+
+When the result exceeds 100 packages, the filter criteria is repeated in the footer so context is preserved after scrolling:
+
 ```
  ────────────────────────────────────
- 🔢 Total number of package(s): 310
- ↑  Showing 310 package(s) installed: last-month
+ 🔢 Total: 310 packages
+ ↑  Showing 310 packages installed: last-month
 ```
-The threshold is controlled by the global variable `__arch_summary_threshold` (default: `25`).
 
-**Example:**
+The threshold is controlled by the global variable `__arch_summary_threshold` (default: `100`).
+
+**Examples:**
 
 * arch_installed td
 * arch_installed last-week
 * arch_installed count this-month
 * arch_installed since 2024-01-01 until 2024-02-01
 * arch_installed --refresh
+* arch_installed --cache off
+* arch_installed --cache
 * arch_installed --help
 
 ---

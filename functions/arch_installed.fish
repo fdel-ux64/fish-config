@@ -1,6 +1,7 @@
 # ---- Global helpers — defined once, outside main function ----
 
-set -g __arch_summary_threshold 25
+set -g __arch_summary_threshold 100
+set -g __arch_use_cache 1
 
 function __arch_installed_help
     echo "arch_installed — list installed Arch packages by install date"
@@ -9,7 +10,10 @@ function __arch_installed_help
     echo "  arch_installed [OPTION]"
     echo "  arch_installed since DATE [until DATE]"
     echo "  arch_installed count [OPTION]"
-    echo "  arch_installed --refresh"
+    echo "  arch_installed --refresh     # rebuild cache"
+    echo "  arch_installed --cache on    # enable caching (default)"
+    echo "  arch_installed --cache off   # always query expac live"
+    echo "  arch_installed --cache       # show current cache status"
     echo
     echo "OPTIONS:"
     echo "  today        Packages installed today"
@@ -38,8 +42,8 @@ end
 
 function __display_arch_packages
     set -l title $argv[1]
-    set -l pkgs $argv[2..-1]
-    set -l pkg_count (count $pkgs)
+    set -l packages $argv[2..-1]
+    set -l pkg_count (count $packages)
 
     if test $pkg_count -eq 0
         echo
@@ -50,23 +54,54 @@ function __display_arch_packages
     end
 
     echo
-    echo "       📦 List of installed package(s): $title"
-    echo "       ╰─────────────────────────────────────────────────────────"
+    echo "    📦 Installed packages — $title"
     echo
 
-    for line in $pkgs
-        set -l parts (string split -m1 ' ' $line)
-        set -l ts $parts[1]
-        set -l pkg $parts[2]
-        set -l datestr (date -d @$ts "+%Y-%m-%d %T")
-        echo " $datestr: $pkg"
+    # First pass: build parallel arrays of dates and names.
+    set -l dates
+    set -l names
+    for pkg in $packages
+        set -l ts   (string split --max 1 ' ' -- $pkg)[1]
+        set -l name (string split --max 1 ' ' -- $pkg)[2]
+        set -l day  (date -d @$ts '+%a %Y-%m-%d' 2>/dev/null)
+        if test -z "$day"
+            set day unknown
+        end
+        set -a dates $day
+        set -a names $name
+    end
+
+    # Second pass: emit grouped output.
+    set -l current_date ""
+    set -l i 1
+    set -l total (count $names)
+    while test $i -le $total
+        set -l day  $dates[$i]
+        set -l name $names[$i]
+
+        if test "$day" != "$current_date"
+            # Count contiguous run for this date.
+            set -l run 0
+            set -l j $i
+            while test $j -le $total; and test $dates[$j] = $day
+                set run (math $run + 1)
+                set j   (math $j + 1)
+            end
+            set current_date $day
+            printf " 📆 %s  \e[2m(%d package%s)\e[0m\n" \
+                $day $run (test $run -eq 1 && echo "" || echo "s")
+        end
+
+        printf "    %s\n" $name
+        set i (math $i + 1)
     end
 
     echo
     echo " ────────────────────────────────────"
-    echo " 🔢 Total number of package(s): $pkg_count"
+    printf " 🔢 Total: %d package%s\n" \
+        $pkg_count (test $pkg_count -eq 1 && echo "" || echo "s")
     if test $pkg_count -gt $__arch_summary_threshold
-        echo " ↑  Showing $pkg_count package(s) installed: $title"
+        printf " ↑  Showing %d packages installed: %s\n" $pkg_count "$title"
     end
     echo
 end
@@ -96,6 +131,34 @@ function arch_installed --description "List installed Arch packages by install d
             return 0
     end
 
+    # ---- Cache toggle ----
+    if test "$arg" = --cache
+        set -l subcmd (string lower -- $argv[2])
+        switch $subcmd
+            case on
+                set -g __arch_use_cache 1
+                echo "✅ Cache enabled."
+            case off
+                set -g __arch_use_cache 0
+                set -e __arch_instlist_cache
+                echo "⚡ Cache disabled. expac will be queried live on every call."
+            case ''
+                if test $__arch_use_cache -eq 1
+                    if set -q __arch_instlist_cache
+                        echo "Cache: enabled (populated)"
+                    else
+                        echo "Cache: enabled (empty — will build on next call)"
+                    end
+                else
+                    echo "Cache: disabled (live expac queries)"
+                end
+            case '*'
+                echo "❌ Unknown cache option: '$subcmd'. Use on or off." >&2
+                return 1
+        end
+        return 0
+    end
+
     # ---- Refresh cache ----
     if test "$arg" = --refresh
         set -e __arch_instlist_cache
@@ -103,8 +166,12 @@ function arch_installed --description "List installed Arch packages by install d
         return 0
     end
 
-    # ---- Build cache if missing ----
-    if not set -q __arch_instlist_cache
+    # ---- Build cache if missing or disabled ----
+    if test $__arch_use_cache -eq 1
+        if not set -q __arch_instlist_cache
+            set -g __arch_instlist_cache (__instlist_arch)
+        end
+    else
         set -g __arch_instlist_cache (__instlist_arch)
     end
 
@@ -179,6 +246,7 @@ function arch_installed --description "List installed Arch packages by install d
     end
 
     # ---- since / until override ----
+    set -l freeform_date 0
     for i in (seq (count $argv))
         set -l token (string lower -- $argv[$i])
         switch $token
@@ -194,6 +262,7 @@ function arch_installed --description "List installed Arch packages by install d
                     return 1
                 end
                 set s $parsed
+                set freeform_date 1
             case until
                 set -l next (math $i + 1)
                 if test $next -gt (count $argv)
@@ -206,6 +275,7 @@ function arch_installed --description "List installed Arch packages by install d
                     return 1
                 end
                 set e $parsed
+                set freeform_date 1
         end
     end
 
@@ -224,6 +294,13 @@ function arch_installed --description "List installed Arch packages by install d
             awk -v s="$s" -v e="$e" '$1>=s && (e=="" || $1<e)' |
             sort -n
         )
-        __display_arch_packages "$arg" $res
+        set -l heading "$arg"
+        if test $freeform_date -eq 1
+            set heading "since "(date -d @$s +%Y-%m-%d)
+            if test -n "$e"
+                set heading "$heading until "(date -d @$e +%Y-%m-%d)
+            end
+        end
+        __display_arch_packages "$heading" $res
     end
 end
