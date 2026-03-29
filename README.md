@@ -17,6 +17,7 @@ Not intended as a fully stable public plugin suite, yet mature tools are documen
 - **Interactive Fish shell helpers**: search & cleanup history, inspect functions
 - **Secure password generation** with environment-aware clipboard handling
 - **Cross-platform kernel version checks**
+- **Archive creation and extraction**: smart format detection, overwrite protection, and pigz/zstd acceleration
 - **Fisher-compatible** functions, completions, and keybindings
 
 ---
@@ -386,6 +387,85 @@ resize_image <image|dir> [size]
 resize_image photo.jpg 50
 resize_image photo.jpg 1200
 resize_image ~/Pictures/trip/ 800
+```
+
+---
+
+## 📦 Archive Utilities
+
+### 📦 `create_archive`
+
+Create a compressed archive from a file or directory, with smart format detection and optional acceleration via `pigz` or `zstd`.
+
+**Scope:** Cross-distro (Fedora / Arch / Debian-based)
+
+**Dependencies:** `tar`; `zstd` for `.tar.zst` (default format); `pigz` optional for faster `.tar.gz`
+
+**Usage:**
+```
+create_archive [OPTIONS] <source> [output]
+create_archive [OPTIONS] <source> <dest-dir>/
+```
+
+| Option | Description |
+| --- | --- |
+| `-f/--type TYPE` | Archive format: `tar` \| `tar.gz` \| `tgz` \| `tar.zst` (default: `tar.zst`) |
+| `-F/--force` | Overwrite existing archive without prompting |
+| `-h/--help` | Show help |
+
+- If `output` is omitted, the archive is named after the source
+- If `output` ends with `/`, it is treated as a destination directory
+- Format is inferred from the output filename when `-f` is not given; falls back to `tar.zst`
+- If `-f` is given alongside an output filename that already has a recognised extension, they must agree — a mismatch is an error
+- Uses `pigz` for parallel `.tar.gz` compression when available
+- Uses `zstd -T0` for multi-threaded `.tar.zst` compression
+- On failure, partial output is removed automatically
+- If the archive already exists and `--force` is not set, prompts interactively in a terminal (default: N); errors in non-interactive mode
+
+**Examples:**
+```
+create_archive project
+create_archive project backup.tar.gz
+create_archive -f tar.gz project
+create_archive --force project
+create_archive project ~/backups/
+```
+
+---
+
+### 📦 `extract_archive`
+
+Extract an archive into its own directory, with atomic extraction and overwrite protection.
+
+**Scope:** Cross-distro (Fedora / Arch / Debian-based)
+
+**Optional dependencies:** `pigz` (faster `.tar.gz`), `zstd` (`.tar.zst`, `.zst`), `unrar` (`.rar`)
+
+**Supported formats:** `tar`, `tar.gz`, `tgz`, `tar.bz2`, `tar.xz`, `tar.zst`, `zip`, `gz`, `bz2`, `xz`, `zst`, `rar`
+
+**Usage:**
+```
+extract_archive [OPTIONS] <archive>
+```
+
+| Option | Description |
+| --- | --- |
+| `-F/--force` | Overwrite existing output directory without prompting |
+| `-q/--quiet` | Suppress output on success |
+| `-h/--help` | Show help |
+
+- Output directory is placed alongside the archive, named after it (extension stripped)
+- Extraction is staged in a temp directory; the output directory only appears on success
+- If the archive contains a single top-level directory with the same name as the archive, it is flattened to avoid double-nesting (e.g. `project.tar.gz` → `project/` not `project/project/`)
+- On failure, both the temp directory and output directory are cleaned up
+- If the output directory already exists and `--force` is not set, prompts interactively in a terminal (default: N); errors in non-interactive mode
+- Format detection uses regex matching, not shell globs — works correctly with non-ASCII filenames regardless of locale
+
+**Examples:**
+```
+extract_archive archive.tar.gz
+extract_archive --force archive.tar.zst
+extract_archive -q archive.zip
 ```
 
 ---
