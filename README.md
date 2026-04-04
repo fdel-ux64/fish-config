@@ -121,6 +121,7 @@ rpm_installed --refresh | --cache on|off | --cache | --help
 
 ```
     📦 Installed packages — last-week
+
  📆 Wed 2026-03-18  (5 packages)
     onnx-libs-1.17.0-12.fc43.x86_64
     zlib-ng-2.3.3-2.fc43.x86_64
@@ -132,7 +133,7 @@ rpm_installed --refresh | --cache on|off | --cache | --help
  🔢 Total: 14 packages
 ```
 
-The footer repeats the filter label when the total exceeds 100 packages (`__rpm_summary_threshold`).
+The footer repeats the filter label when the total exceeds 75 packages (`__rpm_summary_threshold`).
 
 **Examples:**
 ```
@@ -178,7 +179,7 @@ arch_installed --refresh | --cache on|off | --cache | --help
 | `--cache off` | Disable caching — expac is queried live on every call |
 | `--cache` | Show current cache status |
 
-The footer repeats the filter label when the total exceeds 100 packages (`__arch_summary_threshold`).
+The footer repeats the filter label when the total exceeds 75 packages (`__arch_summary_threshold`).
 
 **Examples:**
 ```
@@ -228,7 +229,7 @@ deb_installed --refresh | --cache on|off | --cache | --help
 | `--cache off` | Disable caching — dpkg logs are queried live on every call |
 | `--cache` | Show current cache status |
 
-The footer repeats the filter label when the total exceeds 100 packages (`__deb_summary_threshold`).
+The footer repeats the filter label when the total exceeds 75 packages (`__deb_summary_threshold`).
 
 **Examples:**
 ```

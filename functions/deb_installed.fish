@@ -1,6 +1,6 @@
 	# Global helpers defined ONCE outside the main function — fixes scope leak
 
-set -g __deb_summary_threshold 100
+set -g __deb_summary_threshold 75
 set -g __deb_use_cache 1
 
 function __deb_installed_help
@@ -117,7 +117,7 @@ function __display_packages
     echo " ────────────────────────────────────"
     printf " 🔢 Total: %d package%s\n" \
         $pkg_count (test $pkg_count -eq 1 && echo "" || echo "s")
-    if test $pkg_count -gt $__deb_summary_threshold
+    if test $pkg_count -ge $__deb_summary_threshold
         printf " ↑  Showing %d packages installed: %s\n" $pkg_count "$title"
     end
     echo
@@ -246,6 +246,7 @@ function deb_installed --description "List installed Debian/Ubuntu packages by i
             printf "%s\n" $__deb_instlist_cache |
                 awk '{w=strftime("%Y-W%V",$1);c[w]++} END{for(w in c) print w,c[w]}' | sort
             return
+        case since until
         case ''
             set s 0
         case '*'

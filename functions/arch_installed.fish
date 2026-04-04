@@ -1,6 +1,6 @@
 # ---- Global helpers — defined once, outside main function ----
 
-set -g __arch_summary_threshold 100
+set -g __arch_summary_threshold 75
 set -g __arch_use_cache 1
 
 function __arch_installed_help
@@ -100,7 +100,7 @@ function __display_arch_packages
     echo " ────────────────────────────────────"
     printf " 🔢 Total: %d package%s\n" \
         $pkg_count (test $pkg_count -eq 1 && echo "" || echo "s")
-    if test $pkg_count -gt $__arch_summary_threshold
+    if test $pkg_count -ge $__arch_summary_threshold
         printf " ↑  Showing %d packages installed: %s\n" $pkg_count "$title"
     end
     echo
@@ -237,6 +237,7 @@ function arch_installed --description "List installed Arch packages by install d
             printf "%s\n" $__arch_instlist_cache |
                 awk '{w=strftime("%Y-W%V",$1);c[w]++} END{for(w in c) print w,c[w]}' | sort
             return
+        case since until
         case ''
             set s 0
         case '*'

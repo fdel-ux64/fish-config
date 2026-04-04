@@ -1,6 +1,6 @@
 # ---- Global helpers — defined once, outside main function ----
 
-set -g __rpm_summary_threshold 100
+set -g __rpm_summary_threshold 75
 set -g __rpm_use_cache 1
 
 function __rpm_installed_help
@@ -110,7 +110,7 @@ function __display_rpm_packages
     echo " ────────────────────────────────────"
     printf " 🔢 Total: %d package%s\n" \
         $pkg_count (test $pkg_count -eq 1 && echo "" || echo "s")
-    if test $pkg_count -gt $__rpm_summary_threshold
+    if test $pkg_count -ge $__rpm_summary_threshold
         printf " ↑  Showing %d packages installed: %s\n" $pkg_count "$title"
     end
     echo
@@ -255,6 +255,7 @@ function rpm_installed --description "List installed RPM packages by install dat
             printf "%s\n" $__rpm_instlist_cache |
                 awk '{count[strftime("%Y-W%V",$1)]++} END{for(w in count) printf "%s  %d\n", w, count[w]}' | sort
             return
+        case since until
         case ''
             set s 0
         case '*'
