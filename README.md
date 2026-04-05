@@ -133,7 +133,7 @@ rpm_installed --refresh | --cache on|off | --cache | --help
  🔢 Total: 14 packages
 ```
 
-The footer repeats the filter label when the total exceeds 75 packages (`__rpm_summary_threshold`).
+The footer repeats the filter label when the total reaches or exceeds 75 packages (`__rpm_summary_threshold`).
 
 **Examples:**
 ```
@@ -179,7 +179,7 @@ arch_installed --refresh | --cache on|off | --cache | --help
 | `--cache off` | Disable caching — expac is queried live on every call |
 | `--cache` | Show current cache status |
 
-The footer repeats the filter label when the total exceeds 75 packages (`__arch_summary_threshold`).
+The footer repeats the filter label when the total reaches or exceeds 75 packages (`__arch_summary_threshold`).
 
 **Examples:**
 ```
@@ -229,7 +229,7 @@ deb_installed --refresh | --cache on|off | --cache | --help
 | `--cache off` | Disable caching — dpkg logs are queried live on every call |
 | `--cache` | Show current cache status |
 
-The footer repeats the filter label when the total exceeds 75 packages (`__deb_summary_threshold`).
+The footer repeats the filter label when the total reaches or exceeds 75 packages (`__deb_summary_threshold`).
 
 **Examples:**
 ```
