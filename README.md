@@ -18,6 +18,7 @@ Not intended as a fully stable public plugin suite, yet mature tools are documen
 - **Secure password generation** with environment-aware clipboard handling
 - **Cross-platform kernel version checks**
 - **Archive creation and extraction**: smart format detection, overwrite protection, and pigz/zstd acceleration
+- **Fish file formatting** via `fish_indent` with single-file and directory modes
 - **Fisher-compatible** functions, completions, and keybindings
 
 ---
@@ -467,6 +468,55 @@ extract_archive [OPTIONS] <archive>
 extract_archive archive.tar.gz
 extract_archive --force archive.tar.zst
 extract_archive -q archive.zip
+```
+
+---
+
+## 🐟 Fish Dev Utilities
+
+### 🎨 `fishfmt`
+
+Format `.fish` files using `fish_indent`.
+
+**Scope:** Fish shell
+
+**Dependencies:** `fish_indent` (bundled with Fish), `find`
+
+**Usage:**
+```
+fishfmt [OPTIONS] FILE|DIR [...]
+```
+
+| Option | Description |
+| --- | --- |
+| `-r, --recursive` | Recurse into subdirectories when a DIR is given |
+| `-h, --help` | Show this help |
+
+- Formats a single `.fish` file, or all `.fish` files in a directory
+- By default, directory mode is one level deep — use `-r` to recurse
+- Rejects non-`.fish` files with a clear error rather than passing them to `fish_indent`
+- Always prints a summary: files formatted and files skipped
+
+**Examples:**
+```
+$ fishfmt myfunc.fish
+ ✔ Formatted: myfunc.fish
+ Done — 1 formatted, 0 skipped
+
+$ fishfmt ~/.config/fish/functions
+ ✔ Formatted: /home/user/.config/fish/functions/myfunc.fish
+ ✔ Formatted: /home/user/.config/fish/functions/kver.fish
+ Done — 2 formatted, 0 skipped
+
+$ fishfmt -r ~/.config/fish/functions
+ ✔ Formatted: /home/user/.config/fish/functions/myfunc.fish
+ ✔ Formatted: /home/user/.config/fish/functions/subfolder/helper.fish
+ Done — 2 formatted, 0 skipped
+
+$ fishfmt func_a.fish func_b.fish
+ ✔ Formatted: func_a.fish
+ ✔ Formatted: func_b.fish
+ Done — 2 formatted, 0 skipped
 ```
 
 ---
