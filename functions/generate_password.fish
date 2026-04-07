@@ -1,6 +1,6 @@
 function generate_password
-    # Clipboard defaults
-    set -l no_clipboard 0
+    # Defaults
+    set -l clipboard 0
     set -l clipboard_timeout 30
     set -l no_ambiguous 0
 
@@ -19,8 +19,8 @@ function generate_password
             end
         end
         switch $arg
-            case '--no-clipboard'
-                set no_clipboard 1
+            case '--clipboard'
+                set clipboard 1
             case '--clipboard-timeout'
                 set expect_timeout 1
             case '--no-ambiguous'
@@ -37,7 +37,6 @@ function generate_password
         return 1
     end
 
-    # FIX: reject --clipboard-timeout 0
     if test $clipboard_timeout -lt 1
         echo "❌ --clipboard-timeout must be at least 1 second"
         return 1
@@ -54,16 +53,12 @@ function generate_password
         echo "USAGE: generate_password [OPTIONS] [LENGTH] [COUNT]"
         echo
         echo "Options:"
-        echo "  --no-clipboard              Disable clipboard auto-copy"
+        echo "  --clipboard                 Copy first password to clipboard (requires Wayland + wl-clipboard)"
         echo "  --clipboard-timeout <sec>   Clipboard clear timeout in seconds (default: 30, min: 1)"
         echo "  --no-ambiguous              Exclude visually similar chars (0,O,l,1,|,I)"
         echo "  -h, --help                  Show this help"
         echo
         echo "Defaults: LENGTH=16, COUNT=1 — minimum length is 3, recommended minimum is 12"
-        echo
-        echo "Wayland extra:"
-        echo "If wl-clipboard is installed and clipboard is enabled,"
-        echo "the first password is copied to clipboard for the specified duration."
         return 0
     end
 
@@ -178,27 +173,24 @@ function generate_password
     # FIX: clean up the internal helper so it doesn't leak into the global scope
     functions -e _secure_rand_char
 
-    # Clipboard handling
-    if test $no_clipboard -eq 1
-        echo "ℹ️  Clipboard copy disabled (--no-clipboard)"
-    else if set -q WAYLAND_DISPLAY
-        if type -q wl-copy
+    # Clipboard handling (opt-in via --clipboard)
+    if test $clipboard -eq 1
+        if not set -q WAYLAND_DISPLAY
+            echo "⚠️  Clipboard requested but no Wayland session detected — skipping"
+        else if not type -q wl-copy
+            echo "⚠️  Clipboard requested but wl-clipboard is not installed — skipping"
+        else
             echo -n "$first_password" | wl-copy
             echo "📋 First password copied to clipboard (clears in $clipboard_timeout s)"
             if type -q systemd-run
                 systemd-run --user --no-block -- \
                     sh -c "sleep $clipboard_timeout; echo -n '' | wl-copy" >/dev/null 2>&1
-                # FIX: warn if systemd-run fails (non-zero exit)
                 if test $status -ne 0
                     echo "⚠️  systemd-run failed — clipboard may not be cleared automatically"
                 end
             else
                 nohup fish -c "sleep $clipboard_timeout; echo -n '' | wl-copy" >/dev/null 2>&1 &
             end
-        else
-            echo "ℹ️  Tip: install wl-clipboard to auto-copy the first password to clipboard"
         end
-    else
-        echo "ℹ️  Clipboard copy skipped (no Wayland session detected)"
     end
 end
