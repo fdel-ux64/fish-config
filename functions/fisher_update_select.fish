@@ -54,6 +54,7 @@ function fisher_update_select --description "Interactively or non-interactively 
     echo
 
     read -P "Your choice: " choice
+    set choice (string trim -- $choice)
 
     # Empty input
     if test -z "$choice"
@@ -80,14 +81,11 @@ function fisher_update_select --description "Interactively or non-interactively 
     end
 
     # Numeric selection
-    set -l raw_indices (string split ' ' -- $choice)
+    set -l raw_indices (string split -n ' ' -- $choice)
     set -l seen_indices
     set -l selected
 
     for idx in $raw_indices
-        # Skip extra whitespace tokens from split
-        test -z "$idx"; and continue
-
         if not string match -qr '^[0-9]+$' -- $idx
             echo "Invalid input: $idx"
             return 1
