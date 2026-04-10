@@ -88,7 +88,6 @@ function extract_archive --description "Extract archive into its own directory"
     end
 
     set outdir "$archivedir/$basename"
-    set tmp "$archivedir/$basename.__tmp"
 
     # -------------------------
     # Overwrite protection
@@ -112,8 +111,9 @@ function extract_archive --description "Extract archive into its own directory"
         end
     end
 
+    set tmp (mktemp -d)
+
     mkdir -p "$outdir"
-    mkdir -p "$tmp"
 
     # -------------------------
     # Extraction — switch on derived $format, not filename glob
@@ -164,7 +164,7 @@ function extract_archive --description "Extract archive into its own directory"
             end
 
         case zip
-            unzip "$archive" -d "$tmp"
+            unzip -q "$archive" -d "$tmp"
             if test $status -ne 0
                 set failed 1
             end
