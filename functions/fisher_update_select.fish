@@ -1,130 +1,130 @@
-function fisher_update_select --description "Interactively or non-interactively update Fisher plugins"
-    set -l non_interactive 0
+function fisher_update_select \
+    --description "Selectively update Fisher plugins (interactive or scripted)"
+
+    # --- flag parsing ---
+    set -l do_all 0
     set -l auto_yes 0
 
     for arg in $argv
         switch $arg
+            case --help -h
+                echo "Usage: fisher_update_select [--all] [--yes|-y]"
+                echo ""
+                echo "Interactively select Fisher plugins to update."
+                echo ""
+                echo "Options:"
+                echo "  --all        Update all plugins, skip interactive picker"
+                echo "  --yes, -y    Skip confirmation prompts (use with --all)"
+                echo "  --help, -h   Show this help"
+                return 0
             case --all
-                set non_interactive 1
-            case --yes
+                set do_all 1
+            case --yes -y
                 set auto_yes 1
-            case '*'
-                echo "Unknown option: $arg"
-                echo "Supported options: --all, --yes"
-                return 1
+            case '--*'
+                echo "Unknown flag: $arg" >&2
+                return 2
         end
     end
 
-    set -l plugins (fisher list | sort)
-    if test (count $plugins) -eq 0
-        echo "No Fisher plugins installed."
+    # --- get plugin list ---
+    set -l plugins (fisher list)
+    set -l count_plugins (count $plugins)
+    if test $count_plugins -eq 0
+        echo "No plugins installed."
         return 0
     end
 
-    # --all: update everything, skip confirmation unless --yes is absent
-    # Rationale: --all means "I want all of them"; the extra confirmation adds
-    # friction without safety. --yes makes it fully non-interactive.
-    if test $non_interactive -eq 1
-        if test $auto_yes -eq 0
-            read -P "Update ALL plugins? [y/N]: " confirm
-            switch (string lower -- $confirm)
-                case y yes
-                case '*'
-                    echo "Aborted."
-                    return 0
+    # --- helper: confirm ---
+    # Takes auto_yes flag as $1, prompt as $2
+    function __fus_confirm
+        if test "$argv[1]" -eq 1
+            return 0
+        end
+        while true
+            if not read -P "$argv[2] [y/N]: " resp
+                echo "Aborted." >&2
+                return 1
             end
+            switch (string lower -- $resp)
+                case y yes
+                    return 0
+                case n no ''
+                    echo "Aborted."
+                    return 1
+                case '*'
+                    echo "Please answer yes or no."
+            end
+        end
+    end
+
+    # --- all mode ---
+    if test $do_all -eq 1
+        if not __fus_confirm $auto_yes "Update ALL plugins?"
+            return 0
         end
         fisher update
-        return 0
+        return $status
     end
 
-    # -------------------------
-    # Interactive mode
-    # -------------------------
-    echo "Installed Fisher plugins:"
-    echo
-    for i in (seq (count $plugins))
-        printf "  %2d) %s\n" $i $plugins[$i]
-    end
-    echo
-    echo "Select plugins to update:"
-    echo "  - Numbers separated by spaces (e.g. 1 3 5)"
-    echo "  - 'a' to update all"
-    echo "  - 'n' or 'q' to quit"
-    echo
+    # --- interactive mode ---
+    while true
+        echo "Installed plugins:"
+        for i in (seq $count_plugins)
+            echo "  $i) $plugins[$i]"
+        end
+        echo
+        echo "Enter indices (e.g. 1 2 5), 'a' for all, or 'q' to quit."
 
-    read -P "Your choice: " choice
-    set choice (string trim -- $choice)
-
-    # Empty input
-    if test -z "$choice"
-        echo "No input provided. Aborted."
-        return 0
-    end
-
-    switch (string lower -- $choice)
-        case q n
-            echo "Aborted. No plugins updated."
+        if not read -P "> " choice
+            echo "Aborted."
             return 0
-        case a
-            if test $auto_yes -eq 0
-                read -P "Update ALL plugins? [y/N]: " confirm
-                switch (string lower -- $confirm)
-                    case y yes
-                    case '*'
-                        echo "Aborted."
-                        return 0
-                end
-            end
-            fisher update
-            return 0
-    end
-
-    # Numeric selection
-    set -l raw_indices (string split -n ' ' -- $choice)
-    set -l seen_indices
-    set -l selected
-
-    for idx in $raw_indices
-        if not string match -qr '^[0-9]+$' -- $idx
-            echo "Invalid input: $idx"
-            return 1
         end
 
-        if test $idx -lt 1 -o $idx -gt (count $plugins)
-            echo "Invalid selection: $idx (valid range: 1–"(count $plugins)")"
-            return 1
-        end
-
-        # Deduplicate
-        if contains -- $idx $seen_indices
-            continue
-        end
-        set seen_indices $seen_indices $idx
-        set selected $selected $plugins[$idx]
-    end
-
-    if test (count $selected) -eq 0
-        echo "No valid plugins selected."
-        return 0
-    end
-
-    echo
-    echo "Selected plugins:"
-    for p in $selected
-        echo "  - $p"
-    end
-    echo
-
-    if test $auto_yes -eq 0
-        read -P "Proceed with update? [y/N]: " confirm
-        switch (string lower -- $confirm)
-            case y yes
-            case '*'
+        switch (string lower -- (string trim -- $choice))
+            case q quit
                 echo "Aborted."
                 return 0
+            case a all
+                if not __fus_confirm $auto_yes "Update ALL plugins?"
+                    continue
+                end
+                fisher update
+                return $status
+            case ''
+                continue
         end
-    end
 
-    fisher update $selected
+        set -l raw (string match -ar '[0-9]+' -- $choice)
+        set -l selected
+        set -l invalid 0
+
+        for idx in $raw
+            if test $idx -lt 1 -o $idx -gt $count_plugins
+                echo "Out of range: $idx"
+                set invalid 1
+                continue
+            end
+            set selected $selected $plugins[$idx]
+        end
+
+        set selected (printf "%s\n" $selected | sort -u)
+
+        if test (count $selected) -eq 0
+            echo "No valid selection."
+            continue
+        end
+
+        echo "Selected: "(string join ', ' $selected)
+        if test $invalid -eq 1
+            echo "Some inputs were out of range and ignored."
+        end
+
+        if not __fus_confirm $auto_yes "Proceed?"
+            continue
+        end
+
+        fisher update $selected
+        return $status
+    end
 end
