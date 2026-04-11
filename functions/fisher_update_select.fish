@@ -121,7 +121,7 @@ function fisher_update_select \
         end
 
         if not __fus_confirm $auto_yes "Proceed?"
-            continue
+            return 0
         end
 
         fisher update $selected
