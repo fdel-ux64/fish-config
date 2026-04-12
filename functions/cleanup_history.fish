@@ -14,7 +14,7 @@ function cleanup_history -d "Interactive history cleanup with pattern argument"
         echo "  cleanup_history -h                # Show this help"
         echo ""
         echo "During cleanup:"
-        echo "  Enter numbers (space-separated), 'all', or 'n/q' to quit."
+        echo "  Enter numbers (space-separated), ranges (e.g. 4-7), 'all', or 'n/q' to quit."
         return
     end
     
@@ -50,7 +50,7 @@ function cleanup_history -d "Interactive history cleanup with pattern argument"
     echo ""
     
     while true
-        echo "Enter numbers (space-separated), 'all', or 'n/q' to quit:"
+        echo "Enter numbers (space-separated), ranges (e.g. 4-7), 'all', or 'n/q' to quit:"
         read -l selection
         
         # Check quit FIRST
@@ -73,7 +73,38 @@ function cleanup_history -d "Interactive history cleanup with pattern argument"
         # Process numbers
         set -l valid_nums
         set -l invalid_nums
-        for num in (string split " " $selection)
+
+        # Expand ranges (e.g. "4-7" → "4 5 6 7") before validation
+        set -l expanded_tokens
+        for token in (string split " " $selection)
+            if string match -qr '^[0-9]+-[0-9]+$' -- $token
+                set -l parts (string split "-" $token)
+                set -l lo $parts[1]
+                set -l hi $parts[2]
+                if test $lo -le $hi
+                    for n in (seq $lo $hi)
+                        set -a expanded_tokens $n
+                    end
+                else
+                    # Reverse range (e.g. "7-4") — treat as invalid
+                    set -a expanded_tokens $token
+                end
+            else
+                set -a expanded_tokens $token
+            end
+        end
+
+        # Deduplicate tokens (preserves first occurrence order)
+        set -l seen_tokens
+        set -l deduped_tokens
+        for token in $expanded_tokens
+            if not contains -- $token $seen_tokens
+                set -a seen_tokens $token
+                set -a deduped_tokens $token
+            end
+        end
+
+        for num in $deduped_tokens
             if string match -qr '^[0-9]+$' -- $num
                 if test $num -ge 1 -a $num -le (count $matches)
                     set valid_nums $valid_nums $num
