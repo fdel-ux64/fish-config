@@ -14,7 +14,7 @@ Not intended as a fully stable public plugin suite, yet mature tools are documen
 
 - **Multi-distro package inspection**: unified `installed_packages` for Arch, Debian/Ubuntu, and RPM systems
 - **Consistent package history** across distributions
-- **Interactive Fish shell helpers**: search & cleanup history, inspect functions
+- **Interactive Fish shell helpers**: search & cleanup history with range selection, inspect functions
 - **Secure password generation** with environment-aware clipboard handling
 - **Cross-platform kernel version checks**
 - **Archive creation and extraction**: smart format detection, overwrite protection, and pigz/zstd acceleration
@@ -564,8 +564,16 @@ cleanup_history PATTERN
 ```
 
 - Displays matching entries with numeric indexes
-- Accepts space-separated numbers, `all`, or `n`/`q` to quit safely
+- Accepts space-separated numbers, ranges (e.g. `4-7`), or any mix of both (e.g. `1 4-7 12`)
+- Duplicates are silently deduplicated — `4-7 5` deletes 4 entries, not 5
+- Accepts `all` to remove every match, or `n`/`q` to quit safely
 - Uses exact, case-sensitive deletion to avoid accidental removals
+
+**Examples:**
+```
+cleanup_history 'git add'
+cleanup_history rpm
+```
 
 **Note:** For an integrated search + cleanup workflow, use `search_history -c` instead.
 
