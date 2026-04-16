@@ -20,6 +20,7 @@ function search_history --description "Search fish command history with optional
                 echo "  • Case-insensitive search by default"
                 echo "  • Can be bound to CTRL+H for quick access"
                 echo "  • Optional interactive cleanup of search results"
+                echo "  • Range selection support (e.g. 2-5, or mixed: 2-5 7 9)"
                 echo
                 echo "EXAMPLES:"
                 echo "  search_history git              # find all git commands"
@@ -97,8 +98,42 @@ function search_history --description "Search fish command history with optional
     
     # ---- Cleanup integration ----
     if test $cleanup_mode -eq 1
-        read -l -P "🧹 Clean up entries? [all/select/NUMBERS/N]: " cleanup_choice
+        read -l -P "🧹 Clean up entries? [all/select/NUMBERS/RANGE(e.g.2-5)/N]: " cleanup_choice
         
+        # Parse numbers and/or ranges from a token list into a deduplicated sorted list.
+        # Tokens can be plain numbers ("3") or ranges ("2-5"). Reversed ranges ("5-2")
+        # are normalised automatically. Out-of-bound values are silently dropped here;
+        # callers report invalids separately.
+        #
+        # Usage: _parse_tokens_to_indices TOTAL_COUNT TOKEN …
+        #   Prints one index per line, sorted, unique, within [1, TOTAL_COUNT].
+        function _parse_tokens_to_indices
+            set -l total $argv[1]
+            set -l raw_indices
+            for token in $argv[2..]
+                if string match -qr '^[0-9]+-[0-9]+$' -- $token
+                    # Range token  e.g. "2-5"
+                    set -l parts (string split '-' $token)
+                    set -l lo $parts[1]
+                    set -l hi $parts[2]
+                    # Normalise reversed ranges
+                    if test $lo -gt $hi
+                        set -l tmp $lo; set lo $hi; set hi $tmp
+                    end
+                    for n in (seq $lo $hi)
+                        set -a raw_indices $n
+                    end
+                else if string match -qr '^[0-9]+$' -- $token
+                    set -a raw_indices $token
+                end
+            end
+            # Filter to valid range, sort, deduplicate
+            printf '%s\n' $raw_indices \
+                | awk -v max=$total '$1>=1 && $1<=max' \
+                | sort -n \
+                | uniq
+        end
+
         # Check if input is 'all'
         switch $cleanup_choice
             case '' 'n' 'N' 'no' 'quit' 'q' 'Q'
@@ -116,16 +151,20 @@ function search_history --description "Search fish command history with optional
                 set cleanup_choice ""  # Reset for the loop
         end
         
-        # Check if direct numbers were provided
+        # Check if direct numbers/ranges were provided
         set -l initial_nums
         if test -n "$cleanup_choice"
-            # Try to parse as numbers
-            for num in (string split " " $cleanup_choice)
-                if string match -qr '^[0-9]+$' -- $num
-                    if test $num -ge 1 -a $num -le (count $matches)
-                        set -a initial_nums $num
-                    end
+            set -l tokens (string split " " $cleanup_choice)
+            set initial_nums (_parse_tokens_to_indices (count $matches) $tokens)
+            # Warn about unrecognised tokens
+            set -l invalid_tokens
+            for token in $tokens
+                if not string match -qr '^[0-9]+$|^[0-9]+-[0-9]+$' -- $token
+                    set -a invalid_tokens $token
                 end
+            end
+            if test (count $invalid_tokens) -gt 0
+                echo "  ⚠️  Ignored unrecognised tokens: "(string join ", " $invalid_tokens)
             end
         end
         
@@ -133,7 +172,7 @@ function search_history --description "Search fish command history with optional
         if test (count $initial_nums) -gt 0
             for num in $initial_nums
                 set -l cmd $matches[$num]
-                history delete --exact --case-sensitive $cmd
+                history delete --exact --case-sensitive "$cmd"
                 echo "  ✅ Deleted: $cmd"
             end
             echo "Deleted "(count $initial_nums)" entries."
@@ -148,7 +187,7 @@ function search_history --description "Search fish command history with optional
         
         # Interactive cleanup loop for selective deletion
         while true
-            echo "Enter numbers (space-separated) or 'q' to quit:"
+            echo "Enter numbers, ranges (e.g. 2-5), or mixed (e.g. 2-5 7), or 'q' to quit:"
             read -l selection
             
             # Check quit
@@ -158,26 +197,37 @@ function search_history --description "Search fish command history with optional
                     break
             end
             
-            # Process numbers
-            set -l valid_nums 
-            set -l invalid_nums
-            
-            for num in (string split " " $selection)
-                if string match -qr '^[0-9]+$' -- $num
-                    if test $num -ge 1 -a $num -le (count $matches)
-                        set valid_nums $valid_nums $num
-                    else
-                        set invalid_nums $invalid_nums $num
+            # Parse numbers and ranges, deduplicated
+            set -l tokens (string split " " $selection)
+            set -l valid_nums (_parse_tokens_to_indices (count $matches) $tokens)
+
+            # Collect unrecognised tokens for warning
+            set -l invalid_tokens
+            for token in $tokens
+                if not string match -qr '^[0-9]+$|^[0-9]+-[0-9]+$' -- $token
+                    set -a invalid_tokens $token
+                end
+            end
+            # Out-of-bound numbers (recognised format but outside list)
+            for token in $tokens
+                if string match -qr '^[0-9]+$' -- $token
+                    if test $token -lt 1 -o $token -gt (count $matches)
+                        set -a invalid_tokens $token
                     end
-                else
-                    set invalid_nums $invalid_nums $num
+                else if string match -qr '^[0-9]+-[0-9]+$' -- $token
+                    set -l parts (string split '-' $token)
+                    set -l lo $parts[1]; set -l hi $parts[2]
+                    if test $lo -gt $hi; set -l tmp $lo; set lo $hi; set hi $tmp; end
+                    if test $lo -lt 1 -o $hi -gt (count $matches)
+                        set -a invalid_tokens $token
+                    end
                 end
             end
             
             if test (count $valid_nums) -gt 0
                 for num in $valid_nums
                     set -l cmd $matches[$num]
-                    history delete --exact --case-sensitive $cmd
+                    history delete --exact --case-sensitive "$cmd"
                     echo "  ✅ Deleted: $cmd"
                 end
                 echo "Deleted "(count $valid_nums)" entries."
@@ -187,10 +237,10 @@ function search_history --description "Search fish command history with optional
                     break
                 end
             else
-                if test (count $invalid_nums) -gt 0
-                    echo "  ⚠️  Ignored invalid entries: "(string join ", " $invalid_nums)
+                if test (count $invalid_tokens) -gt 0
+                    echo "  ⚠️  Ignored invalid entries: "(string join ", " $invalid_tokens)
                 end
-                echo "Enter valid numbers or 'q' to quit."
+                echo "Enter valid numbers/ranges or 'q' to quit."
             end
         end
         
