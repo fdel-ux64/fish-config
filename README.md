@@ -524,13 +524,12 @@ $ fishfmt func_a.fish func_b.fish
 ## 📜 History & Shell UX Helpers
 
 ### 🔍 `search_history`
-
 Search command history with optional interactive cleanup.
 
 **Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
 **Usage:**
-```
+```fish
 search_history [OPTIONS] [PATTERN]
 ```
 
@@ -541,13 +540,15 @@ search_history [OPTIONS] [PATTERN]
 
 - Uses ripgrep if available, falls back to grep
 - Can be triggered with `CTRL+H`
-- With `-c`: accepts `all`, `select`, direct numbers (e.g. `1 3 5`), or `n`/`q` to skip
+- With `-c`: accepts `all`, `select`, direct numbers (e.g. `1 3 5`), ranges (e.g. `2-5`), mixed (e.g. `2-5 7`), or `n`/`q` to skip
+- Overlapping ranges and numbers are deduplicated (e.g. `2-5 3` removes only 4 entries)
 
 **Examples:**
 ```fish
 search_history git
 search_history -c 'git push'
 search_history -c rpm
+search_history -c cd      # then: 2-5 7  to delete a range + extra entry
 ```
 
 ---
