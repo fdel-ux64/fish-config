@@ -8,6 +8,7 @@ function __rpm_installed_help
     echo
     echo "USAGE:"
     echo "  rpm_installed [OPTION]"
+    echo "  rpm_installed days N         # last N days (rolling window)"
     echo "  rpm_installed since DATE [until DATE]"
     echo "  rpm_installed count [OPTION] (including 'since … until …')"
     echo "  rpm_installed --refresh      # rebuild cache"
@@ -18,7 +19,8 @@ function __rpm_installed_help
     echo "OPTIONS:"
     echo "  today        Packages installed today"
     echo "  yesterday    Packages installed yesterday"
-    echo "  last-week    Packages installed in the last 7 days"
+    echo "  days N       Packages installed in the last N days (today included)"
+    echo "  last-week    Packages installed in the last 7 days (excludes today)"
     echo "  this-month   Packages installed this calendar month"
     echo "  last-month   Packages installed in the previous calendar month"
     echo
@@ -31,6 +33,7 @@ function __rpm_installed_help
     echo
     echo "COUNT / STATS:"
     echo "  rpm_installed count today"
+    echo "  rpm_installed count days 5"
     echo "  rpm_installed count last-week"
     echo "  rpm_installed count per-day"
     echo "  rpm_installed count per-week"
@@ -54,25 +57,18 @@ function __display_rpm_packages
         return
     end
 
-    echo
-    echo "    📦 Installed packages — $title"
-    echo
+    # Build output into a temp file so we can decide whether to page it.
+    set -l tmpfile (mktemp /tmp/rpm_installed.XXXXXX)
 
     # Group packages by date.
     # Each line arriving here is: "<epoch> <name-ver-rel.arch>"
-    # We track the current date header and emit it on change.
     set -l current_date ""
-    set -l group_count 0
-    set -l all_lines
-
-    # First pass: collect (date, pkgname) pairs so we can emit per-group counts.
-    # Build two parallel arrays: dates[] and names[].
     set -l dates
     set -l names
     for pkg in $packages
-        set -l ts (string split --max 1 ' ' -- $pkg)[1]
+        set -l ts   (string split --max 1 ' ' -- $pkg)[1]
         set -l name (string split --max 1 ' ' -- $pkg)[2]
-        set -l day (env LC_ALL=en_US.UTF-8 date -d @$ts '+%a %Y-%m-%d' 2>/dev/null)
+        set -l day  (env LC_ALL=en_US.UTF-8 date -d @$ts '+%a %Y-%m-%d' 2>/dev/null)
         if test -z "$day"
             set day unknown
         end
@@ -80,40 +76,52 @@ function __display_rpm_packages
         set -a names $name
     end
 
-    # Second pass: emit grouped output.
-    set -l i 1
-    set -l total (count $names)
-    while test $i -le $total
-        set -l day $dates[$i]
-        set -l name $names[$i]
+    begin
+        echo
+        echo "    📦 Installed packages — $title"
+        echo
 
-        # When the date changes, close previous group and open a new one.
-        if test "$day" != "$current_date"
-            # Count how many packages share this date (contiguous run).
-            set -l run 0
-            set -l j $i
-            while test $j -le $total; and test $dates[$j] = $day
-                set run (math $run + 1)
-                set j (math $j + 1)
+        set -l i 1
+        set -l total (count $names)
+        while test $i -le $total
+            set -l day  $dates[$i]
+            set -l name $names[$i]
+
+            if test "$day" != "$current_date"
+                set -l run 0
+                set -l j $i
+                while test $j -le $total; and test $dates[$j] = $day
+                    set run (math $run + 1)
+                    set j   (math $j + 1)
+                end
+                set current_date $day
+                printf " 📆 %s  \e[2m(%d package%s)\e[0m\n" \
+                    $day $run (test $run -eq 1 && echo "" || echo "s")
             end
 
-            set current_date $day
-            printf " 📆 %s  \e[2m(%d package%s)\e[0m\n" \
-                $day $run (test $run -eq 1 && echo "" || echo "s")
+            printf "    %s\n" $name
+            set i (math $i + 1)
         end
 
-        printf "    %s\n" $name
-        set i (math $i + 1)
+        echo
+        echo " ────────────────────────────────────"
+        # Title always repeated in footer so it's visible without scrolling up
+        printf " 🔢 Total: %d package%s — %s\n" \
+            $pkg_count (test $pkg_count -eq 1 && echo "" || echo "s") "$title"
+        echo
+    end >$tmpfile
+
+    # Auto-page when output would overflow the terminal; skip when piped.
+    set -l term_lines $LINES
+    test -z "$term_lines"; and set term_lines 24
+    set -l file_lines (wc -l <$tmpfile)
+    if test $file_lines -gt $term_lines; and isatty stdout
+        cat $tmpfile | less -R
+    else
+        cat $tmpfile
     end
 
-    echo
-    echo " ────────────────────────────────────"
-    printf " 🔢 Total: %d package%s\n" \
-        $pkg_count (test $pkg_count -eq 1 && echo "" || echo "s")
-    if test $pkg_count -ge $__rpm_summary_threshold
-        printf " ↑  Showing %d packages installed: %s\n" $pkg_count "$title"
-    end
-    echo
+    rm -f $tmpfile
 end
 
 function rpm_installed --description "List installed RPM packages by install date with caching"
@@ -212,16 +220,17 @@ function rpm_installed --description "List installed RPM packages by install dat
     end
 
     # ---- Time boundaries ----
-    set -l today_start (env LC_ALL=en_US.UTF-8 date -d 'today 00:00'      +%s)
-    set -l tomorrow_start (env LC_ALL=en_US.UTF-8 date -d 'tomorrow 00:00'   +%s)
-    set -l yesterday_start (env LC_ALL=en_US.UTF-8 date -d 'yesterday 00:00'  +%s)
-    set -l last_week_start (env LC_ALL=en_US.UTF-8 date -d '7 days ago 00:00' +%s)
+    set -l today_start      (env LC_ALL=en_US.UTF-8 date -d 'today 00:00'      +%s)
+    set -l tomorrow_start   (env LC_ALL=en_US.UTF-8 date -d 'tomorrow 00:00'   +%s)
+    set -l yesterday_start  (env LC_ALL=en_US.UTF-8 date -d 'yesterday 00:00'  +%s)
+    set -l last_week_start  (env LC_ALL=en_US.UTF-8 date -d '7 days ago 00:00' +%s)
     set -l this_month_start (env LC_ALL=en_US.UTF-8 date -d (date +%Y-%m-01)   +%s)
     set -l last_month_start (env LC_ALL=en_US.UTF-8 date -d (date +%Y-%m-01)' -1 month' +%s)
 
     # ---- Resolve s/e from $arg ----
     set -l s 0
     set -l e ""
+    set -l n_days 0   # >0 when 'days N' was used; drives heading
 
     switch $arg
         case today
@@ -239,6 +248,20 @@ function rpm_installed --description "List installed RPM packages by install dat
         case last-month
             set s $last_month_start
             set e $this_month_start
+        case days
+            # Next positional arg shifts by 1 in count mode
+            set -l raw_n $argv[(math $count_mode + 2)]
+            if test -z "$raw_n"
+                echo "❌ 'days' requires a number  →  rpm_installed days 3" >&2
+                return 1
+            end
+            if not string match -qr '^[1-9][0-9]*$' -- "$raw_n"
+                echo "❌ 'days' expects a positive integer, got: '$raw_n'" >&2
+                return 1
+            end
+            set n_days $raw_n
+            set s (env LC_ALL=en_US.UTF-8 date -d "$n_days days ago 00:00" +%s)
+            set e $tomorrow_start
         case per-day
             if test $count_mode -eq 1
                 echo "❌ 'count per-day' is redundant — per-day already counts by day" >&2
@@ -317,7 +340,9 @@ function rpm_installed --description "List installed RPM packages by install dat
             sort -n
         )
         set -l heading "$arg"
-        if test $freeform_date -eq 1
+        if test $n_days -gt 0
+            set heading "last $n_days days"
+        else if test $freeform_date -eq 1
             set heading "since "(env LC_ALL=en_US.UTF-8 date -d @$s +%Y-%m-%d)
             if test -n "$e"
                 set heading "$heading until "(env LC_ALL=en_US.UTF-8 date -d @$e +%Y-%m-%d)
