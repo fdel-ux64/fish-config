@@ -49,6 +49,7 @@ Single portable entry point with full feature parity across backends.
 
 ```
 installed_packages [OPTION]
+installed_packages days N
 installed_packages count [OPTION]
 installed_packages since DATE [until DATE]
 installed_packages --refresh
@@ -59,6 +60,7 @@ installed_packages --backend
 | --- | --- | --- |
 | `today` | `td` | Packages installed today |
 | `yesterday` | `yd` | Packages installed yesterday |
+| `days N` | | Packages installed in the last N days (today included) |
 | `last-week` | `lw` | Packages installed in the last 7 days |
 | `this-month` | `tm` | Packages installed this calendar month |
 | `last-month` | `lm` | Packages installed in the previous month |
@@ -75,6 +77,7 @@ Aliases are case-insensitive (TD, Td, etc.).
 **Examples:**
 ```
 installed_packages today
+installed_packages days 3
 installed_packages lw
 installed_packages count last-week
 installed_packages since 2026-02-01
@@ -96,6 +99,7 @@ Lists installed RPM packages by installation date, grouped by day, with caching 
 
 ```
 rpm_installed [OPTION]
+rpm_installed days N
 rpm_installed count [OPTION]
 rpm_installed since DATE [until DATE]
 rpm_installed --refresh | --cache on|off | --cache | --help
@@ -105,6 +109,7 @@ rpm_installed --refresh | --cache on|off | --cache | --help
 | --- | --- | --- |
 | `today` | `td` | Packages installed today |
 | `yesterday` | `yd` | Packages installed yesterday |
+| `days N` | | Packages installed in the last N days (today included) |
 | `last-week` | `lw` | Packages installed in the last 7 days |
 | `this-month` | `tm` | Packages installed this calendar month |
 | `last-month` | `lm` | Packages installed in the previous month |
@@ -131,14 +136,16 @@ rpm_installed --refresh | --cache on|off | --cache | --help
     libtasn1-4.21.0-1.fc43.x86_64
     ...
  ────────────────────────────────────
- 🔢 Total: 14 packages
+ 🔢 Total: 14 packages — last-week
 ```
 
-The footer repeats the filter label when the total reaches or exceeds 75 packages (`__rpm_summary_threshold`).
+The filter label is always repeated in the footer, so it remains visible without scrolling up. Output is automatically paged with `less` when it exceeds the terminal height.
 
 **Examples:**
 ```
 rpm_installed lw
+rpm_installed days 3
+rpm_installed count days 5
 rpm_installed count this-month
 rpm_installed since 2025-12-16 until 2025-12-22
 rpm_installed --cache off
