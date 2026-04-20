@@ -166,6 +166,7 @@ Backend for Arch-based systems. Equivalent of `rpm_installed`, using `expac` as 
 
 ```
 arch_installed [OPTION]
+arch_installed days N
 arch_installed count [OPTION]
 arch_installed since DATE [until DATE]
 arch_installed --refresh | --cache on|off | --cache | --help
@@ -175,6 +176,7 @@ arch_installed --refresh | --cache on|off | --cache | --help
 | --- | --- | --- |
 | `today` | `td` | Packages installed today |
 | `yesterday` | `yd` | Packages installed yesterday |
+| `days N` | | Packages installed in the last N days (today included) |
 | `last-week` | `lw` | Packages installed in the last 7 days |
 | `this-month` | `tm` | Packages installed this calendar month |
 | `last-month` | `lm` | Packages installed in the previous month |
@@ -188,11 +190,13 @@ arch_installed --refresh | --cache on|off | --cache | --help
 | `--cache off` | Disable caching — expac is queried live on every call |
 | `--cache` | Show current cache status |
 
-The footer repeats the filter label when the total reaches or exceeds 75 packages (`__arch_summary_threshold`).
+The filter label is always repeated in the footer, so it remains visible without scrolling up. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
 
 **Examples:**
 ```
 arch_installed lw
+arch_installed days 3
+arch_installed count days 5
 arch_installed count this-month
 arch_installed since 2024-01-01 until 2024-02-01
 arch_installed --cache off
@@ -216,6 +220,7 @@ Backend for Debian-based systems. Equivalent of `rpm_installed`, reconstructing 
 
 ```
 deb_installed [OPTION]
+deb_installed days N
 deb_installed count [OPTION]
 deb_installed since DATE [until DATE]
 deb_installed --refresh | --cache on|off | --cache | --help
@@ -225,6 +230,7 @@ deb_installed --refresh | --cache on|off | --cache | --help
 | --- | --- | --- |
 | `today` | `td` | Packages installed today |
 | `yesterday` | `yd` | Packages installed yesterday |
+| `days N` | | Packages installed in the last N days (today included) |
 | `last-week` | `lw` | Packages installed in the last 7 days |
 | `this-month` | `tm` | Packages installed this calendar month |
 | `last-month` | `lm` | Packages installed in the previous month |
@@ -238,11 +244,13 @@ deb_installed --refresh | --cache on|off | --cache | --help
 | `--cache off` | Disable caching — dpkg logs are queried live on every call |
 | `--cache` | Show current cache status |
 
-The footer repeats the filter label when the total reaches or exceeds 75 packages (`__deb_summary_threshold`).
+The filter label is always repeated in the footer, so it remains visible without scrolling up. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
 
 **Examples:**
 ```
 deb_installed lw
+deb_installed days 3
+deb_installed count days 5
 deb_installed count this-month
 deb_installed since 2024-01-01 until 2024-02-01
 deb_installed --cache off
