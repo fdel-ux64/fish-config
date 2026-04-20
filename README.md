@@ -25,7 +25,7 @@ Not intended as a fully stable public plugin suite, yet mature tools are documen
 
 ## 📥 Installation
 
-### 🎣 Using Fisher (recommended)
+### 🎣 Using [Fisher](https://github.com/jorgebucaran/fisher) (Recommended)
 
 ```
 fisher install fdel-ux64/fish-config
@@ -137,9 +137,10 @@ rpm_installed --refresh | --cache on|off | --cache | --help
     ...
  ────────────────────────────────────
  🔢 Total: 14 packages — last-week
+ 💾 Cache: session cache
 ```
 
-The filter label is always repeated in the footer, so it remains visible without scrolling up. Output is automatically paged with `less` when it exceeds the terminal height.
+The filter label is always repeated in the footer, so it remains visible without scrolling up. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
 
 **Examples:**
 ```
