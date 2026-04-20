@@ -8,7 +8,7 @@ function __rpm_installed_help
     echo
     echo "USAGE:"
     echo "  rpm_installed [OPTION]"
-    echo "  rpm_installed days N         # last N days (rolling window)"
+    echo "  rpm_installed days N             # last N days (rolling window)"
     echo "  rpm_installed since DATE [until DATE]"
     echo "  rpm_installed count [OPTION] (including 'since … until …')"
     echo "  rpm_installed --refresh      # rebuild cache"
@@ -45,8 +45,9 @@ function __instlist_rpm
 end
 
 function __display_rpm_packages
-    set -l title $argv[1]
-    set -l packages $argv[2..-1]
+    set -l cache_status $argv[1]
+    set -l title $argv[2]
+    set -l packages $argv[3..-1]
     set -l pkg_count (count $packages)
 
     if test $pkg_count -eq 0
@@ -108,6 +109,7 @@ function __display_rpm_packages
         # Title always repeated in footer so it's visible without scrolling up
         printf " 🔢 Total: %d package%s — %s\n" \
             $pkg_count (test $pkg_count -eq 1 && echo "" || echo "s") "$title"
+        printf " 💾 Cache: %s\n" "$cache_status"
         echo
     end >$tmpfile
 
@@ -348,6 +350,11 @@ function rpm_installed --description "List installed RPM packages by install dat
                 set heading "$heading until "(env LC_ALL=en_US.UTF-8 date -d @$e +%Y-%m-%d)
             end
         end
-        __display_rpm_packages "$heading" $res
+        # Determine cache status label for footer
+        set -l cache_status "session cache"
+        if test $__rpm_use_cache -eq 0
+            set cache_status "live query"
+        end
+        __display_rpm_packages "$cache_status" "$heading" $res
     end
 end
