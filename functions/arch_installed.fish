@@ -60,9 +60,9 @@ function __display_arch_packages
     set -l dates
     set -l names
     for pkg in $packages
-        set -l ts   (string split --max 1 ' ' -- $pkg)[1]
+        set -l ts (string split --max 1 ' ' -- $pkg)[1]
         set -l name (string split --max 1 ' ' -- $pkg)[2]
-        set -l day  (date -d @$ts '+%a %Y-%m-%d' 2>/dev/null)
+        set -l day (date -d @$ts '+%a %Y-%m-%d' 2>/dev/null)
         if test -z "$day"
             set day unknown
         end
@@ -80,7 +80,7 @@ function __display_arch_packages
         set -l i 1
         set -l total (count $names)
         while test $i -le $total
-            set -l day  $dates[$i]
+            set -l day $dates[$i]
             set -l name $names[$i]
 
             if test "$day" != "$current_date"
@@ -88,7 +88,7 @@ function __display_arch_packages
                 set -l j $i
                 while test $j -le $total; and test $dates[$j] = $day
                     set run (math $run + 1)
-                    set j   (math $j + 1)
+                    set j (math $j + 1)
                 end
                 set current_date $day
                 printf " 📆 %s  \e[2m(%d package%s)\e[0m\n" \
@@ -120,7 +120,6 @@ function __display_arch_packages
 
     rm -f $tmpfile
 end
-
 
 function arch_installed --description "List installed Arch packages by install date with caching using expac"
 
@@ -192,11 +191,16 @@ function arch_installed --description "List installed Arch packages by install d
 
     # ---- Alias normalization ----
     switch $arg
-        case td; set arg today
-        case yd; set arg yesterday
-        case lw; set arg last-week
-        case tm; set arg this-month
-        case lm; set arg last-month
+        case td
+            set arg today
+        case yd
+            set arg yesterday
+        case lw
+            set arg last-week
+        case tm
+            set arg this-month
+        case lm
+            set arg last-month
     end
 
     # ---- count/stats mode: shift args ----
@@ -205,38 +209,48 @@ function arch_installed --description "List installed Arch packages by install d
         set count_mode 1
         set arg (string lower -- $argv[2])
         switch $arg
-            case td; set arg today
-            case yd; set arg yesterday
-            case lw; set arg last-week
-            case tm; set arg this-month
-            case lm; set arg last-month
+            case td
+                set arg today
+            case yd
+                set arg yesterday
+            case lw
+                set arg last-week
+            case tm
+                set arg this-month
+            case lm
+                set arg last-month
         end
     end
 
     # ---- Time boundaries ----
-    set -l today_start      (date -d 'today 00:00'      +%s)
-    set -l tomorrow_start   (date -d 'tomorrow 00:00'   +%s)
-    set -l yesterday_start  (date -d 'yesterday 00:00'  +%s)
-    set -l last_week_start  (date -d '7 days ago 00:00' +%s)
+    set -l today_start (date -d 'today 00:00'      +%s)
+    set -l tomorrow_start (date -d 'tomorrow 00:00'   +%s)
+    set -l yesterday_start (date -d 'yesterday 00:00'  +%s)
+    set -l last_week_start (date -d '7 days ago 00:00' +%s)
     set -l this_month_start (date -d (date +%Y-%m-01)   +%s)
     set -l last_month_start (date -d (date +%Y-%m-01)' -1 month' +%s)
 
     # ---- Resolve s/e from $arg ----
     set -l s 0
     set -l e ""
-    set -l n_days 0   # >0 when 'days N' was used; drives heading
+    set -l n_days 0 # >0 when 'days N' was used; drives heading
 
     switch $arg
         case today
-            set s $today_start;      set e $tomorrow_start
+            set s $today_start
+            set e $tomorrow_start
         case yesterday
-            set s $yesterday_start;  set e $today_start
+            set s $yesterday_start
+            set e $today_start
         case last-week
-            set s $last_week_start;  set e $today_start
+            set s $last_week_start
+            set e $today_start
         case this-month
-            set s $this_month_start; set e $tomorrow_start
+            set s $this_month_start
+            set e $tomorrow_start
         case last-month
-            set s $last_month_start; set e $this_month_start
+            set s $last_month_start
+            set e $this_month_start
         case days
             # Next positional arg shifts by 1 in count mode
             set -l raw_n $argv[(math $count_mode + 2)]
@@ -252,18 +266,10 @@ function arch_installed --description "List installed Arch packages by install d
             set s (date -d "$n_days days ago 00:00" +%s)
             set e $tomorrow_start
         case per-day
-            if test $count_mode -eq 1
-                echo "❌ 'count per-day' is redundant — per-day already counts by day" >&2
-                return 1
-            end
             printf "%s\n" $__arch_instlist_cache |
                 awk '{d=strftime("%Y-%m-%d",$1);c[d]++} END{for(d in c) print d,c[d]}' | sort
             return
         case per-week
-            if test $count_mode -eq 1
-                echo "❌ 'count per-week' is redundant — per-week already counts by week" >&2
-                return 1
-            end
             printf "%s\n" $__arch_instlist_cache |
                 awk '{w=strftime("%Y-W%V",$1);c[w]++} END{for(w in c) print w,c[w]}' | sort
             return
