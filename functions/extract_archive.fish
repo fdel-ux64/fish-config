@@ -164,8 +164,23 @@ function extract_archive --description "Extract archive into its own directory"
             end
 
         case zip
-            unzip -q "$archive" -d "$tmp"
-            if test $status -ne 0
+            if command -sq unzip
+                unzip -q "$archive" -d "$tmp"
+                if test $status -ne 0
+                    set failed 1
+                end
+            else if command -sq bsdtar
+                bsdtar xf "$archive" -C "$tmp"
+                if test $status -ne 0
+                    set failed 1
+                end
+            else if command -sq python3
+                python3 -c "import zipfile, sys; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])" "$archive" "$tmp"
+                if test $status -ne 0
+                    set failed 1
+                end
+            else
+                echo "Error: no zip extractor found (install unzip or bsdtar)"
                 set failed 1
             end
 

@@ -5,7 +5,6 @@ README.private.md
 functions/local/
 completions/local/
 conf.d/local/
+conf.d/fish_frozen*.fish
 link-*.fish
 *.bak
-
-
