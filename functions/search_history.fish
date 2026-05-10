@@ -30,11 +30,11 @@ function search_history --description "Search fish command history with optional
                 return 0
         end
     end
-    
+
     # ---- Parse options ----
     set -l cleanup_mode 0
     set -l pattern_args
-    
+
     for arg in $argv
         switch $arg
             case -c --cleanup
@@ -47,7 +47,7 @@ function search_history --description "Search fish command history with optional
                 set -a pattern_args $arg
         end
     end
-    
+
     # ---- Interactive prompt mode (no arguments) ----
     if test (count $pattern_args) -eq 0
         read --prompt-str "🔍 History search > " query
@@ -57,31 +57,30 @@ function search_history --description "Search fish command history with optional
             return 0
         end
         set pattern_args $query
-        
+
         # Ask if user wants cleanup option in interactive mode
         read -l -P "Enable cleanup mode? [y/N]: " enable_cleanup
         if string match -qi 'y*' $enable_cleanup
             set cleanup_mode 1
         end
     end
-    
+
     # ---- Search with pattern ----
     set -l query (string join ' ' -- $pattern_args)
-    
+
     echo -e "\n   🔍 Searching history for: \"$query\""
-    echo "  ╰──────────────────────────────────────────"
     echo
-    
+
     # Use Fish's built-in history search for exact matching (needed for cleanup)
     set -l matches (history search --contains $query --max 100)
-    
+
     # Display results
     if test (count $matches) -eq 0
         echo "No matches found for \"$query\""
         echo
         return 0
     end
-    
+
     # Show numbered results if cleanup mode, otherwise just list
     if test $cleanup_mode -eq 1
         for i in (seq (count $matches))
@@ -92,14 +91,16 @@ function search_history --description "Search fish command history with optional
             echo "  $line"
         end
     end
-    
-    echo -e " \n ─────────────────────────────────"
-    echo -e " 🔢 Total matches: "(count $matches)"\n"
-    
+
+    echo
+    echo "  ─────────────────────────────────"
+    echo " 🔢 Total matches: "(count $matches)"
+    echo
+
     # ---- Cleanup integration ----
     if test $cleanup_mode -eq 1
         read -l -P "🧹 Clean up entries? [all/select/NUMBERS/RANGE(e.g.2-5)/N]: " cleanup_choice
-        
+
         # Parse numbers and/or ranges from a token list into a deduplicated sorted list.
         # Tokens can be plain numbers ("3") or ranges ("2-5"). Reversed ranges ("5-2")
         # are normalised automatically. Out-of-bound values are silently dropped here;
@@ -118,7 +119,9 @@ function search_history --description "Search fish command history with optional
                     set -l hi $parts[2]
                     # Normalise reversed ranges
                     if test $lo -gt $hi
-                        set -l tmp $lo; set lo $hi; set hi $tmp
+                        set -l tmp $lo
+                        set lo $hi
+                        set hi $tmp
                     end
                     for n in (seq $lo $hi)
                         set -a raw_indices $n
@@ -136,21 +139,21 @@ function search_history --description "Search fish command history with optional
 
         # Check if input is 'all'
         switch $cleanup_choice
-            case '' 'n' 'N' 'no' 'quit' 'q' 'Q'
+            case '' n N no quit q Q
                 echo "Skipped cleanup."
                 return 0
-            case 'all' 'ALL' 'a' 'A'
+            case all ALL a A
                 for cmd in $matches
                     history delete --exact --case-sensitive "$cmd"
                 end
                 echo "✅ Deleted all "(count $matches)" matching entries."
                 echo "Done."
                 return 0
-            case 'select' 'SELECT' 's' 'S' 'sel'
+            case select SELECT s S sel
                 # Enter interactive selection mode (original workflow)
-                set cleanup_choice ""  # Reset for the loop
+                set cleanup_choice "" # Reset for the loop
         end
-        
+
         # Check if direct numbers/ranges were provided
         set -l initial_nums
         if test -n "$cleanup_choice"
@@ -167,7 +170,7 @@ function search_history --description "Search fish command history with optional
                 echo "  ⚠️  Ignored unrecognised tokens: "(string join ", " $invalid_tokens)
             end
         end
-        
+
         # If valid numbers were provided directly, process them
         if test (count $initial_nums) -gt 0
             for num in $initial_nums
@@ -176,7 +179,7 @@ function search_history --description "Search fish command history with optional
                 echo "  ✅ Deleted: $cmd"
             end
             echo "Deleted "(count $initial_nums)" entries."
-            
+
             read -l -P "Continue deleting more? [y/N]: " continue
             if not string match -qi 'y*' $continue
                 echo "Done."
@@ -184,19 +187,19 @@ function search_history --description "Search fish command history with optional
             end
             # If yes, continue to interactive loop below
         end
-        
+
         # Interactive cleanup loop for selective deletion
         while true
             echo "Enter numbers, ranges (e.g. 2-5), or mixed (e.g. 2-5 7), or 'q' to quit:"
             read -l selection
-            
+
             # Check quit
             switch $selection
-                case '' 'n' 'N' 'q' 'Q' 'quit' 'exit'
+                case '' n N q Q quit exit
                     echo "Cleanup finished."
                     break
             end
-            
+
             # Parse numbers and ranges, deduplicated
             set -l tokens (string split " " $selection)
             set -l valid_nums (_parse_tokens_to_indices (count $matches) $tokens)
@@ -216,14 +219,19 @@ function search_history --description "Search fish command history with optional
                     end
                 else if string match -qr '^[0-9]+-[0-9]+$' -- $token
                     set -l parts (string split '-' $token)
-                    set -l lo $parts[1]; set -l hi $parts[2]
-                    if test $lo -gt $hi; set -l tmp $lo; set lo $hi; set hi $tmp; end
+                    set -l lo $parts[1]
+                    set -l hi $parts[2]
+                    if test $lo -gt $hi
+                        set -l tmp $lo
+                        set lo $hi
+                        set hi $tmp
+                    end
                     if test $lo -lt 1 -o $hi -gt (count $matches)
                         set -a invalid_tokens $token
                     end
                 end
             end
-            
+
             if test (count $valid_nums) -gt 0
                 for num in $valid_nums
                     set -l cmd $matches[$num]
@@ -231,7 +239,7 @@ function search_history --description "Search fish command history with optional
                     echo "  ✅ Deleted: $cmd"
                 end
                 echo "Deleted "(count $valid_nums)" entries."
-                
+
                 read -l -P "Continue deleting more? [y/N]: " continue
                 if not string match -qi 'y*' $continue
                     break
@@ -243,7 +251,7 @@ function search_history --description "Search fish command history with optional
                 echo "Enter valid numbers/ranges or 'q' to quit."
             end
         end
-        
+
         echo "Done."
     end
 end
