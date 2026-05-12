@@ -94,7 +94,7 @@ function search_history --description "Search fish command history with optional
 
     echo
     echo "  ─────────────────────────────────"
-    echo " 🔢 Total matches: "(count $matches)"
+    echo " 🔢 Total matches: "(count $matches)
     echo
 
     # ---- Cleanup integration ----
