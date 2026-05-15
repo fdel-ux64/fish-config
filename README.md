@@ -52,37 +52,46 @@ installed_packages [OPTION]
 installed_packages days N
 installed_packages count [OPTION]
 installed_packages since DATE [until DATE]
+installed_packages package NAME
+installed_packages package 'PATTERN'
 installed_packages --refresh
 installed_packages --backend
 ```
 
-| Option | Alias | Description |
-| --- | --- | --- |
-| `today` | `td` | Packages installed today |
-| `yesterday` | `yd` | Packages installed yesterday |
-| `days N` | | Packages installed in the last N days (today included) |
-| `last-week` | `lw` | Packages installed in the last 7 days |
-| `this-month` | `tm` | Packages installed this calendar month |
-| `last-month` | `lm` | Packages installed in the previous month |
-| `per-day` | | Count packages per day |
-| `per-week` | | Count packages per week |
+| Option              | Alias | Description                                                |
+| ------------------- | ----- | ---------------------------------------------------------- |
+| `today`             | `td`  | Packages installed today                                   |
+| `yesterday`         | `yd`  | Packages installed yesterday                               |
+| `days N`            |       | Packages installed in the last N days (today included)     |
+| `last-week`         | `lw`  | Packages installed in the last 7 days                      |
+| `this-month`        | `tm`  | Packages installed this calendar month                     |
+| `last-month`        | `lm`  | Packages installed in the previous month                   |
+| `per-day`           |       | Count packages per day                                     |
+| `per-week`          |       | Count packages per week                                    |
+| `package NAME`      |       | Full install history for an exact package name             |
+| `package 'PATTERN'` |       | Full install history with glob — e.g. `'kern*'`, `'*lib*'` |
 
 Aliases are case-insensitive (TD, Td, etc.).
 
-| Flag | Description |
-| --- | --- |
-| `--backend` | Show detected backend |
+| Flag        | Description                          |
+| ----------- | ------------------------------------ |
+| `--backend` | Show detected backend                |
 | `--refresh` | Refresh cache (delegated to backend) |
 
 **Examples:**
+
 ```
 installed_packages today
 installed_packages days 3
 installed_packages lw
 installed_packages count last-week
 installed_packages since 2026-02-01
+installed_packages package cups
+installed_packages package 'kern*'
 installed_packages --backend
 ```
+
+> ⚠️ **Glob quoting:** always quote patterns containing `*` — without quotes, Fish expands them as filesystem globs before the function sees them. Exact names (`cups`) need no quotes.
 
 ---
 
@@ -102,28 +111,32 @@ rpm_installed [OPTION]
 rpm_installed days N
 rpm_installed count [OPTION]
 rpm_installed since DATE [until DATE]
+rpm_installed package NAME
+rpm_installed package 'PATTERN'
 rpm_installed --refresh | --cache on|off | --cache | --help
 ```
 
-| Option | Alias | Description |
-| --- | --- | --- |
-| `today` | `td` | Packages installed today |
-| `yesterday` | `yd` | Packages installed yesterday |
-| `days N` | | Packages installed in the last N days (today included) |
-| `last-week` | `lw` | Packages installed in the last 7 days |
-| `this-month` | `tm` | Packages installed this calendar month |
-| `last-month` | `lm` | Packages installed in the previous month |
-| `per-day` | | Count packages per day |
-| `per-week` | | Count packages per week |
+| Option              | Alias | Description                                                |
+| ------------------- | ----- | ---------------------------------------------------------- |
+| `today`             | `td`  | Packages installed today                                   |
+| `yesterday`         | `yd`  | Packages installed yesterday                               |
+| `days N`            |       | Packages installed in the last N days (today included)     |
+| `last-week`         | `lw`  | Packages installed in the last 7 days                      |
+| `this-month`        | `tm`  | Packages installed this calendar month                     |
+| `last-month`        | `lm`  | Packages installed in the previous month                   |
+| `per-day`           |       | Count packages per day                                     |
+| `per-week`          |       | Count packages per week                                    |
+| `package NAME`      |       | Full install history for an exact package name             |
+| `package 'PATTERN'` |       | Full install history with glob — e.g. `'kern*'`, `'*lib*'` |
 
-| Flag | Description |
-| --- | --- |
-| `--refresh` | Clear and rebuild the cache on next call (caching stays enabled) |
-| `--cache on` | Enable caching (default) |
-| `--cache off` | Disable caching — RPM is queried live on every call |
-| `--cache` | Show current cache status |
+| Flag          | Description                                                      |
+| ------------- | ---------------------------------------------------------------- |
+| `--refresh`   | Clear and rebuild the cache on next call (caching stays enabled) |
+| `--cache on`  | Enable caching (default)                                         |
+| `--cache off` | Disable caching — RPM is queried live on every call              |
+| `--cache`     | Show current cache status                                        |
 
-**Output:**
+**Output — date range query:**
 
 ```
     📦 Installed packages — last-week
@@ -140,23 +153,50 @@ rpm_installed --refresh | --cache on|off | --cache | --help
  💾 Cache: session cache
 ```
 
-The filter label is always repeated in the footer, so it remains visible without scrolling up. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
+**Output — package search:**
+
+```
+    📦 Package history — kern*
+
+ 📆 Sat 2026-05-09  (5 packages)
+    09:30 CEST  kernel-core-7.0.4-200.fc44.x86_64
+    09:30 CEST  kernel-modules-7.0.4-200.fc44.x86_64
+    09:30 CEST  kernel-7.0.4-200.fc44.x86_64
+    ...
+ 📆 Thu 2026-05-14  (6 packages)
+    10:50 CEST  kernel-core-7.0.6-200.fc44.x86_64
+    10:50 CEST  kernel-7.0.6-200.fc44.x86_64
+    ...
+ ────────────────────────────────────
+ 🔢 11 install records matching 'kern*'
+ 💾 Cache: session cache
+```
+
+The filter label is always repeated in the footer, so it remains visible without scrolling up. Package search shows install time to the minute. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
 
 **Examples:**
+
 ```
 rpm_installed lw
 rpm_installed days 3
 rpm_installed count days 5
 rpm_installed count this-month
 rpm_installed since 2025-12-16 until 2025-12-22
+rpm_installed package cups
+rpm_installed package 'kern*'
+rpm_installed package 'python3*'
 rpm_installed --cache off
 ```
+
+> ⚠️ **Glob quoting:** always quote patterns containing `*` — without quotes, Fish expands them as filesystem globs before the function sees them. Exact names (`cups`) need no quotes.
 
 ---
 
 ### 📦 `arch_installed`
 
 Backend for Arch-based systems. Equivalent of `rpm_installed`, using `expac` as the data source.
+
+> 📋 **Feature parity:** the `package` subcommand (package history search) is currently implemented on `rpm_installed` only. Arch and Debian backends are planned.
 
 **Scope:** Arch-based distributions (Arch Linux, Manjaro, EndeavourOS…)
 
@@ -172,27 +212,28 @@ arch_installed since DATE [until DATE]
 arch_installed --refresh | --cache on|off | --cache | --help
 ```
 
-| Option | Alias | Description |
-| --- | --- | --- |
-| `today` | `td` | Packages installed today |
-| `yesterday` | `yd` | Packages installed yesterday |
-| `days N` | | Packages installed in the last N days (today included) |
-| `last-week` | `lw` | Packages installed in the last 7 days |
-| `this-month` | `tm` | Packages installed this calendar month |
-| `last-month` | `lm` | Packages installed in the previous month |
-| `per-day` | | Count packages per day |
-| `per-week` | | Count packages per week |
+| Option       | Alias | Description                                            |
+| ------------ | ----- | ------------------------------------------------------ |
+| `today`      | `td`  | Packages installed today                               |
+| `yesterday`  | `yd`  | Packages installed yesterday                           |
+| `days N`     |       | Packages installed in the last N days (today included) |
+| `last-week`  | `lw`  | Packages installed in the last 7 days                  |
+| `this-month` | `tm`  | Packages installed this calendar month                 |
+| `last-month` | `lm`  | Packages installed in the previous month               |
+| `per-day`    |       | Count packages per day                                 |
+| `per-week`   |       | Count packages per week                                |
 
-| Flag | Description |
-| --- | --- |
-| `--refresh` | Clear and rebuild the cache on next call (caching stays enabled) |
-| `--cache on` | Enable caching (default) |
-| `--cache off` | Disable caching — expac is queried live on every call |
-| `--cache` | Show current cache status |
+| Flag          | Description                                                      |
+| ------------- | ---------------------------------------------------------------- |
+| `--refresh`   | Clear and rebuild the cache on next call (caching stays enabled) |
+| `--cache on`  | Enable caching (default)                                         |
+| `--cache off` | Disable caching — expac is queried live on every call            |
+| `--cache`     | Show current cache status                                        |
 
 The filter label is always repeated in the footer, so it remains visible without scrolling up. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
 
 **Examples:**
+
 ```
 arch_installed lw
 arch_installed days 3
@@ -207,6 +248,8 @@ arch_installed --cache off
 ### 📦 `deb_installed`
 
 Backend for Debian-based systems. Equivalent of `rpm_installed`, reconstructing install timestamps from dpkg logs.
+
+> 📋 **Feature parity:** the `package` subcommand (package history search) is currently implemented on `rpm_installed` only. Arch and Debian backends are planned.
 
 **Scope:** Debian-based distributions (Ubuntu, Debian, Linux Mint, Pop!_OS…)
 
@@ -226,27 +269,28 @@ deb_installed since DATE [until DATE]
 deb_installed --refresh | --cache on|off | --cache | --help
 ```
 
-| Option | Alias | Description |
-| --- | --- | --- |
-| `today` | `td` | Packages installed today |
-| `yesterday` | `yd` | Packages installed yesterday |
-| `days N` | | Packages installed in the last N days (today included) |
-| `last-week` | `lw` | Packages installed in the last 7 days |
-| `this-month` | `tm` | Packages installed this calendar month |
-| `last-month` | `lm` | Packages installed in the previous month |
-| `per-day` | | Count packages per day |
-| `per-week` | | Count packages per week |
+| Option       | Alias | Description                                            |
+| ------------ | ----- | ------------------------------------------------------ |
+| `today`      | `td`  | Packages installed today                               |
+| `yesterday`  | `yd`  | Packages installed yesterday                           |
+| `days N`     |       | Packages installed in the last N days (today included) |
+| `last-week`  | `lw`  | Packages installed in the last 7 days                  |
+| `this-month` | `tm`  | Packages installed this calendar month                 |
+| `last-month` | `lm`  | Packages installed in the previous month               |
+| `per-day`    |       | Count packages per day                                 |
+| `per-week`   |       | Count packages per week                                |
 
-| Flag | Description |
-| --- | --- |
-| `--refresh` | Clear and rebuild the cache on next call (caching stays enabled) |
-| `--cache on` | Enable caching (default) |
-| `--cache off` | Disable caching — dpkg logs are queried live on every call |
-| `--cache` | Show current cache status |
+| Flag          | Description                                                      |
+| ------------- | ---------------------------------------------------------------- |
+| `--refresh`   | Clear and rebuild the cache on next call (caching stays enabled) |
+| `--cache on`  | Enable caching (default)                                         |
+| `--cache off` | Disable caching — dpkg logs are queried live on every call       |
+| `--cache`     | Show current cache status                                        |
 
 The filter label is always repeated in the footer, so it remains visible without scrolling up. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
 
 **Examples:**
+
 ```
 deb_installed lw
 deb_installed days 3
@@ -277,6 +321,7 @@ advanced_install_package [package_name]
 - If no package name is provided, prompts interactively
 
 **Examples:**
+
 ```
 advanced_install_package vim
 advanced_install_package vim htop curl
@@ -292,19 +337,21 @@ Display the current kernel version and optionally compare with the latest stable
 **Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
 **Usage:**
+
 ```
 kver [-c|--compare] [-h|--help]
 ```
 
-| Flag | Description |
-| --- | --- |
+| Flag            | Description                                                     |
+| --------------- | --------------------------------------------------------------- |
 | `-c, --compare` | Fetch and compare with the latest stable kernel from kernel.org |
-| `-h, --help` | Display help information |
+| `-h, --help`    | Display help information                                        |
 
 - Version comparison is numeric per segment (avoids lexicographic issues e.g. `6.9` vs `6.10`)
 - Fetch has a 5s timeout — falls back gracefully if kernel.org is unreachable
 
 **Examples:**
+
 ```
 $ kver
 Current Kernel Version: 6.19.7-200.fc43.x86_64
@@ -326,14 +373,15 @@ Interactive and non-interactive helper to update Fisher plugins selectively or i
 **Requirements:** Fish shell, Fisher
 
 **Usage:**
+
 ```
 fisher_update_select
 fisher_update_select --all
 fisher_update_select --all --yes
 ```
 
-| Flag | Description |
-| --- | --- |
+| Flag    | Description                                     |
+| ------- | ----------------------------------------------- |
 | `--all` | Update all installed plugins, with confirmation |
 | `--yes` | Skip confirmation prompt (useful for scripting) |
 
@@ -351,24 +399,28 @@ Generate secure random passwords using Fish shell only — no external generator
 **Environment-aware:** Desktop-friendly, server-safe
 
 **Features:**
+
 - Cryptographically secure randomness via `/dev/urandom`
 - Guaranteed character class coverage (digit + special character in every password)
 - Optional ambiguous character exclusion (`--no-ambiguous`) for passwords meant to be typed manually
 - Optional clipboard copy on Wayland desktops via `--clipboard` — auto-clears after timeout, survives terminal close via systemd
 
 **Usage:**
+
 ```
 generate_password [OPTIONS] [LENGTH] [COUNT]
 generate_password
 ```
-| Flag | Description |
-| --- | --- |
-| `--clipboard` | Copy first password to clipboard (requires Wayland + wl-clipboard) |
-| `--clipboard-timeout <sec>` | Set clipboard clear timeout in seconds (default: 30, min: 1) |
-| `--no-ambiguous` | Exclude visually similar characters (`0`,`O`,`l`,`1`,`\|`,`I`) |
-| `-h, --help` | Show help |
+
+| Flag                        | Description                                                        |
+| --------------------------- | ------------------------------------------------------------------ |
+| `--clipboard`               | Copy first password to clipboard (requires Wayland + wl-clipboard) |
+| `--clipboard-timeout <sec>` | Set clipboard clear timeout in seconds (default: 30, min: 1)       |
+| `--no-ambiguous`            | Exclude visually similar characters (`0`,`O`,`l`,`1`,`\|`,`I`)     |
+| `-h, --help`                | Show help                                                          |
 
 **Examples:**
+
 ```
 generate_password 20
 generate_password 15 5
@@ -390,6 +442,7 @@ Resize a single image or a batch of images in a directory by percentage or max d
 **Dependencies:** `ImageMagick` (`magick` command, v7+)
 
 **Usage:**
+
 ```
 resize_image <image|dir> [size]
 ```
@@ -401,6 +454,7 @@ resize_image <image|dir> [size]
 - Supported formats: jpg, jpeg, png, gif, webp, tiff, bmp
 
 **Examples:**
+
 ```
 resize_image photo.jpg 50
 resize_image photo.jpg 1200
@@ -420,16 +474,17 @@ Create a compressed archive from a file or directory, with smart format detectio
 **Dependencies:** `tar`; `zstd` for `.tar.zst` (default format); `pigz` optional for faster `.tar.gz`
 
 **Usage:**
+
 ```
 create_archive [OPTIONS] <source> [output]
 create_archive [OPTIONS] <source> <dest-dir>/
 ```
 
-| Option | Description |
-| --- | --- |
+| Option           | Description                                                                  |
+| ---------------- | ---------------------------------------------------------------------------- |
 | `-f/--type TYPE` | Archive format: `tar` \| `tar.gz` \| `tgz` \| `tar.zst` (default: `tar.zst`) |
-| `-F/--force` | Overwrite existing archive without prompting |
-| `-h/--help` | Show help |
+| `-F/--force`     | Overwrite existing archive without prompting                                 |
+| `-h/--help`      | Show help                                                                    |
 
 - If `output` is omitted, the archive is named after the source
 - If `output` ends with `/`, it is treated as a destination directory
@@ -441,6 +496,7 @@ create_archive [OPTIONS] <source> <dest-dir>/
 - If the archive already exists and `--force` is not set, prompts interactively in a terminal (default: N); errors in non-interactive mode
 
 **Examples:**
+
 ```
 create_archive project
 create_archive project backup.tar.gz
@@ -462,15 +518,16 @@ Extract an archive into its own directory, with atomic extraction and overwrite 
 **Supported formats:** `tar`, `tar.gz`, `tgz`, `tar.bz2`, `tar.xz`, `tar.zst`, `zip`, `gz`, `bz2`, `xz`, `zst`, `rar`
 
 **Usage:**
+
 ```
 extract_archive [OPTIONS] <archive>
 ```
 
-| Option | Description |
-| --- | --- |
+| Option       | Description                                           |
+| ------------ | ----------------------------------------------------- |
 | `-F/--force` | Overwrite existing output directory without prompting |
-| `-q/--quiet` | Suppress output on success |
-| `-h/--help` | Show help |
+| `-q/--quiet` | Suppress output on success                            |
+| `-h/--help`  | Show help                                             |
 
 - Output directory is placed alongside the archive, named after it (extension stripped)
 - Extraction is staged in a temp directory; the output directory only appears on success
@@ -480,6 +537,7 @@ extract_archive [OPTIONS] <archive>
 - Format detection uses regex matching, not shell globs — works correctly with non-ASCII filenames regardless of locale
 
 **Examples:**
+
 ```
 extract_archive archive.tar.gz
 extract_archive --force archive.tar.zst
@@ -499,14 +557,15 @@ Format `.fish` files using `fish_indent`.
 **Dependencies:** `fish_indent` (bundled with Fish), `find`
 
 **Usage:**
+
 ```
 fishfmt [OPTIONS] FILE|DIR [...]
 ```
 
-| Option | Description |
-| --- | --- |
+| Option            | Description                                     |
+| ----------------- | ----------------------------------------------- |
 | `-r, --recursive` | Recurse into subdirectories when a DIR is given |
-| `-h, --help` | Show this help |
+| `-h, --help`      | Show this help                                  |
 
 - Formats a single `.fish` file, or all `.fish` files in a directory
 - By default, directory mode is one level deep — use `-r` to recurse
@@ -514,6 +573,7 @@ fishfmt [OPTIONS] FILE|DIR [...]
 - Always prints a summary: files formatted and files skipped
 
 **Examples:**
+
 ```
 $ fishfmt myfunc.fish
  ✔ Formatted: myfunc.fish
@@ -540,19 +600,21 @@ $ fishfmt func_a.fish func_b.fish
 ## 📜 History & Shell UX Helpers
 
 ### 🔍 `search_history`
+
 Search command history with optional interactive cleanup.
 
 **Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
 **Usage:**
+
 ```fish
 search_history [OPTIONS] [PATTERN]
 ```
 
-| Flag | Description |
-| --- | --- |
+| Flag            | Description                                     |
+| --------------- | ----------------------------------------------- |
 | `-c, --cleanup` | Offer to clean up matching entries after search |
-| `-h, --help` | Show help |
+| `-h, --help`    | Show help                                       |
 
 - Uses ripgrep if available, falls back to grep
 - Can be triggered with `CTRL+H`
@@ -560,6 +622,7 @@ search_history [OPTIONS] [PATTERN]
 - Overlapping ranges and numbers are deduplicated (e.g. `2-5 3` removes only 4 entries)
 
 **Examples:**
+
 ```fish
 search_history git
 search_history -c 'git push'
@@ -576,6 +639,7 @@ Standalone interactive history cleanup tool.
 **Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
 **Usage:**
+
 ```
 cleanup_history PATTERN
 ```
@@ -587,6 +651,7 @@ cleanup_history PATTERN
 - Uses exact, case-sensitive deletion to avoid accidental removals
 
 **Examples:**
+
 ```
 cleanup_history 'git add'
 cleanup_history rpm
@@ -603,15 +668,16 @@ Clear the current Fish shell session history with a visual countdown and final c
 **Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
 **Usage:**
+
 ```
 clean_session_history [OPTIONS]
 ```
 
-| Flag | Description |
-| --- | --- |
-| `-y, --yes` | Clear immediately without countdown or prompt |
+| Flag                 | Description                                          |
+| -------------------- | ---------------------------------------------------- |
+| `-y, --yes`          | Clear immediately without countdown or prompt        |
 | `-w, --wait SECONDS` | Countdown duration in seconds (default: 10, max: 60) |
-| `-h, --help` | Show help |
+| `-h, --help`         | Show help                                            |
 
 - Default flow: progress bar countdown, then a final confirmation prompt
 - Press `Ctrl-C` at any time during the countdown to abort without clearing
@@ -619,6 +685,7 @@ clean_session_history [OPTIONS]
 - Only clears the current session — use `history clear` for all saved history
 
 **Examples:**
+
 ```
 clean_session_history            # 10s countdown, then confirm
 clean_session_history -y         # clear instantly, no prompt
@@ -635,6 +702,7 @@ Search, display, and optionally edit Fish shell functions.
 **Optional dependencies:** `bat` for paging, `fzf` for fuzzy selection
 
 **Usage:**
+
 ```
 inspect_function [FUNCTION_NAME or PATTERN]
 ```
@@ -644,6 +712,7 @@ inspect_function [FUNCTION_NAME or PATTERN]
 - Can edit user-defined functions with `$EDITOR`
 
 **Examples:**
+
 ```
 inspect_function kver
 inspect_function generate_password
@@ -653,6 +722,6 @@ inspect_function generate_password
 
 **⌨️ Keybindings Summary:**
 
-| Keybinding | Function |
-| --- | --- |
-| `CTRL+H` | `search_history` |
+| Keybinding | Function         |
+| ---------- | ---------------- |
+| `CTRL+H`   | `search_history` |
