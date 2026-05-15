@@ -7,14 +7,19 @@ function clean_session_history --description "Clear fish session history with co
     while test $i -le (count $argv)
         switch $argv[$i]
             case -h --help
-                echo "Usage: cleanh [OPTIONS]"
+                echo "Usage: clean_session_history [OPTIONS]"
                 echo
                 echo "Clear the current fish session history."
                 echo
                 echo "Options:"
-                echo "  -y, --yes           Clear immediately (no prompt, no delay)"
-                echo "  -w, --wait SECONDS  Wait time before clearing (default: 10)"
+                echo "  -y, --yes           Clear immediately (no countdown, no prompt)"
+                echo "  -w, --wait SECONDS  Countdown duration in seconds (default: 10, max: 60)"
                 echo "  -h, --help          Show this help message"
+                echo
+                echo "Examples:"
+                echo "  clean_session_history          # 10s countdown, then confirm"
+                echo "  clean_session_history -y       # clear instantly"
+                echo "  clean_session_history -w 5     # 5s countdown, then confirm"
                 return 0
             case -y --yes
                 set immediate 1
@@ -26,12 +31,20 @@ function clean_session_history --description "Clear fish session history with co
                 end
                 set wait_time $argv[$i]
                 if not string match -qr '^[0-9]+$' $wait_time
-                    echo "Error: --wait must be a number."
+                    echo "Error: --wait must be a non-negative integer."
+                    return 1
+                end
+                if test $wait_time -gt 60
+                    echo "Error: --wait maximum is 60 seconds."
                     return 1
                 end
             case '*'
                 echo "Unknown option: $argv[$i]"
-                echo "Use --help to see available options."
+                echo
+                echo "Options:"
+                echo "  -y, --yes           Clear immediately (no countdown, no prompt)"
+                echo "  -w, --wait SECONDS  Countdown duration in seconds (default: 10, max: 60)"
+                echo "  -h, --help          Show this help message"
                 return 1
         end
         set i (math $i + 1)
@@ -44,24 +57,21 @@ function clean_session_history --description "Clear fish session history with co
     end
     # ---- Immediate mode ----
     if test $immediate -eq 1
-        history clear-session
+        history clear-session 1>/dev/null; or begin
+            echo "Error: failed to clear session history."
+            return 1
+        end
         echo "Session history cleared."
         return 0
     end
-    # ---- Confirmation ----
-    read --prompt-str "Clear session history in $wait_time seconds? [y/N] " answer
-    if not string match -qr '^(y|yes)$' (string lower $answer)
-        echo "Aborted."
-        return 0
-    end
     # ---- Countdown progress bar ----
-    echo "Clearing session history..."
+    echo "Counting down — press Ctrl-C at any time to abort."
     set -l width 30
 
     for elapsed in (seq 0 (math $wait_time - 1))
-        set percent (math --scale=0 "($elapsed * 100) / $wait_time")
-        set filled (math --scale=0 "($elapsed * $width) / $wait_time")
-        set empty (math --scale=0 "$width - $filled")
+        set -l percent (math --scale=0 "($elapsed * 100) / $wait_time")
+        set -l filled (math --scale=0 "($elapsed * $width) / $wait_time")
+        set -l empty (math --scale=0 "$width - $filled")
 
         command printf "\r[%s%s] %3d%%\033[K" \
             (string repeat -n $filled "=") \
@@ -72,7 +82,16 @@ function clean_session_history --description "Clear fish session history with co
     end
 
     command printf "\r[%s] 100%%\033[K\n" (string repeat -n $width "=")
+    # ---- Confirmation after countdown ----
+    read --prompt-str "Clear session history now? [y/N] " answer
+    if not string match -qr '^(y|yes)$' (string lower $answer)
+        echo "Aborted."
+        return 0
+    end
     # ---- Clear history ----
-    history clear-session
+    history clear-session 1>/dev/null; or begin
+        echo "Error: failed to clear session history."
+        return 1
+    end
     echo "Session history cleared."
 end
