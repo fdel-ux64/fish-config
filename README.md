@@ -598,7 +598,7 @@ cleanup_history rpm
 
 ### 🧹 `clean_session_history`
 
-Clear the current Fish shell session history with confirmation and visual countdown.
+Clear the current Fish shell session history with a visual countdown and final confirmation.
 
 **Scope:** Cross-distro (Fedora / Arch / Debian-based)
 
@@ -609,13 +609,22 @@ clean_session_history [OPTIONS]
 
 | Flag | Description |
 | --- | --- |
-| `-y, --yes` | Clear immediately without prompt or delay |
-| `-w, --wait SECONDS` | Set countdown duration (default: 10 seconds) |
+| `-y, --yes` | Clear immediately without countdown or prompt |
+| `-w, --wait SECONDS` | Countdown duration in seconds (default: 10, max: 60) |
 | `-h, --help` | Show help |
 
-- Requires confirmation in interactive mode with a progress bar countdown
+- Default flow: progress bar countdown, then a final confirmation prompt
+- Press `Ctrl-C` at any time during the countdown to abort without clearing
 - Requires `--yes` in non-interactive shells to prevent accidental clearing
 - Only clears the current session — use `history clear` for all saved history
+
+**Examples:**
+```
+clean_session_history            # 10s countdown, then confirm
+clean_session_history -y         # clear instantly, no prompt
+clean_session_history -w 5       # 5s countdown, then confirm
+clean_session_history -w 5 -y    # clear instantly (--yes takes precedence)
+```
 
 ---
 
