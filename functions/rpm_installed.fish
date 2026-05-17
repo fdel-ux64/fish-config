@@ -9,6 +9,7 @@ function __rpm_installed_help
     echo "USAGE:"
     echo "  rpm_installed [OPTION]"
     echo "  rpm_installed days N             # last N days (rolling window)"
+    echo "  rpm_installed on DATE            # exact date, e.g. on 2026-05-15"
     echo "  rpm_installed since DATE [until DATE]"
     echo "  rpm_installed count [OPTION] (including 'since … until …')"
     echo "  rpm_installed --refresh      # rebuild cache"
@@ -40,6 +41,7 @@ function __rpm_installed_help
     echo "  rpm_installed count today"
     echo "  rpm_installed count days 5"
     echo "  rpm_installed count last-week"
+    echo "  rpm_installed count on DATE"
     echo "  rpm_installed count per-day"
     echo "  rpm_installed count per-week"
     echo "  rpm_installed count since DATE [until DATE]"
@@ -396,6 +398,7 @@ function rpm_installed --description "List installed RPM packages by install dat
     set -l s 0
     set -l e ""
     set -l n_days 0   # >0 when 'days N' was used; drives heading
+    set -l on_date "" # non-empty when 'on DATE' was used; drives heading
 
     switch $arg
         case today
@@ -427,6 +430,22 @@ function rpm_installed --description "List installed RPM packages by install dat
             set n_days $raw_n
             set s (env LC_ALL=en_US.UTF-8 date -d "$n_days days ago 00:00" +%s)
             set e $tomorrow_start
+        case on
+            # Next positional arg shifts by 1 in count mode
+            set -l raw_date $argv[(math $count_mode + 2)]
+            if test -z "$raw_date"
+                echo "❌ 'on' requires a date  →  rpm_installed on 2026-05-15" >&2
+                return 1
+            end
+            set -l parsed_on (env LC_ALL=en_US.UTF-8 date -d "$raw_date 00:00" +%s 2>/dev/null)
+            if test -z "$parsed_on"
+                echo "❌ Invalid date for 'on': $raw_date" >&2
+                echo "   Expected a format understood by 'date -d' (e.g. YYYY-MM-DD)" >&2
+                return 1
+            end
+            set s $parsed_on
+            set e (env LC_ALL=en_US.UTF-8 date -d "$raw_date +1 day 00:00" +%s)
+            set on_date $raw_date
         case per-day
             printf "%s\n" $__rpm_instlist_cache |
                 awk '{count[strftime("%Y-%m-%d",$1)]++} END{for(d in count) printf "%s  %d\n", d, count[d]}' | sort
@@ -497,12 +516,16 @@ function rpm_installed --description "List installed RPM packages by install dat
             sort -n
         )
         set -l heading "$arg"
-        if test $n_days -gt 0
+        if test -n "$on_date"
+            set heading "$on_date"
+        else if test $n_days -gt 0
             set heading "last $n_days days"
         else if test $freeform_date -eq 1
             set heading "since "(env LC_ALL=en_US.UTF-8 date -d @$s +%Y-%m-%d)
             if test -n "$e"
-                set heading "$heading until "(env LC_ALL=en_US.UTF-8 date -d @$e +%Y-%m-%d)
+                # Subtract one day (86400s) from e to show the inclusive end date as typed
+                set -l e_display (math $e - 86400)
+                set heading "$heading until "(env LC_ALL=en_US.UTF-8 date -d @$e_display +%Y-%m-%d)
             end
         end
         # Determine cache status label for footer
