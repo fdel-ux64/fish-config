@@ -50,6 +50,7 @@ Single portable entry point with full feature parity across backends.
 ```
 installed_packages [OPTION]
 installed_packages days N
+installed_packages on DATE
 installed_packages count [OPTION]
 installed_packages since DATE [until DATE]
 installed_packages package NAME
@@ -63,6 +64,7 @@ installed_packages --backend
 | `today`             | `td`  | Packages installed today                                   |
 | `yesterday`         | `yd`  | Packages installed yesterday                               |
 | `days N`            |       | Packages installed in the last N days (today included)     |
+| `on DATE`           |       | Packages installed on an exact date — e.g. `on 2026-05-15` |
 | `last-week`         | `lw`  | Packages installed in the last 7 days                      |
 | `this-month`        | `tm`  | Packages installed this calendar month                     |
 | `last-month`        | `lm`  | Packages installed in the previous month                   |
@@ -84,7 +86,9 @@ Aliases are case-insensitive (TD, Td, etc.).
 installed_packages today
 installed_packages days 3
 installed_packages lw
+installed_packages on 2026-05-15
 installed_packages count last-week
+installed_packages count on 2026-05-15
 installed_packages since 2026-02-01
 installed_packages package cups
 installed_packages package 'kern*'
@@ -109,6 +113,7 @@ Lists installed RPM packages by installation date, grouped by day, with caching 
 ```
 rpm_installed [OPTION]
 rpm_installed days N
+rpm_installed on DATE
 rpm_installed count [OPTION]
 rpm_installed since DATE [until DATE]
 rpm_installed package NAME
@@ -121,6 +126,7 @@ rpm_installed --refresh | --cache on|off | --cache | --help
 | `today`             | `td`  | Packages installed today                                   |
 | `yesterday`         | `yd`  | Packages installed yesterday                               |
 | `days N`            |       | Packages installed in the last N days (today included)     |
+| `on DATE`           |       | Packages installed on an exact date — e.g. `on 2026-05-15` |
 | `last-week`         | `lw`  | Packages installed in the last 7 days                      |
 | `this-month`        | `tm`  | Packages installed this calendar month                     |
 | `last-month`        | `lm`  | Packages installed in the previous month                   |
@@ -179,7 +185,9 @@ The filter label is always repeated in the footer, so it remains visible without
 ```
 rpm_installed lw
 rpm_installed days 3
+rpm_installed on 2026-05-15
 rpm_installed count days 5
+rpm_installed count on 2026-05-15
 rpm_installed count this-month
 rpm_installed since 2025-12-16 until 2025-12-22
 rpm_installed package cups
@@ -196,7 +204,7 @@ rpm_installed --cache off
 
 Backend for Arch-based systems. Equivalent of `rpm_installed`, using `expac` as the data source.
 
-> 📋 **Feature parity:** the `package` subcommand (package history search) is currently implemented on `rpm_installed` only. Arch and Debian backends are planned.
+> 📋 **Feature parity:** the `package` subcommand (package history search) and `on DATE` (exact date query) are currently implemented on `rpm_installed` only. Arch and Debian backends are planned.
 
 **Scope:** Arch-based distributions (Arch Linux, Manjaro, EndeavourOS…)
 
@@ -249,7 +257,7 @@ arch_installed --cache off
 
 Backend for Debian-based systems. Equivalent of `rpm_installed`, reconstructing install timestamps from dpkg logs.
 
-> 📋 **Feature parity:** the `package` subcommand (package history search) is currently implemented on `rpm_installed` only. Arch and Debian backends are planned.
+> 📋 **Feature parity:** the `package` subcommand (package history search) and `on DATE` (exact date query) are currently implemented on `rpm_installed` only. Arch and Debian backends are planned.
 
 **Scope:** Debian-based distributions (Ubuntu, Debian, Linux Mint, Pop!_OS…)
 
