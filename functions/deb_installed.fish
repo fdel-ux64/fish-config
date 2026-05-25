@@ -8,6 +8,7 @@ function __deb_installed_help
     echo "USAGE:"
     echo "  deb_installed [OPTION]"
     echo "  deb_installed days N             # last N days (rolling window)"
+    echo "  deb_installed on DATE            # exact date, e.g. on 2026-05-15"
     echo "  deb_installed since DATE [until DATE]"
     echo "  deb_installed count [OPTION]"
     echo "  deb_installed --refresh     # rebuild cache"
@@ -19,6 +20,7 @@ function __deb_installed_help
     echo "  today        Packages installed today"
     echo "  yesterday    Packages installed yesterday"
     echo "  days N       Packages installed in the last N days (today included)"
+    echo "  on DATE      Packages installed on an exact date"
     echo "  last-week    Packages installed in the last 7 days (excludes today)"
     echo "  this-month   Packages installed this calendar month"
     echo "  last-month   Packages installed in the previous calendar month"
@@ -33,10 +35,16 @@ function __deb_installed_help
     echo "COUNT / STATS:"
     echo "  deb_installed count today"
     echo "  deb_installed count days 5"
+    echo "  deb_installed count on DATE"
     echo "  deb_installed count last-week"
     echo "  deb_installed count per-day"
     echo "  deb_installed count per-week"
     echo "  deb_installed count since DATE [until DATE]"
+    echo
+    echo "PACKAGE SEARCH:"
+    echo "  deb_installed package NAME        # exact name match"
+    echo "  deb_installed package 'PATTERN'   # glob, e.g. 'linux*' or '*lib*'"
+    echo "  Note: always quote patterns containing * to prevent shell expansion"
 end
 
 function __instlist_deb
@@ -129,6 +137,88 @@ function __display_packages
     end >$tmpfile
 
     # Auto-page when output would overflow the terminal; skip when piped.
+    set -l term_lines $LINES
+    test -z "$term_lines"; and set term_lines 24
+    set -l file_lines (wc -l <$tmpfile)
+    if test $file_lines -gt $term_lines; and isatty stdout
+        cat $tmpfile | less -R
+    else
+        cat $tmpfile
+    end
+
+    rm -f $tmpfile
+end
+
+# ---- Package search display — shows time-to-the-minute, grouped by date ----
+function __display_deb_package_search
+    set -l pattern      $argv[1]
+    set -l cache_status $argv[2]
+    set -l packages     $argv[3..-1]
+
+    if test (count $packages) -eq 0
+        echo
+        echo "     📭 No install history found for '$pattern'"
+        echo "        The package may not be installed, or the name/pattern doesn't match."
+        echo "        Tip: quote glob patterns — deb_installed package 'linux*'"
+        echo
+        return
+    end
+
+    set -l dates
+    set -l times
+    set -l names
+    for pkg in $packages
+        set -l ts   (string split --max 1 ' ' -- $pkg)[1]
+        set -l name (string split --max 1 ' ' -- $pkg)[2]
+        set -l day  (env LC_ALL=en_US.UTF-8 date -d @$ts '+%a %Y-%m-%d' 2>/dev/null)
+        set -l hm   (env LC_ALL=en_US.UTF-8 date -d @$ts '+%H:%M %Z'    2>/dev/null)
+        test -z "$day"; and set day unknown
+        test -z "$hm";  and set hm "??:??"
+        set -a dates $day
+        set -a times $hm
+        set -a names $name
+    end
+
+    set -l pkg_count (count $names)
+    set -l tmpfile (mktemp /tmp/deb_installed.XXXXXX)
+
+    begin
+        echo
+        printf "    📦 Package history — %s\n" $pattern
+        echo
+
+        set -l current_date ""
+        set -l i 1
+        set -l total (count $names)
+        while test $i -le $total
+            set -l day  $dates[$i]
+            set -l hm   $times[$i]
+            set -l name $names[$i]
+
+            if test "$day" != "$current_date"
+                set -l run 0
+                set -l j $i
+                while test $j -le $total; and test $dates[$j] = $day
+                    set run (math $run + 1)
+                    set j   (math $j + 1)
+                end
+                set current_date $day
+                printf " 📆 %s  \e[2m(%d package%s)\e[0m\n" \
+                    $day $run (test $run -eq 1 && echo "" || echo "s")
+            end
+
+            printf "    %s  %s\n" $hm $name
+            set i (math $i + 1)
+        end
+
+        echo
+        echo " ────────────────────────────────────"
+        printf " 🔢 %d install record%s matching '%s'\n" \
+            $pkg_count (test $pkg_count -eq 1 && echo "" || echo "s") $pattern
+        printf " 💾 Cache: %s\n" "$cache_status"
+        echo
+    end >$tmpfile
+
     set -l term_lines $LINES
     test -z "$term_lines"; and set term_lines 24
     set -l file_lines (wc -l <$tmpfile)
@@ -246,7 +336,44 @@ function deb_installed --description "List installed Debian/Ubuntu packages by i
     # ---- Resolve s/e from $arg ----
     set -l s 0
     set -l e ""
-    set -l n_days 0 # >0 when 'days N' was used; drives heading
+    set -l n_days 0   # >0 when 'days N' was used; drives heading
+    set -l on_date "" # non-empty when 'on DATE' was used; drives heading
+
+    # ---- package search mode ----
+    if test "$arg" = package
+        set -l raw_pattern $argv[2]
+        if test -z "$raw_pattern"
+            echo "❌ 'package' requires a name or pattern" >&2
+            echo "   Usage: deb_installed package cups" >&2
+            echo "          deb_installed package 'linux*'" >&2
+            return 1
+        end
+
+        set -l has_glob 0
+        string match -qr '[*?\[]' -- "$raw_pattern"; and set has_glob 1
+
+        set -l matched
+        for line in $__deb_instlist_cache
+            # deb cache format: "<epoch> <name>" — name already stripped of version by awk
+            set -l pkg_name (string split --max 1 ' ' -- $line)[2]
+
+            if test $has_glob -eq 1
+                if string match -q -- $raw_pattern $pkg_name
+                    set -a matched $line
+                end
+            else
+                if test "$pkg_name" = $raw_pattern
+                    set -a matched $line
+                end
+            end
+        end
+
+        set -l sorted (printf "%s\n" $matched | sort -n)
+        set -l cache_status "session cache"
+        test $__deb_use_cache -eq 0; and set cache_status "live query"
+        __display_deb_package_search "$raw_pattern" "$cache_status" $sorted
+        return 0
+    end
 
     switch $arg
         case today
@@ -278,6 +405,21 @@ function deb_installed --description "List installed Debian/Ubuntu packages by i
             set n_days $raw_n
             set s (date -d "$n_days days ago 00:00" +%s)
             set e $tomorrow_start
+        case on
+            set -l raw_date $argv[(math $count_mode + 2)]
+            if test -z "$raw_date"
+                echo "❌ 'on' requires a date  →  deb_installed on 2026-05-15" >&2
+                return 1
+            end
+            set -l parsed_on (env LC_ALL=en_US.UTF-8 date -d "$raw_date 00:00" +%s 2>/dev/null)
+            if test -z "$parsed_on"
+                echo "❌ Invalid date for 'on': $raw_date" >&2
+                echo "   Expected a format understood by 'date -d' (e.g. YYYY-MM-DD)" >&2
+                return 1
+            end
+            set s $parsed_on
+            set e (env LC_ALL=en_US.UTF-8 date -d "$raw_date +1 day 00:00" +%s)
+            set on_date $raw_date
         case per-day
             printf "%s\n" $__deb_instlist_cache |
                 awk '{d=strftime("%Y-%m-%d",$1);c[d]++} END{for(d in c) print d,c[d]}' | sort
@@ -286,7 +428,7 @@ function deb_installed --description "List installed Debian/Ubuntu packages by i
             printf "%s\n" $__deb_instlist_cache |
                 awk '{w=strftime("%Y-W%V",$1);c[w]++} END{for(w in c) print w,c[w]}' | sort
             return
-        case since until
+        case since until on
         case ''
             set s 0
         case '*'
@@ -346,12 +488,15 @@ function deb_installed --description "List installed Debian/Ubuntu packages by i
             sort -n
         )
         set -l heading "$arg"
-        if test $n_days -gt 0
+        if test -n "$on_date"
+            set heading "$on_date"
+        else if test $n_days -gt 0
             set heading "last $n_days days"
         else if test $freeform_date -eq 1
-            set heading "since "(date -d @$s +%Y-%m-%d)
+            set heading "since "(env LC_ALL=en_US.UTF-8 date -d @$s +%Y-%m-%d)
             if test -n "$e"
-                set heading "$heading until "(date -d @$e +%Y-%m-%d)
+                set -l e_display (math $e - 86400)
+                set heading "$heading until "(env LC_ALL=en_US.UTF-8 date -d @$e_display +%Y-%m-%d)
             end
         end
         # Determine cache status label for footer
