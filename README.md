@@ -43,7 +43,7 @@ Automatically detects your distribution and calls the appropriate backend:
 - `deb_installed` — Debian-based systems (Debian, Ubuntu, Mint, Pop!_OS…)
 - `arch_installed` — Arch-based systems (Arch, Manjaro, EndeavourOS…)
 
-Single portable entry point with full feature parity across backends.
+Single portable entry point with full feature parity across all backends — `package` search, `on DATE`, and all time-based subcommands work identically on RPM, Arch, and Debian systems.
 
 **Usage:**
 
@@ -204,32 +204,38 @@ rpm_installed --cache off
 
 Backend for Arch-based systems. Equivalent of `rpm_installed`, using `expac` as the data source.
 
-> 📋 **Feature parity:** the `package` subcommand (package history search) and `on DATE` (exact date query) are currently implemented on `rpm_installed` only. Arch and Debian backends are planned.
-
 **Scope:** Arch-based distributions (Arch Linux, Manjaro, EndeavourOS…)
 
 **Dependencies:** `expac`, Fish shell, GNU date
+
+> 💡 If `expac` is not installed, `arch_installed` will prompt to install it via `sudo pacman -S expac` — no need to run it manually first.
 
 **Usage:**
 
 ```
 arch_installed [OPTION]
 arch_installed days N
+arch_installed on DATE
 arch_installed count [OPTION]
 arch_installed since DATE [until DATE]
+arch_installed package NAME
+arch_installed package 'PATTERN'
 arch_installed --refresh | --cache on|off | --cache | --help
 ```
 
-| Option       | Alias | Description                                            |
-| ------------ | ----- | ------------------------------------------------------ |
-| `today`      | `td`  | Packages installed today                               |
-| `yesterday`  | `yd`  | Packages installed yesterday                           |
-| `days N`     |       | Packages installed in the last N days (today included) |
-| `last-week`  | `lw`  | Packages installed in the last 7 days                  |
-| `this-month` | `tm`  | Packages installed this calendar month                 |
-| `last-month` | `lm`  | Packages installed in the previous month               |
-| `per-day`    |       | Count packages per day                                 |
-| `per-week`   |       | Count packages per week                                |
+| Option              | Alias | Description                                                |
+| ------------------- | ----- | ---------------------------------------------------------- |
+| `today`             | `td`  | Packages installed today                                   |
+| `yesterday`         | `yd`  | Packages installed yesterday                               |
+| `days N`            |       | Packages installed in the last N days (today included)     |
+| `on DATE`           |       | Packages installed on an exact date — e.g. `on 2026-05-15` |
+| `last-week`         | `lw`  | Packages installed in the last 7 days                      |
+| `this-month`        | `tm`  | Packages installed this calendar month                     |
+| `last-month`        | `lm`  | Packages installed in the previous month                   |
+| `per-day`           |       | Count packages per day                                     |
+| `per-week`          |       | Count packages per week                                    |
+| `package NAME`      |       | Full install history for an exact package name             |
+| `package 'PATTERN'` |       | Full install history with glob — e.g. `'linux*'`, `'*lib*'` |
 
 | Flag          | Description                                                      |
 | ------------- | ---------------------------------------------------------------- |
@@ -238,26 +244,31 @@ arch_installed --refresh | --cache on|off | --cache | --help
 | `--cache off` | Disable caching — expac is queried live on every call            |
 | `--cache`     | Show current cache status                                        |
 
-The filter label is always repeated in the footer, so it remains visible without scrolling up. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
+The filter label is always repeated in the footer, so it remains visible without scrolling up. Package search shows install time to the minute. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
 
 **Examples:**
 
 ```
 arch_installed lw
 arch_installed days 3
+arch_installed on 2026-05-15
 arch_installed count days 5
+arch_installed count on 2026-05-15
 arch_installed count this-month
 arch_installed since 2024-01-01 until 2024-02-01
+arch_installed package linux
+arch_installed package 'linux*'
+arch_installed package '*lib*'
 arch_installed --cache off
 ```
+
+> ⚠️ **Glob quoting:** always quote patterns containing `*` — without quotes, Fish expands them as filesystem globs before the function sees them. Exact names (`linux`) need no quotes.
 
 ---
 
 ### 📦 `deb_installed`
 
 Backend for Debian-based systems. Equivalent of `rpm_installed`, reconstructing install timestamps from dpkg logs.
-
-> 📋 **Feature parity:** the `package` subcommand (package history search) and `on DATE` (exact date query) are currently implemented on `rpm_installed` only. Arch and Debian backends are planned.
 
 **Scope:** Debian-based distributions (Ubuntu, Debian, Linux Mint, Pop!_OS…)
 
@@ -272,21 +283,27 @@ Backend for Debian-based systems. Equivalent of `rpm_installed`, reconstructing 
 ```
 deb_installed [OPTION]
 deb_installed days N
+deb_installed on DATE
 deb_installed count [OPTION]
 deb_installed since DATE [until DATE]
+deb_installed package NAME
+deb_installed package 'PATTERN'
 deb_installed --refresh | --cache on|off | --cache | --help
 ```
 
-| Option       | Alias | Description                                            |
-| ------------ | ----- | ------------------------------------------------------ |
-| `today`      | `td`  | Packages installed today                               |
-| `yesterday`  | `yd`  | Packages installed yesterday                           |
-| `days N`     |       | Packages installed in the last N days (today included) |
-| `last-week`  | `lw`  | Packages installed in the last 7 days                  |
-| `this-month` | `tm`  | Packages installed this calendar month                 |
-| `last-month` | `lm`  | Packages installed in the previous month               |
-| `per-day`    |       | Count packages per day                                 |
-| `per-week`   |       | Count packages per week                                |
+| Option              | Alias | Description                                                |
+| ------------------- | ----- | ---------------------------------------------------------- |
+| `today`             | `td`  | Packages installed today                                   |
+| `yesterday`         | `yd`  | Packages installed yesterday                               |
+| `days N`            |       | Packages installed in the last N days (today included)     |
+| `on DATE`           |       | Packages installed on an exact date — e.g. `on 2026-05-15` |
+| `last-week`         | `lw`  | Packages installed in the last 7 days                      |
+| `this-month`        | `tm`  | Packages installed this calendar month                     |
+| `last-month`        | `lm`  | Packages installed in the previous month                   |
+| `per-day`           |       | Count packages per day                                     |
+| `per-week`          |       | Count packages per week                                    |
+| `package NAME`      |       | Full install history for an exact package name             |
+| `package 'PATTERN'` |       | Full install history with glob — e.g. `'linux*'`, `'*lib*'` |
 
 | Flag          | Description                                                      |
 | ------------- | ---------------------------------------------------------------- |
@@ -295,18 +312,25 @@ deb_installed --refresh | --cache on|off | --cache | --help
 | `--cache off` | Disable caching — dpkg logs are queried live on every call       |
 | `--cache`     | Show current cache status                                        |
 
-The filter label is always repeated in the footer, so it remains visible without scrolling up. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
+The filter label is always repeated in the footer, so it remains visible without scrolling up. Package search shows install time to the minute. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
 
 **Examples:**
 
 ```
 deb_installed lw
 deb_installed days 3
+deb_installed on 2026-05-15
 deb_installed count days 5
+deb_installed count on 2026-05-15
 deb_installed count this-month
 deb_installed since 2024-01-01 until 2024-02-01
+deb_installed package cups
+deb_installed package 'linux*'
+deb_installed package '*lib*'
 deb_installed --cache off
 ```
+
+> ⚠️ **Glob quoting:** always quote patterns containing `*` — without quotes, Fish expands them as filesystem globs before the function sees them. Exact names (`cups`) need no quotes.
 
 ---
 
