@@ -21,6 +21,7 @@ function __rpm_installed_help
     echo "  today        Packages installed today"
     echo "  yesterday    Packages installed yesterday"
     echo "  days N       Packages installed in the last N days (today included)"
+    echo "  this-week    Packages installed this calendar week (Mon → today)"
     echo "  last-week    Packages installed in the last 7 days (excludes today)"
     echo "  this-month   Packages installed this calendar month"
     echo "  last-month   Packages installed in the previous calendar month"
@@ -28,6 +29,7 @@ function __rpm_installed_help
     echo "ALIASES:"
     echo "  td  → today"
     echo "  yd  → yesterday"
+    echo "  tw  → this-week"
     echo "  lw  → last-week"
     echo "  tm  → this-month"
     echo "  lm  → last-month"
@@ -40,6 +42,7 @@ function __rpm_installed_help
     echo "COUNT / STATS:"
     echo "  rpm_installed count today"
     echo "  rpm_installed count days 5"
+    echo "  rpm_installed count this-week"
     echo "  rpm_installed count last-week"
     echo "  rpm_installed count on DATE"
     echo "  rpm_installed count per-day"
@@ -377,6 +380,8 @@ function rpm_installed --description "List installed RPM packages by install dat
                 set arg today
             case yd
                 set arg yesterday
+            case tw
+                set arg this-week
             case lw
                 set arg last-week
             case tm
@@ -393,6 +398,16 @@ function rpm_installed --description "List installed RPM packages by install dat
     set -l last_week_start  (env LC_ALL=en_US.UTF-8 date -d '7 days ago 00:00' +%s)
     set -l this_month_start (env LC_ALL=en_US.UTF-8 date -d (date +%Y-%m-01)   +%s)
     set -l last_month_start (env LC_ALL=en_US.UTF-8 date -d (date +%Y-%m-01)' -1 month' +%s)
+    # ISO week: Monday = weekday 1, so days_since_mon = %u - 1
+    set -l _dow (date +%u)
+    set -l _days_since_mon (math $_dow - 1)
+    set -l this_week_start  (env LC_ALL=en_US.UTF-8 date -d "$_days_since_mon days ago 00:00" +%s)
+
+    # Normalise aliases that weren't caught by the count-mode block
+    switch $arg
+        case tw
+            set arg this-week
+    end
 
     # ---- Resolve s/e from $arg ----
     set -l s 0
@@ -407,6 +422,9 @@ function rpm_installed --description "List installed RPM packages by install dat
         case yesterday
             set s $yesterday_start
             set e $today_start
+        case this-week
+            set s $this_week_start
+            set e $tomorrow_start
         case last-week
             set s $last_week_start
             set e $today_start
@@ -518,6 +536,10 @@ function rpm_installed --description "List installed RPM packages by install dat
         set -l heading "$arg"
         if test -n "$on_date"
             set heading "$on_date"
+        else if test "$arg" = this-week
+            set -l week_start_label (env LC_ALL=en_US.UTF-8 date -d @$this_week_start '+%a %Y-%m-%d')
+            set -l today_label      (env LC_ALL=en_US.UTF-8 date '+%a %Y-%m-%d')
+            set heading "$week_start_label → $today_label"
         else if test $n_days -gt 0
             set heading "last $n_days days"
         else if test $freeform_date -eq 1
