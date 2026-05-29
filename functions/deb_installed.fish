@@ -59,7 +59,7 @@ function __instlist_deb
             cat $f
         end
     end | awk '
-        $3=="install" {
+        ($3=="install" || $3=="upgrade") {
             split($1,d,"-")
             split($2,t,":")
             ts=mktime(d[1]" "d[2]" "d[3]" "t[1]" "t[2]" "t[3])
