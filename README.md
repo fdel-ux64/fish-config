@@ -224,6 +224,7 @@ Backend for Arch-based systems. Equivalent of `rpm_installed`, using `expac` as 
 arch_installed [OPTION]
 arch_installed days N
 arch_installed on DATE
+arch_installed this-week
 arch_installed count [OPTION]
 arch_installed since DATE [until DATE]
 arch_installed package NAME
@@ -237,6 +238,7 @@ arch_installed --refresh | --cache on|off | --cache | --help
 | `yesterday`         | `yd`  | Packages installed yesterday                                |
 | `days N`            |       | Packages installed in the last N days (today included)      |
 | `on DATE`           |       | Packages installed on an exact date — e.g. `on 2026-05-15`  |
+| `this-week`         | `tw`  | Packages installed this calendar week (Mon → today)         |
 | `last-week`         | `lw`  | Packages installed in the last 7 days                       |
 | `this-month`        | `tm`  | Packages installed this calendar month                      |
 | `last-month`        | `lm`  | Packages installed in the previous month                    |
@@ -257,9 +259,11 @@ The filter label is always repeated in the footer, so it remains visible without
 **Examples:**
 
 ```
+arch_installed tw
 arch_installed lw
 arch_installed days 3
 arch_installed on 2026-05-15
+arch_installed count this-week
 arch_installed count days 5
 arch_installed count on 2026-05-15
 arch_installed count this-month
@@ -292,6 +296,7 @@ Backend for Debian-based systems. Equivalent of `rpm_installed`, reconstructing 
 deb_installed [OPTION]
 deb_installed days N
 deb_installed on DATE
+deb_installed this-week
 deb_installed count [OPTION]
 deb_installed since DATE [until DATE]
 deb_installed package NAME
@@ -305,6 +310,7 @@ deb_installed --refresh | --cache on|off | --cache | --help
 | `yesterday`         | `yd`  | Packages installed yesterday                                |
 | `days N`            |       | Packages installed in the last N days (today included)      |
 | `on DATE`           |       | Packages installed on an exact date — e.g. `on 2026-05-15`  |
+| `this-week`         | `tw`  | Packages installed this calendar week (Mon → today)         |
 | `last-week`         | `lw`  | Packages installed in the last 7 days                       |
 | `this-month`        | `tm`  | Packages installed this calendar month                      |
 | `last-month`        | `lm`  | Packages installed in the previous month                    |
@@ -325,9 +331,11 @@ The filter label is always repeated in the footer, so it remains visible without
 **Examples:**
 
 ```
+deb_installed tw
 deb_installed lw
 deb_installed days 3
 deb_installed on 2026-05-15
+deb_installed count this-week
 deb_installed count days 5
 deb_installed count on 2026-05-15
 deb_installed count this-month
