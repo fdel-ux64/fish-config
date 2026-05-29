@@ -288,7 +288,7 @@ Backend for Debian-based systems. Equivalent of `rpm_installed`, reconstructing 
 
 **Backend details:** Reads `/var/log/dpkg.log` and rotated logs (`dpkg.log.*`, including `.gz`).
 
-**Limitations:** Does not include Snap or Flatpak packages. Very old installs may be missing if logs were rotated or deleted.
+**Limitations:** Does not include Snap or Flatpak packages. Very old installs may be missing if logs were rotated or deleted. Both `install` and `upgrade` actions are captured — initial installs and `apt upgrade` updates both appear in results.
 
 **Usage:**
 
