@@ -1,0 +1,10 @@
+[Unit]
+Description=Fish shell + git repos backup
+# Wants network only if you ever add remote backup — harmless to keep
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/bin/fish-backup.sh
+StandardOutput=journal
+StandardError=journal

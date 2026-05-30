@@ -1,0 +1,12 @@
+[Unit]
+Description=Run fish-backup twice a week (Mon + Thu 09:00)
+
+[Timer]
+OnCalendar=Mon,Thu 09:00
+# If the machine was off at 9am, run as soon as it's back on
+Persistent=true
+# Spread the start up to 5 min to avoid exact-time load spikes (good habit)
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target
