@@ -93,7 +93,7 @@ function __display_packages
     for pkg in $packages
         set -l ts (string split --max 1 ' ' -- $pkg)[1]
         set -l name (string split --max 1 ' ' -- $pkg)[2]
-        set -l day (date -d @$ts '+%a %Y-%m-%d' 2>/dev/null)
+        set -l day (env LC_ALL=en_US.UTF-8 date -d @$ts '+%a %Y-%m-%d' 2>/dev/null)
         if test -z "$day"
             set day unknown
         end
