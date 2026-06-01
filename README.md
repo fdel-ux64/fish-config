@@ -617,30 +617,36 @@ fishfmt [OPTIONS] FILE|DIR [...]
 
 - Formats a single `.fish` file, or all `.fish` files in a directory
 - By default, directory mode is one level deep — use `-r` to recurse
-- Rejects non-`.fish` files with a clear error rather than passing them to `fish_indent`
-- Always prints a summary: files formatted and files skipped
+- Non-`.fish` files and permission-denied paths are skipped with a warning, not treated as failures
+- Format errors (e.g. syntax issues caught by `fish_indent`) are counted separately and printed with the error message
+- Always prints a summary: files formatted, skipped, and failed
+- Exits non-zero if any file failed to format — safe for scripting and CI
 
 **Examples:**
 
 ```
 $ fishfmt myfunc.fish
  ✔ Formatted: myfunc.fish
- Done — 1 formatted, 0 skipped
+
+ Done — 1 formatted, 0 skipped, 0 failed
 
 $ fishfmt ~/.config/fish/functions
  ✔ Formatted: /home/user/.config/fish/functions/myfunc.fish
  ✔ Formatted: /home/user/.config/fish/functions/kver.fish
- Done — 2 formatted, 0 skipped
+
+ Done — 2 formatted, 0 skipped, 0 failed
 
 $ fishfmt -r ~/.config/fish/functions
  ✔ Formatted: /home/user/.config/fish/functions/myfunc.fish
  ✔ Formatted: /home/user/.config/fish/functions/subfolder/helper.fish
- Done — 2 formatted, 0 skipped
+
+ Done — 2 formatted, 0 skipped, 0 failed
 
 $ fishfmt func_a.fish func_b.fish
  ✔ Formatted: func_a.fish
  ✔ Formatted: func_b.fish
- Done — 2 formatted, 0 skipped
+
+ Done — 2 formatted, 0 skipped, 0 failed
 ```
 
 ---
