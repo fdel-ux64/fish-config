@@ -87,7 +87,9 @@ function inspect_function --description "Search, display, and optionally edit fi
         functions $fname | bat --language fish --style=plain --paging=never
     else
         set line_count (functions $fname | count)
-        if test $line_count -gt (tput lines)
+        set term_lines (tput lines 2>/dev/null)
+        if test -z "$term_lines"; set term_lines 40; end
+        if test $line_count -gt $term_lines
             functions $fname | less
         else
             functions $fname
@@ -97,7 +99,7 @@ function inspect_function --description "Search, display, and optionally edit fi
     if test -n "$funcfile"
         echo ""
         # Resolve editor: honour $EDITOR if set, else nano > vim > vi
-        if set -q EDITOR; and command -q "$EDITOR"
+        if set -q EDITOR; and command -q (string split " " -- $EDITOR)[1]
             set editor $EDITOR
         else if command -q nano
             set editor nano
@@ -111,7 +113,7 @@ function inspect_function --description "Search, display, and optionally edit fi
         end
         read --prompt-str "Edit this function? (y/N) " answer
         if string match -qi y "$answer"
-            $editor $funcfile
+            eval $editor $funcfile
             # Syntax-check before sourcing
             if fish --no-execute $funcfile 2>/dev/null
                 source $funcfile
