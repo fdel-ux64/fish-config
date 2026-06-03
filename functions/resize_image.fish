@@ -112,8 +112,9 @@ function resize_image --description "Resize image(s) by percentage or max dimens
                 set px (string replace "dim:" "" "$resize_arg")
                 magick "$img" -resize "$px"x"$px"\> "$out"
         end
+        set magick_status $status
 
-        if test $status -eq 0
+        if test $magick_status -eq 0
             if test $batch -eq 1
                 echo "  ✅ $base → $name-resized$ext"
             else
