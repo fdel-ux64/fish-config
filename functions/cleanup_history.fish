@@ -61,9 +61,11 @@ function cleanup_history -d "Interactive history cleanup with pattern argument"
             case all ALL
                 read -l -P "Delete ALL "(count $matches)" matching entries? [y/N]: " confirm
                 if string match -qi 'y*' $confirm
-                    # Direct deletion - pipe 'all' to bypass interactive prompt
-                    echo all | history delete --contains $pattern >/dev/null 2>&1
-                    echo "Deleted all matching entries."
+                    for cmd in $matches
+                        history delete --exact --case-sensitive "$cmd"
+                    end
+                    builtin history save
+                    echo "Deleted all "(count $matches)" matching entries."
                 else
                     echo "Aborted."
                 end
@@ -119,12 +121,10 @@ function cleanup_history -d "Interactive history cleanup with pattern argument"
         if test (count $valid_nums) -gt 0
             for num in $valid_nums
                 set -l cmd $matches[$num]
-                # Extract first 50 chars to use as unique identifier for prefix deletion
-                set -l prefix (string sub -l 50 -- $cmd)
-                # Pipe 'all' to bypass Fish's interactive prompt
-                echo all | history delete --prefix "$prefix" >/dev/null 2>&1
-                echo "Deleted entry $num: "(string sub -l 60 -- $cmd)"..."
+                history delete --exact --case-sensitive "$cmd"
+                echo "  ✅ Deleted: $cmd"
             end
+            builtin history save
             echo "Deleted "(count $valid_nums)" entries."
             read -l -P "Continue deleting more? [y/N]: " continue
             if not string match -qi 'y*' $continue
