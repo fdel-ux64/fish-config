@@ -1,3 +1,26 @@
+# Helper: prompt for confirmation
+# Usage: __fisher_update_select_confirm <auto_yes> <prompt>
+function __fisher_update_select_confirm
+    if test "$argv[1]" -eq 1
+        return 0
+    end
+    while true
+        if not read -P "$argv[2] [y/N]: " resp
+            echo "Aborted." >&2
+            return 1
+        end
+        switch (string lower -- $resp)
+            case y yes
+                return 0
+            case n no ''
+                echo "Aborted."
+                return 1
+            case '*'
+                echo "Please answer yes or no."
+        end
+    end
+end
+
 function fisher_update_select \
     --description "Selectively update Fisher plugins (interactive or scripted)"
 
@@ -14,7 +37,7 @@ function fisher_update_select \
                 echo ""
                 echo "Options:"
                 echo "  --all        Update all plugins, skip interactive picker"
-                echo "  --yes, -y    Skip confirmation prompts (use with --all)"
+                echo "  --yes, -y    Skip confirmation prompts (works standalone too)"
                 echo "  --help, -h   Show this help"
                 return 0
             case --all
@@ -35,36 +58,13 @@ function fisher_update_select \
         return 0
     end
 
-    # --- helper: confirm ---
-    # Takes auto_yes flag as $1, prompt as $2
-    function __fus_confirm
-        if test "$argv[1]" -eq 1
-            return 0
-        end
-        while true
-            if not read -P "$argv[2] [y/N]: " resp
-                echo "Aborted." >&2
-                return 1
-            end
-            switch (string lower -- $resp)
-                case y yes
-                    return 0
-                case n no ''
-                    echo "Aborted."
-                    return 1
-                case '*'
-                    echo "Please answer yes or no."
-            end
-        end
-    end
-
     # --- all mode ---
     if test $do_all -eq 1
-        if not __fus_confirm $auto_yes "Update ALL plugins?"
+        if not __fisher_update_select_confirm $auto_yes "Update ALL plugins?"
             return 0
         end
         fisher update
-        return $status
+        return
     end
 
     # --- interactive mode ---
@@ -86,11 +86,11 @@ function fisher_update_select \
                 echo "Aborted."
                 return 0
             case a all
-                if not __fus_confirm $auto_yes "Update ALL plugins?"
+                if not __fisher_update_select_confirm $auto_yes "Update ALL plugins?"
                     continue
                 end
                 fisher update
-                return $status
+                return
             case ''
                 continue
         end
@@ -105,10 +105,11 @@ function fisher_update_select \
                 set invalid 1
                 continue
             end
-            set selected $selected $plugins[$idx]
+            # Deduplicate: only append if not already in selected
+            if not contains -- $plugins[$idx] $selected
+                set selected $selected $plugins[$idx]
+            end
         end
-
-        set selected (printf "%s\n" $selected | sort -u)
 
         if test (count $selected) -eq 0
             echo "No valid selection."
@@ -120,11 +121,11 @@ function fisher_update_select \
             echo "Some inputs were out of range and ignored."
         end
 
-        if not __fus_confirm $auto_yes "Proceed?"
+        if not __fisher_update_select_confirm $auto_yes "Proceed?"
             return 0
         end
 
         fisher update $selected
-        return $status
+        return
     end
 end
