@@ -426,14 +426,16 @@ Interactive and non-interactive helper to update Fisher plugins selectively or i
 fisher_update_select
 fisher_update_select --all
 fisher_update_select --all --yes
+fisher_update_select --yes
 ```
 
-| Flag    | Description                                     |
-| ------- | ----------------------------------------------- |
-| `--all` | Update all installed plugins, with confirmation |
-| `--yes` | Skip confirmation prompt (useful for scripting) |
+| Flag          | Description                                          |
+| ------------- | ---------------------------------------------------- |
+| `--all`       | Update all installed plugins, with confirmation      |
+| `--yes`, `-y` | Skip confirmation prompt (works standalone or with `--all`) |
+| `--help`, `-h`| Show help                                            |
 
-- Presents a numbered, alphabetically sorted list of installed plugins
+- Presents a numbered list of installed plugins in `fisher list` order
 - Accepts single, multiple (space-separated), or all (`a`) selections
 - Safe exit without changes (`n` or `q`)
 
