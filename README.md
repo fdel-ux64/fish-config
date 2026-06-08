@@ -387,27 +387,37 @@ Display the current kernel version and optionally compare with the latest stable
 **Usage:**
 
 ```
-kver [-c|--compare] [-h|--help]
+kver [--compare] [--open]
 ```
 
-| Flag            | Description                                                     |
-| --------------- | --------------------------------------------------------------- |
-| `-c, --compare` | Fetch and compare with the latest stable kernel from kernel.org |
-| `-h, --help`    | Display help information                                        |
+| Flag               | Description                                                     |
+| ------------------ | --------------------------------------------------------------- |
+| `-c, --compare`    | Fetch and compare with the latest stable kernel from kernel.org |
+| `-o, --open`       | Open kernel.org in the default browser and exit                 |
+| `-h, --help`       | Display help information                                        |
 
 - Version comparison is numeric per segment (avoids lexicographic issues e.g. `6.9` vs `6.10`)
-- Fetch has a 5s timeout — falls back gracefully if kernel.org is unreachable
+- Requires `curl` — fetches from `kernel.org/finger_banner`
 
 **Examples:**
 
 ```
 $ kver
-Current Kernel Version: 6.19.7-200.fc43.x86_64
+Current kernel: 7.0.11-200.fc44.x86_64
 
-$ kver -c
-Current Kernel Version: 6.19.7-200.fc43.x86_64
-Latest Stable Kernel:   6.19.8
-ℹ️  A newer kernel is available.
+$ kver --compare
+Current kernel: 7.0.11-200.fc44.x86_64
+Latest stable:  7.0.11
+Up to date.
+
+$ kver --compare --open
+Current kernel: 7.0.11-200.fc44.x86_64
+Latest stable:  7.0.11
+Up to date.
+Opening kernel.org...
+
+$ kver --open
+Opening kernel.org...
 ```
 
 ---
