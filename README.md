@@ -461,7 +461,7 @@ Generate secure random passwords using Fish shell only — no external generator
 **Features:**
 
 - Cryptographically secure randomness via `/dev/urandom`
-- Guaranteed character class coverage (digit + special character in every password)
+- Guaranteed character class coverage — at least one lowercase, uppercase, digit, and special character in every password
 - Optional ambiguous character exclusion (`--no-ambiguous`) for passwords meant to be typed manually
 - Optional clipboard copy on Wayland desktops via `--clipboard` — auto-clears after timeout, survives terminal close via systemd
 
@@ -469,7 +469,6 @@ Generate secure random passwords using Fish shell only — no external generator
 
 ```
 generate_password [OPTIONS] [LENGTH] [COUNT]
-generate_password
 ```
 
 | Flag                        | Description                                                        |
@@ -478,6 +477,8 @@ generate_password
 | `--clipboard-timeout <sec>` | Set clipboard clear timeout in seconds (default: 30, min: 1)       |
 | `--no-ambiguous`            | Exclude visually similar characters (`0`,`O`,`l`,`1`,`\|`,`I`)     |
 | `-h, --help`                | Show help                                                          |
+
+**Defaults and bounds:** `LENGTH=16`, `COUNT=1` — minimum length is 4, recommended minimum is 12, maximum `LENGTH=256`, `COUNT=1000`. Values above the maximum are accepted and clamped with a warning.
 
 **Examples:**
 
