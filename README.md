@@ -33,6 +33,10 @@ fisher install fdel-ux64/fish-config
 
 ---
 
+> ℹ️ **Note:** This repo also contains a personal backup setup (`backup/` — systemd service, timer, and script) for archiving this Fish config and other local git repos. It is unrelated to the Fisher plugin and is **not** retrieved by `fisher install` — included for transparency only.
+
+---
+
 > 🛠️ Cross-distro tools: Works on Arch, Debian/Ubuntu, and RPM-based Linux distributions
 
 ### 📦 `installed_packages` (Unified dispatcher)
