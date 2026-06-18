@@ -58,7 +58,7 @@ function generate_password
         echo "  --no-ambiguous              Exclude visually similar chars (0,O,l,1,|,I)"
         echo "  -h, --help                  Show this help"
         echo
-        echo "Defaults: LENGTH=16, COUNT=1 — minimum length is 3, recommended minimum is 12"
+        echo "Defaults: LENGTH=16, COUNT=1 — minimum length is 4, recommended minimum is 12, maximum LENGTH=256, COUNT=1000"
         return 0
     end
 
@@ -79,8 +79,8 @@ function generate_password
         echo "❌ Invalid length: $length"
         return 1
     end
-    if test $length -lt 3
-        echo "❌ Length must be at least 3"
+    if test $length -lt 4
+        echo "❌ Length must be at least 4"
         return 1
     end
 
@@ -94,26 +94,37 @@ function generate_password
         return 1
     end
 
+    # Clamp length and count
+    if test $length -gt 256
+        echo "⚠️  Length capped to 256 (requested: $length)"
+        set length 256
+    end
+    if test $count -gt 1000
+        echo "⚠️  Count capped to 1000 (requested: $count)"
+        set count 1000
+    end
+
     # Entropy warning
     if test $length -lt 12
         echo "⚠️  Warning: length $length is below the recommended minimum of 12"
     end
 
     # Character sets
-    set -l charset  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/-+;:,!&'({*?|}%@#\$^~=_.<>[])\""
-    set -l digits   "0123456789"
-    set -l specials "/-+;:,!&'({*?|}%@#\$^~=_.<>[])\""
+    set -l sq       "'"
+    set -l lowercase "abcdefghijklmnopqrstuvwxyz"
+    set -l uppercase "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    set -l digits    "0123456789"
+    set -l specials  "/-+;:,!&$sq({*?|}%@#\$^~=_.<>[])\""
+    set -l charset   "$lowercase$uppercase$digits$specials"
 
     if test $no_ambiguous -eq 1
-        set charset  (string replace -a -r '[0Ol1|I]' "" $charset)
-        set digits   (string replace -a -r '[01]'     "" $digits)
-        set specials (string replace -a -r '[|I]'     "" $specials)
+        set lowercase (string replace -a -r '[l]'  "" $lowercase)
+        set uppercase (string replace -a -r '[OI]' "" $uppercase)
+        set digits    (string replace -a -r '[01]' "" $digits)
+        set specials  (string replace -a -r '[|]'  "" $specials)
+        set charset   "$lowercase$uppercase$digits$specials"
         echo "ℹ️  Ambiguous characters excluded (0,O,l,1,|,I)"
     end
-
-    set -l charset_len  (string length $charset)
-    set -l digits_len   (string length $digits)
-    set -l specials_len (string length $specials)
 
     # FIX: rejection-sampling to eliminate modulo bias
     # Reads 2 bytes (0–65535) and rejects values that would cause bias.
@@ -135,12 +146,14 @@ function generate_password
     set -l first_password ""
 
     for i in (seq $count)
-        # Guarantee one digit + one special, fill rest from full charset
+        # Guarantee one char from each class, fill rest from full charset
+        set -l g_lower   (_secure_rand_char $lowercase)
+        set -l g_upper   (_secure_rand_char $uppercase)
         set -l g_digit   (_secure_rand_char $digits)
         set -l g_special (_secure_rand_char $specials)
 
-        set -l remaining (math $length - 2)
-        set -l chars $g_digit $g_special
+        set -l remaining (math $length - 4)
+        set -l chars $g_lower $g_upper $g_digit $g_special
         for j in (seq $remaining)
             set chars $chars (_secure_rand_char $charset)
         end
