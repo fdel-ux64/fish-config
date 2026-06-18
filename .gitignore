@@ -1,5 +1,5 @@
 # Ignore private notes
-README.private.md
+*.private.md
 
 # Ignore all local-only fish code or backup files
 functions/local/
