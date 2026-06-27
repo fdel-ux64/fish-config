@@ -83,7 +83,7 @@ function clean_session_history --description "Clear fish session history with co
 
     command printf "\r[%s] 100%%\033[K\n" (string repeat -n $width "=")
     # ---- Confirmation after countdown ----
-    read --prompt-str "Clear session history now? [y/N] " answer
+    read -l --prompt-str "Clear session history now? [y/N] " answer
     if not string match -qr '^(y|yes)$' (string lower $answer)
         echo "Aborted."
         return 0
