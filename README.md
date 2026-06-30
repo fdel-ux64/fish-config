@@ -509,14 +509,19 @@ Resize a single image or a batch of images in a directory by percentage or max d
 **Usage:**
 
 ```
-resize_image <image|dir> [size]
+resize_image [--strip-meta] <image|dir> [size]
 ```
+
+| Option         | Description                                                   |
+| -------------- | ------------------------------------------------------------- |
+| `--strip-meta` | Remove EXIF/XMP/IPTC metadata from output (default: preserve) |
 
 - `size ≤ 100` → percentage resize
 - `size > 100` → max dimension (preserves aspect ratio, never upscales)
 - Output saved alongside originals with a `-resized` suffix
 - Batch mode skips files already named `*-resized.*`
 - Supported formats: jpg, jpeg, png, gif, webp, tiff, bmp
+- Always prints storage savings (original size, resized size, % saved) — negative values indicate an upscale
 
 **Examples:**
 
@@ -524,6 +529,21 @@ resize_image <image|dir> [size]
 resize_image photo.jpg 50
 resize_image photo.jpg 1200
 resize_image ~/Pictures/trip/ 800
+resize_image --strip-meta photo.jpg 75
+resize_image --strip-meta ~/Pictures/trip/ 1200
+```
+
+**Example output — batch:**
+
+```
+📁 Found 4 image(s) in .
+  ✅ photo-a.jpg → photo-a-resized.jpg
+  ✅ photo-b.jpg → photo-b-resized.jpg
+─────────────────────────────
+Done:     4 succeeded, 0 failed
+Original: 3.2 MB
+Resized:  2.2 MB
+Saved:    32.1%
 ```
 
 ---
