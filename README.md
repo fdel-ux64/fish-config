@@ -428,7 +428,7 @@ Opening kernel.org...
 
 ### 🔄 `fisher_update_select`
 
-Interactive and non-interactive helper to update Fisher plugins selectively or in bulk.
+Interactive and non-interactive helper to update Fisher plugins selectively, by name, or in bulk.
 
 **Scope:** Fish shell with Fisher plugin manager
 
@@ -441,17 +441,32 @@ fisher_update_select
 fisher_update_select --all
 fisher_update_select --all --yes
 fisher_update_select --yes
+fisher_update_select owner/repo
+fisher_update_select owner
+fisher_update_select owner/repo --yes
 ```
 
-| Flag          | Description                                          |
-| ------------- | ---------------------------------------------------- |
-| `--all`       | Update all installed plugins, with confirmation      |
-| `--yes`, `-y` | Skip confirmation prompt (works standalone or with `--all`) |
-| `--help`, `-h`| Show help                                            |
+| Flag          | Description                                                  |
+| ------------- | -------------------------------------------------------------|
+| `--all`       | Update all installed plugins, with confirmation               |
+| `--yes`, `-y` | Skip confirmation prompt (works standalone, with `--all`, or with a plugin name) |
+| `--help`, `-h`| Show help                                                     |
 
-- Presents a numbered list of installed plugins in `fisher list` order
-- Accepts single, multiple (space-separated), or all (`a`) selections
-- Safe exit without changes (`n` or `q`)
+- No arguments: presents a numbered list of installed plugins in `fisher list` order. Accepts single, multiple (space-separated), or all (`a`) selections. Safe exit without changes (`n` or `q`)
+- Plugin name argument: matches against installed plugins — full `owner/repo`, or just `owner` if it's unambiguous — and updates that one plugin directly, skipping the picker
+  - Unique match: prompts `Update owner/repo?` (or updates immediately and prints `Updating: owner/repo` with `--yes`)
+  - No match: reports the query as not installed, no changes made
+  - Ambiguous match (e.g. `owner` with multiple repos under that owner): lists the candidates and asks you to be more specific
+
+**Examples:**
+
+```
+$ fisher_update_select fdel-ux64/fish-config
+Update fdel-ux64/fish-config? [y/N]: y
+
+$ fisher_update_select fdel-ux64 --yes
+Updating: fdel-ux64/fish-config
+```
 
 ---
 
