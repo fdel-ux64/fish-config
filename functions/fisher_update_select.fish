@@ -21,19 +21,63 @@ function __fisher_update_select_confirm
     end
 end
 
+# Helper: find plugins matching a query string
+# Match priority: exact full name -> owner-only ("owner/*") -> substring (case-insensitive)
+# Usage: __fisher_update_select_find_matches <query> <plugin1> <plugin2> ...
+function __fisher_update_select_find_matches
+    set -l query $argv[1]
+    set -l plugins $argv[2..-1]
+    set -l matches
+
+    # 1. exact match
+    for p in $plugins
+        if test "$p" = "$query"
+            set matches $matches $p
+        end
+    end
+    if test (count $matches) -gt 0
+        printf '%s\n' $matches
+        return
+    end
+
+    # 2. owner-only match (e.g. "fdel-ux64" -> "fdel-ux64/fish-config")
+    for p in $plugins
+        if string match -q -- "$query/*" $p
+            set matches $matches $p
+        end
+    end
+    if test (count $matches) -gt 0
+        printf '%s\n' $matches
+        return
+    end
+
+    # 3. substring match, case-insensitive, as a last resort
+    for p in $plugins
+        if string match -qi -- "*$query*" $p
+            set matches $matches $p
+        end
+    end
+    if test (count $matches) -gt 0
+        printf '%s\n' $matches
+    end
+end
+
 function fisher_update_select \
     --description "Selectively update Fisher plugins (interactive or scripted)"
 
     # --- flag parsing ---
     set -l do_all 0
     set -l auto_yes 0
+    set -l queries
 
     for arg in $argv
         switch $arg
             case --help -h
-                echo "Usage: fisher_update_select [--all] [--yes|-y]"
+                echo "Usage: fisher_update_select [--all] [--yes|-y] [plugin-name]"
                 echo ""
-                echo "Interactively select Fisher plugins to update."
+                echo "Interactively select Fisher plugins to update, or update a"
+                echo "specific plugin directly by name (full \"owner/repo\" or just"
+                echo "\"owner\", as long as the match is unambiguous)."
                 echo ""
                 echo "Options:"
                 echo "  --all        Update all plugins, skip interactive picker"
@@ -47,6 +91,8 @@ function fisher_update_select \
             case '--*'
                 echo "Unknown flag: $arg" >&2
                 return 2
+            case '*'
+                set queries $queries $arg
         end
     end
 
@@ -56,6 +102,47 @@ function fisher_update_select \
     if test $count_plugins -eq 0
         echo "No plugins installed."
         return 0
+    end
+
+    # --- direct name/query match mode ---
+    if test (count $queries) -gt 0 -a $do_all -eq 0
+        set -l matched
+        for q in $queries
+            for m in (__fisher_update_select_find_matches $q $plugins)
+                if not contains -- $m $matched
+                    set matched $matched $m
+                end
+            end
+        end
+
+        switch (count $matched)
+            case 0
+                echo "No installed plugin matches: "(string join ', ' $queries) >&2
+                echo "" >&2
+                echo "Installed plugins:" >&2
+                for p in $plugins
+                    echo "  $p" >&2
+                end
+                return 1
+            case 1
+                set -l target $matched[1]
+                if test $auto_yes -eq 1
+                    echo "Updating: $target"
+                else
+                    if not __fisher_update_select_confirm $auto_yes "Update $target?"
+                        return 0
+                    end
+                end
+                fisher update $target
+                return
+            case '*'
+                echo "Multiple plugins matched "(string join ', ' $queries)":"
+                for m in $matched
+                    echo "  - $m"
+                end
+                echo "Please refine your query, or run without arguments to pick interactively."
+                return 1
+        end
     end
 
     # --- all mode ---
