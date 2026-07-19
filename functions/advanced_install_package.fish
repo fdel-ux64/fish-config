@@ -24,7 +24,7 @@ function advanced_install_package
         return 0
     end
 
-    # Validate argument count — silently drop extras
+    # Validate argument count — warn and use only the first
     if test (count $argv) -gt 1
         echo "Warning: only the first package name will be used."
     end
@@ -37,6 +37,7 @@ function advanced_install_package
     end
 
     # Trim and reject empty package name
+    set -q package_name; or set package_name ""
     set package_name (string trim $package_name)
     if test -z "$package_name"
         echo "Error: no package name provided." >&2
@@ -46,10 +47,10 @@ function advanced_install_package
     # Auto-detect distro — handle quoted values (e.g. ID="ubuntu")
     set distro_id ""
     if test -f /etc/os-release
-        set distro_id (grep '^ID=' /etc/os-release | string replace -r '^ID=|"' '' | string lower)
+        set distro_id (grep '^ID=' /etc/os-release | string replace -ra '^ID=|"' '' | string lower)
         # Fall back to ID_LIKE for derivative distros (e.g. Pop!_OS, Linux Mint)
         if test -z "$distro_id"
-            set id_like (grep '^ID_LIKE=' /etc/os-release | string replace -r '^ID_LIKE=|"' '' | string lower)
+            set id_like (grep '^ID_LIKE=' /etc/os-release | string replace -ra '^ID_LIKE=|"' '' | string lower)
             set distro_id (string split ' ' $id_like)[1]
         end
     end
@@ -58,14 +59,26 @@ function advanced_install_package
     set -l install_status 0
     switch "$distro_id"
         case fedora
+            if not type -q dnf
+                echo "Error: dnf not found on this system." >&2
+                return 1
+            end
             echo "Detected Fedora. Installing with dnf..."
             sudo dnf install -y $package_name
             set install_status $status
         case manjaro arch
+            if not type -q pacman
+                echo "Error: pacman not found on this system." >&2
+                return 1
+            end
             echo "Detected Manjaro/Arch. Installing with pacman..."
             sudo pacman -S --noconfirm $package_name
             set install_status $status
         case ubuntu debian linuxmint pop
+            if not type -q apt
+                echo "Error: apt not found on this system." >&2
+                return 1
+            end
             echo "Detected $distro_id. Installing with apt..."
             sudo apt install -y $package_name
             set install_status $status
