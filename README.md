@@ -128,6 +128,7 @@ rpm_installed since DATE [until DATE]
 rpm_installed package NAME
 rpm_installed package 'PATTERN'
 rpm_installed --refresh | --cache on|off | --cache | --help
+rpm_installed [OPTION] --time
 ```
 
 | Option              | Alias | Description                                                |
@@ -151,6 +152,7 @@ rpm_installed --refresh | --cache on|off | --cache | --help
 | `--cache on`  | Enable caching (default)                                         |
 | `--cache off` | Disable caching — RPM is queried live on every call              |
 | `--cache`     | Show current cache status                                        |
+| `--time`, `-t`| Show install time (HH:MM TZ) next to each package on any date-based query. Can be placed anywhere in the arguments |
 
 **Output — date range query:**
 
@@ -166,6 +168,19 @@ rpm_installed --refresh | --cache on|off | --cache | --help
     ...
  ────────────────────────────────────
  🔢 Total: 14 packages — last-week
+ 💾 Cache: session cache
+```
+
+**Output — date range query with `--time`:**
+
+```
+    📦 Installed packages — today
+
+ 📆 Thu 2026-07-16  (2 packages)
+    06:44 CEST  rsync-3.4.4-1.fc44.x86_64
+    06:44 CEST  firefox-152.0.6-1.fc44.x86_64
+ ────────────────────────────────────
+ 🔢 Total: 2 packages — today
  💾 Cache: session cache
 ```
 
@@ -188,7 +203,7 @@ rpm_installed --refresh | --cache on|off | --cache | --help
  💾 Cache: session cache
 ```
 
-The filter label is always repeated in the footer, so it remains visible without scrolling up. Package search shows install time to the minute. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
+The filter label is always repeated in the footer, so it remains visible without scrolling up. Package search always shows install time to the minute; date-range and count queries only show it when `--time`/`-t` is passed. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
 
 **Examples:**
 
@@ -206,6 +221,9 @@ rpm_installed package cups
 rpm_installed package 'kern*'
 rpm_installed package 'python3*'
 rpm_installed --cache off
+rpm_installed today --time
+rpm_installed -t days 3
+rpm_installed since 2026-07-01 --time
 ```
 
 > ⚠️ **Glob quoting:** always quote patterns containing `*` — without quotes, Fish expands them as filesystem globs before the function sees them. Exact names (`cups`) need no quotes.
