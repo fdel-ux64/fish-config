@@ -1,4 +1,4 @@
-# 🐟 Personal Fish configuration
+# Personal Fish configuration
 
 A curated Fish shell toolkit with cross-distro utilities and reusable helpers.
 
@@ -6,26 +6,17 @@ Primarily maintained for personal use, but many utilities are **cross-distro com
 
 Not intended as a fully stable public plugin suite, yet mature tools are documented and may be useful to others.
 
-> 🐧 Works on Arch, Debian/Ubuntu, and RPM-based Linux distributions
+---
+
+## Highlights
+
+`installed_packages` gives unified package inspection across Arch, Debian/Ubuntu, and RPM systems, with consistent history no matter the distro. There are also interactive history helpers with range-based cleanup, a password generator with clipboard support, kernel version checks, archive creation/extraction with pigz/zstd acceleration, and Fish file formatting through `fish_indent`. Everything here is Fisher-compatible: functions, completions, and keybindings.
 
 ---
 
-## ✨ Highlights
+## Installation
 
-- **Multi-distro package inspection**: unified `installed_packages` for Arch, Debian/Ubuntu, and RPM systems
-- **Consistent package history** across distributions
-- **Interactive Fish shell helpers**: search & cleanup history with range selection, inspect functions
-- **Secure password generation** with environment-aware clipboard handling
-- **Cross-platform kernel version checks**
-- **Archive creation and extraction**: smart format detection, overwrite protection, and pigz/zstd acceleration
-- **Fish file formatting** via `fish_indent` with single-file and directory modes
-- **Fisher-compatible** functions, completions, and keybindings
-
----
-
-## 📥 Installation
-
-### 🎣 Using [Fisher](https://github.com/jorgebucaran/fisher) (Recommended)
+### Using [Fisher](https://github.com/jorgebucaran/fisher)
 
 ```
 fisher install fdel-ux64/fish-config
@@ -33,13 +24,11 @@ fisher install fdel-ux64/fish-config
 
 ---
 
-> ℹ️ **Note:** This repo also contains a personal backup setup (`backup/` — systemd service, timer, and script) for archiving this Fish config and other local git repos. It is unrelated to the Fisher plugin and is **not** retrieved by `fisher install` — included for transparency only.
+This repo also contains a personal backup setup (`backup/` — systemd service, timer, and script) for archiving this Fish config and other local git repos. It's unrelated to the Fisher plugin and isn't retrieved by `fisher install`, it's included here just for transparency.
 
 ---
 
-> 🛠️ Cross-distro tools: Works on Arch, Debian/Ubuntu, and RPM-based Linux distributions
-
-### 📦 `installed_packages` (Unified dispatcher)
+### `installed_packages` (unified dispatcher)
 
 Automatically detects your distribution and calls the appropriate backend:
 
@@ -103,11 +92,11 @@ installed_packages package 'kern*'
 installed_packages --backend
 ```
 
-> ⚠️ **Glob quoting:** always quote patterns containing `*` — without quotes, Fish expands them as filesystem globs before the function sees them. Exact names (`cups`) need no quotes.
+Always quote patterns containing `*`. Without quotes, Fish expands them as filesystem globs before the function sees them. Exact names like `cups` need no quotes.
 
 ---
 
-### 📦 `rpm_installed`
+### `rpm_installed`
 
 Backend for RPM-based systems. Also available as a standalone plugin:
 <https://github.com/fdel-ux64/fish-rpm-installed>
@@ -226,11 +215,11 @@ rpm_installed -t days 3
 rpm_installed since 2026-07-01 --time
 ```
 
-> ⚠️ **Glob quoting:** always quote patterns containing `*` — without quotes, Fish expands them as filesystem globs before the function sees them. Exact names (`cups`) need no quotes.
+As before, quote any pattern with `*` or Fish will expand it as a filesystem glob first. Plain names like `cups` don't need quotes.
 
 ---
 
-### 📦 `arch_installed`
+### `arch_installed`
 
 Backend for Arch-based systems. Equivalent of `rpm_installed`, using `expac` as the data source.
 
@@ -238,7 +227,7 @@ Backend for Arch-based systems. Equivalent of `rpm_installed`, using `expac` as 
 
 **Dependencies:** `expac`, Fish shell, GNU date
 
-> 💡 If `expac` is not installed, `arch_installed` will prompt to install it via `sudo pacman -S expac` — no need to run it manually first.
+If `expac` isn't installed, `arch_installed` prompts to install it via `sudo pacman -S expac`, no need to run it manually first.
 
 **Usage:**
 
@@ -252,6 +241,7 @@ arch_installed since DATE [until DATE]
 arch_installed package NAME
 arch_installed package 'PATTERN'
 arch_installed --refresh | --cache on|off | --cache | --help
+arch_installed [OPTION] --time
 ```
 
 | Option              | Alias | Description                                                 |
@@ -275,8 +265,9 @@ arch_installed --refresh | --cache on|off | --cache | --help
 | `--cache on`  | Enable caching (default)                                         |
 | `--cache off` | Disable caching — expac is queried live on every call            |
 | `--cache`     | Show current cache status                                        |
+| `--time`, `-t`| Show install time (HH:MM TZ) next to each package on any date-based query. Can be placed anywhere in the arguments |
 
-The filter label is always repeated in the footer, so it remains visible without scrolling up. Package search shows install time to the minute. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
+The filter label is always repeated in the footer, so it remains visible without scrolling up. Package search always shows install time to the minute; date-range and count queries only show it when `--time`/`-t` is passed. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
 
 **Examples:**
 
@@ -294,13 +285,16 @@ arch_installed package linux
 arch_installed package 'linux*'
 arch_installed package '*lib*'
 arch_installed --cache off
+arch_installed today --time
+arch_installed -t days 3
+arch_installed since 2026-07-01 --time
 ```
 
-> ⚠️ **Glob quoting:** always quote patterns containing `*` — without quotes, Fish expands them as filesystem globs before the function sees them. Exact names (`linux`) need no quotes.
+Same rule applies here: quote patterns containing `*`, or Fish expands them as filesystem globs before the function runs. Plain names like `linux` don't need quotes.
 
 ---
 
-### 📦 `deb_installed`
+### `deb_installed`
 
 Backend for Debian-based systems. Equivalent of `rpm_installed`, reconstructing install timestamps from dpkg logs.
 
@@ -348,7 +342,7 @@ deb_installed --refresh | --cache on|off | --cache | --help
 | `--cache off` | Disable caching — dpkg logs are queried live on every call       |
 | `--cache`     | Show current cache status                                        |
 
-The filter label is always repeated in the footer, so it remains visible without scrolling up. Package search shows install time to the minute. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
+The filter label is always repeated in the footer, so it remains visible without scrolling up. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
 
 **Examples:**
 
@@ -368,11 +362,11 @@ deb_installed package '*lib*'
 deb_installed --cache off
 ```
 
-> ⚠️ **Glob quoting:** always quote patterns containing `*` — without quotes, Fish expands them as filesystem globs before the function sees them. Exact names (`cups`) need no quotes.
+Same rule again: quote patterns with `*`, since Fish otherwise expands them as filesystem globs first. Plain names like `cups` don't need quotes.
 
 ---
 
-### 🚀 `advanced_install_package`
+### `advanced_install_package`
 
 A versatile package installer that supports multiple Linux distributions (Fedora, Manjaro/Arch, or Ubuntu/Debian) and provides informative feedback.
 
@@ -400,7 +394,7 @@ advanced_install_package
 
 ---
 
-### 🐧 `kver`
+### `kver`
 
 Display the current kernel version and optionally compare with the latest stable release.
 
@@ -444,7 +438,7 @@ Opening kernel.org...
 
 ---
 
-### 🔄 `fisher_update_select`
+### `fisher_update_select`
 
 Interactive and non-interactive helper to update Fisher plugins selectively, by name, or in bulk.
 
@@ -488,7 +482,7 @@ Updating: fdel-ux64/fish-config
 
 ---
 
-### 🔐 `generate_password`
+### `generate_password`
 
 Generate secure random passwords using Fish shell only — no external generators required.
 
@@ -529,9 +523,9 @@ generate_password 16 1 --clipboard --no-ambiguous
 
 ---
 
-## 🖼️ Image Utilities
+## ️ Image Utilities
 
-### 🖼️ `resize_image`
+### ️ `resize_image`
 
 Resize a single image or a batch of images in a directory by percentage or max dimension.
 
@@ -581,9 +575,9 @@ Saved:    32.1%
 
 ---
 
-## 📦 Archive Utilities
+## Archive Utilities
 
-### 📦 `create_archive`
+### `create_archive`
 
 Create a compressed archive from a file or directory, with smart format detection and optional acceleration via `pigz` or `zstd`.
 
@@ -625,7 +619,7 @@ create_archive project ~/backups/
 
 ---
 
-### 📦 `extract_archive`
+### `extract_archive`
 
 Extract an archive into its own directory, with atomic extraction and overwrite protection.
 
@@ -664,9 +658,9 @@ extract_archive -q archive.zip
 
 ---
 
-## 🐟 Fish Dev Utilities
+## Fish Dev Utilities
 
-### 🎨 `fishfmt`
+### `fishfmt`
 
 Format `.fish` files using `fish_indent`.
 
@@ -721,9 +715,9 @@ $ fishfmt func_a.fish func_b.fish
 
 ---
 
-## 📜 History & Shell UX Helpers
+## History & Shell UX Helpers
 
-### 🔍 `search_history`
+### `search_history`
 
 Search command history with optional interactive cleanup.
 
@@ -756,7 +750,7 @@ search_history -c cd      # then: 2-5 7  to delete a range + extra entry
 
 ---
 
-### 🧹 `cleanup_history`
+### `cleanup_history`
 
 Standalone interactive history cleanup tool.
 
@@ -785,7 +779,7 @@ cleanup_history rpm
 
 ---
 
-### 🧹 `clean_session_history`
+### `clean_session_history`
 
 Clear the current Fish shell session history with a visual countdown and final confirmation.
 
@@ -819,7 +813,7 @@ clean_session_history -w 5 -y    # clear instantly (--yes takes precedence)
 
 ---
 
-### 🔎 `inspect_function`
+### `inspect_function`
 
 Search, display, and optionally edit Fish shell functions.
 
