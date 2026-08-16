@@ -16,6 +16,14 @@ function __arch_installed_help
     echo "  arch_installed --cache off   # always query expac live"
     echo "  arch_installed --cache       # show current cache status"
     echo
+    echo "TIME DISPLAY:"
+    echo "  Add --time (or -t) to any date-based query to show the install"
+    echo "  time (HH:MM) next to each package, not just the date it was"
+    echo "  installed on. Can be placed anywhere in the arguments."
+    echo "    arch_installed today --time"
+    echo "    arch_installed -t days 3"
+    echo "    arch_installed since 2026-07-01 --time"
+    echo
     echo "OPTIONS:"
     echo "  today        Packages installed today"
     echo "  yesterday    Packages installed yesterday"
@@ -54,9 +62,10 @@ function __instlist_arch
 end
 
 function __display_arch_packages
-    set -l cache_status $argv[1]
-    set -l title $argv[2]
-    set -l packages $argv[3..-1]
+    set -l show_time $argv[1]
+    set -l cache_status $argv[2]
+    set -l title $argv[3]
+    set -l packages $argv[4..-1]
     set -l pkg_count (count $packages)
 
     if test $pkg_count -eq 0
@@ -72,6 +81,7 @@ function __display_arch_packages
 
     # First pass: build parallel arrays of dates and names.
     set -l dates
+    set -l times
     set -l names
     for pkg in $packages
         set -l ts (string split --max 1 ' ' -- $pkg)[1]
@@ -82,6 +92,11 @@ function __display_arch_packages
         end
         set -a dates $day
         set -a names $name
+        if test "$show_time" = 1
+            set -l hm (env LC_ALL=en_US.UTF-8 date -d @$ts '+%H:%M %Z' 2>/dev/null)
+            test -z "$hm"; and set hm "??:??"
+            set -a times $hm
+        end
     end
 
     begin
@@ -109,7 +124,11 @@ function __display_arch_packages
                     $day $run (test $run -eq 1 && echo "" || echo "s")
             end
 
-            printf "    %s\n" $name
+            if test "$show_time" = 1
+                printf "    %s  %s\n" $times[$i] $name
+            else
+                printf "    %s\n" $name
+            end
             set i (math $i + 1)
         end
 
@@ -249,6 +268,22 @@ function arch_installed --description "List installed Arch packages by install d
             return 1
         end
     end
+
+    # ---- Extract --time / -t flag from anywhere in argv ----
+    # Strip it before any positional parsing so downstream logic (which
+    # relies on argv positions, e.g. 'days N', 'on DATE') is unaffected
+    # regardless of where the user places the flag.
+    set -l show_time 0
+    set -l __arch_filtered_argv
+    for a in $argv
+        switch (string lower -- $a)
+            case --time -t
+                set show_time 1
+            case '*'
+                set -a __arch_filtered_argv $a
+        end
+    end
+    set argv $__arch_filtered_argv
 
     set -l arg (string lower -- $argv[1])
 
@@ -531,6 +566,6 @@ function arch_installed --description "List installed Arch packages by install d
         if test $__arch_use_cache -eq 0
             set cache_status "live query"
         end
-        __display_arch_packages "$cache_status" "$heading" $res
+        __display_arch_packages "$show_time" "$cache_status" "$heading" $res
     end
 end
