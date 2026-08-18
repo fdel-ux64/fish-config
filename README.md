@@ -318,6 +318,7 @@ deb_installed since DATE [until DATE]
 deb_installed package NAME
 deb_installed package 'PATTERN'
 deb_installed --refresh | --cache on|off | --cache | --help
+deb_installed [OPTION] --time
 ```
 
 | Option              | Alias | Description                                                 |
@@ -341,8 +342,9 @@ deb_installed --refresh | --cache on|off | --cache | --help
 | `--cache on`  | Enable caching (default)                                         |
 | `--cache off` | Disable caching — dpkg logs are queried live on every call       |
 | `--cache`     | Show current cache status                                        |
+| `--time`, `-t`| Show install time (HH:MM TZ) next to each package on any date-based query. Can be placed anywhere in the arguments |
 
-The filter label is always repeated in the footer, so it remains visible without scrolling up. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
+The filter label is always repeated in the footer, so it remains visible without scrolling up. Package search always shows install time to the minute; date-range and count queries only show it when `--time`/`-t` is passed. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
 
 **Examples:**
 
@@ -360,6 +362,9 @@ deb_installed package cups
 deb_installed package 'linux*'
 deb_installed package '*lib*'
 deb_installed --cache off
+deb_installed today --time
+deb_installed -t days 3
+deb_installed since 2026-07-01 --time
 ```
 
 Same rule again: quote patterns with `*`, since Fish otherwise expands them as filesystem globs first. Plain names like `cups` don't need quotes.
