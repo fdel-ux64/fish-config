@@ -146,7 +146,7 @@ rpm_installed [OPTION] --time
 **Output — date range query:**
 
 ```
-    📦 Installed packages — last-week
+    📦 Installed packages — last 7 days (rolling, today excluded)
 
  📆 Wed 2026-03-18  (5 packages)
     onnx-libs-1.17.0-12.fc43.x86_64
@@ -156,20 +156,20 @@ rpm_installed [OPTION] --time
     libtasn1-4.21.0-1.fc43.x86_64
     ...
  ────────────────────────────────────
- 🔢 Total: 14 packages — last-week
+ 🔢 Total: 14 packages — last 7 days (rolling, today excluded)
  💾 Cache: session cache
 ```
 
 **Output — date range query with `--time`:**
 
 ```
-    📦 Installed packages — today
+    📦 Installed packages — today (since midnight)
 
  📆 Thu 2026-07-16  (2 packages)
     06:44 CEST  rsync-3.4.4-1.fc44.x86_64
     06:44 CEST  firefox-152.0.6-1.fc44.x86_64
  ────────────────────────────────────
- 🔢 Total: 2 packages — today
+ 🔢 Total: 2 packages — today (since midnight)
  💾 Cache: session cache
 ```
 
