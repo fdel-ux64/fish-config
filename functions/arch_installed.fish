@@ -61,6 +61,26 @@ function __instlist_arch
     expac --timefmt=%s '%l %n-%v'
 end
 
+# Maps a period flag to a clearer header. Falls back to the raw flag
+# for anything not listed here (this-week, days N, on DATE, since/until
+# build their own heading later and override this).
+function __arch_period_label
+    switch $argv[1]
+        case today
+            echo "today (since midnight)"
+        case yesterday
+            echo "yesterday (previous calendar day)"
+        case last-week
+            echo "last 7 days (rolling, today excluded)"
+        case this-month
+            echo "this month (calendar month so far)"
+        case last-month
+            echo "last month (previous calendar month)"
+        case '*'
+            echo $argv[1]
+    end
+end
+
 function __display_arch_packages
     set -l show_time $argv[1]
     set -l cache_status $argv[2]
@@ -545,7 +565,7 @@ function arch_installed --description "List installed Arch packages by install d
             awk -v s="$s" -v e="$e" '$1>=s && (e=="" || $1<e)' |
             sort -n
         )
-        set -l heading "$arg"
+        set -l heading (__arch_period_label "$arg")
         if test -n "$on_date"
             set heading "$on_date"
         else if test "$arg" = this-week
