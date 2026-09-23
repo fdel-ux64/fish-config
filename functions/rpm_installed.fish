@@ -10,6 +10,8 @@ function __rpm_installed_help
     echo "  rpm_installed [OPTION]"
     echo "  rpm_installed days N             # last N days (rolling window)"
     echo "  rpm_installed on DATE            # exact date, e.g. on 2026-05-15"
+    echo "  rpm_installed month YYYY-MM      # a specific month, e.g. month 2026-06"
+    echo "  rpm_installed month NAME YEAR    # a specific month, e.g. month june 2026"
     echo "  rpm_installed since DATE [until DATE]"
     echo "  rpm_installed count [OPTION] (including 'since … until …')"
     echo "  rpm_installed --refresh      # rebuild cache"
@@ -33,6 +35,7 @@ function __rpm_installed_help
     echo "  last-week    Packages installed in the last 7 days (excludes today)"
     echo "  this-month   Packages installed this calendar month"
     echo "  last-month   Packages installed in the previous calendar month"
+    echo "  month YYYY-MM  Packages installed in a specific month, e.g. month 2026-06 or month june 2026"
     echo
     echo "ALIASES:"
     echo "  td  → today"
@@ -53,6 +56,7 @@ function __rpm_installed_help
     echo "  rpm_installed count this-week"
     echo "  rpm_installed count last-week"
     echo "  rpm_installed count on DATE"
+    echo "  rpm_installed count month YYYY-MM"
     echo "  rpm_installed count per-day"
     echo "  rpm_installed count per-week"
     echo "  rpm_installed count since DATE [until DATE]"
@@ -469,6 +473,7 @@ function rpm_installed --description "List installed RPM packages by install dat
     set -l e ""
     set -l n_days 0   # >0 when 'days N' was used; drives heading
     set -l on_date "" # non-empty when 'on DATE' was used; drives heading
+    set -l month_arg "" # non-empty when 'month YYYY-MM' was used; drives heading
 
     switch $arg
         case today
@@ -519,6 +524,42 @@ function rpm_installed --description "List installed RPM packages by install dat
             set s $parsed_on
             set e (env LC_ALL=en_US.UTF-8 date -d "$raw_date +1 day 00:00" +%s)
             set on_date $raw_date
+        case month
+            # Next positional arg shifts by 1 in count mode
+            set -l pos1 $argv[(math $count_mode + 2)]
+            set -l pos2 $argv[(math $count_mode + 3)]
+            if test -z "$pos1"
+                echo "❌ 'month' requires a year-month  →  rpm_installed month 2026-06  or  rpm_installed month june 2026" >&2
+                return 1
+            end
+
+            set -l canonical_ym ""
+            if string match -qr '^[0-9]{4}-(0[1-9]|1[0-2])$' -- "$pos1"
+                # YYYY-MM form, e.g. 2026-06
+                set canonical_ym $pos1
+            else if string match -qr '^[A-Za-z]+$' -- "$pos1"; and string match -qr '^[0-9]{4}$' -- "$pos2"
+                # Month name + year form, e.g. june 2026
+                set -l parsed_name (env LC_ALL=en_US.UTF-8 date -d "1 $pos1 $pos2 00:00" +%s 2>/dev/null)
+                if test -z "$parsed_name"
+                    echo "❌ Invalid month name: '$pos1'" >&2
+                    echo "   Expected a month name and year, e.g. rpm_installed month june 2026" >&2
+                    return 1
+                end
+                set canonical_ym (env LC_ALL=en_US.UTF-8 date -d @$parsed_name +%Y-%m)
+            else
+                echo "❌ Invalid format for 'month': '$pos1'" >&2
+                echo "   Expected YYYY-MM (e.g. 2026-06) or a month name and year (e.g. june 2026)" >&2
+                return 1
+            end
+
+            set -l parsed_month (env LC_ALL=en_US.UTF-8 date -d "$canonical_ym-01 00:00" +%s 2>/dev/null)
+            if test -z "$parsed_month"
+                echo "❌ Invalid date for 'month': $canonical_ym" >&2
+                return 1
+            end
+            set s $parsed_month
+            set e (env LC_ALL=en_US.UTF-8 date -d "$canonical_ym-01 +1 month 00:00" +%s)
+            set month_arg $canonical_ym
         case per-day
             printf "%s\n" $__rpm_instlist_cache |
                 awk '{count[strftime("%Y-%m-%d",$1)]++} END{for(d in count) printf "%s  %d\n", d, count[d]}' | sort
@@ -591,6 +632,8 @@ function rpm_installed --description "List installed RPM packages by install dat
         set -l heading (__rpm_period_label "$arg")
         if test -n "$on_date"
             set heading "$on_date"
+        else if test -n "$month_arg"
+            set heading (env LC_ALL=en_US.UTF-8 date -d "$month_arg-01" +'%B %Y')
         else if test "$arg" = this-week
             set -l week_start_label (env LC_ALL=en_US.UTF-8 date -d @$this_week_start '+%a %Y-%m-%d')
             set -l today_label      (env LC_ALL=en_US.UTF-8 date '+%a %Y-%m-%d')
