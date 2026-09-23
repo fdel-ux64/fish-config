@@ -111,6 +111,8 @@ Lists installed RPM packages by installation date, grouped by day, with caching 
 rpm_installed [OPTION]
 rpm_installed days N
 rpm_installed on DATE
+rpm_installed month YYYY-MM
+rpm_installed month NAME YEAR
 rpm_installed this-week
 rpm_installed count [OPTION]
 rpm_installed since DATE [until DATE]
@@ -130,6 +132,7 @@ rpm_installed [OPTION] --time
 | `last-week`         | `lw`  | Packages installed in the last 7 days                      |
 | `this-month`        | `tm`  | Packages installed this calendar month                     |
 | `last-month`        | `lm`  | Packages installed in the previous month                   |
+| `month YYYY-MM`     |       | Packages installed in a specific month — e.g. `month 2026-06` or `month june 2026` |
 | `per-day`           |       | Count packages per day                                     |
 | `per-week`          |       | Count packages per week                                    |
 | `package NAME`      |       | Full install history for an exact package name             |
@@ -201,10 +204,13 @@ rpm_installed tw
 rpm_installed lw
 rpm_installed days 3
 rpm_installed on 2026-05-15
+rpm_installed month 2026-06
+rpm_installed month june 2026
 rpm_installed count this-week
 rpm_installed count days 5
 rpm_installed count on 2026-05-15
 rpm_installed count this-month
+rpm_installed count month 2026-06
 rpm_installed since 2025-12-16 until 2025-12-22
 rpm_installed package cups
 rpm_installed package 'kern*'
