@@ -9,6 +9,8 @@ function __deb_installed_help
     echo "  deb_installed [OPTION]"
     echo "  deb_installed days N             # last N days (rolling window)"
     echo "  deb_installed on DATE            # exact date, e.g. on 2026-05-15"
+    echo "  deb_installed month YYYY-MM      # a specific month, e.g. month 2026-06"
+    echo "  deb_installed month NAME YEAR    # a specific month, e.g. month june 2026"
     echo "  deb_installed since DATE [until DATE]"
     echo "  deb_installed count [OPTION]"
     echo "  deb_installed --refresh     # rebuild cache"
@@ -33,6 +35,7 @@ function __deb_installed_help
     echo "  last-week    Packages installed in the last 7 days (excludes today)"
     echo "  this-month   Packages installed this calendar month"
     echo "  last-month   Packages installed in the previous calendar month"
+    echo "  month YYYY-MM  Packages installed in a specific month, e.g. month 2026-06 or month june 2026"
     echo
     echo "ALIASES:"
     echo "  td  → today"
@@ -47,6 +50,7 @@ function __deb_installed_help
     echo "  deb_installed count days 5"
     echo "  deb_installed count this-week"
     echo "  deb_installed count on DATE"
+    echo "  deb_installed count month YYYY-MM"
     echo "  deb_installed count last-week"
     echo "  deb_installed count per-day"
     echo "  deb_installed count per-week"
@@ -403,6 +407,7 @@ function deb_installed --description "List installed Debian/Ubuntu packages by i
     set -l e ""
     set -l n_days 0   # >0 when 'days N' was used; drives heading
     set -l on_date "" # non-empty when 'on DATE' was used; drives heading
+    set -l month_arg "" # non-empty when 'month YYYY-MM' was used; drives heading
 
     # ---- package search mode ----
     if test "$arg" = package
@@ -488,6 +493,42 @@ function deb_installed --description "List installed Debian/Ubuntu packages by i
             set s $parsed_on
             set e (env LC_ALL=en_US.UTF-8 date -d "$raw_date +1 day 00:00" +%s)
             set on_date $raw_date
+        case month
+            # Next positional arg(s) shift by 1 in count mode
+            set -l pos1 $argv[(math $count_mode + 2)]
+            set -l pos2 $argv[(math $count_mode + 3)]
+            if test -z "$pos1"
+                echo "❌ 'month' requires a year-month  →  deb_installed month 2026-06  or  deb_installed month june 2026" >&2
+                return 1
+            end
+
+            set -l canonical_ym ""
+            if string match -qr '^[0-9]{4}-(0[1-9]|1[0-2])$' -- "$pos1"
+                # YYYY-MM form, e.g. 2026-06
+                set canonical_ym $pos1
+            else if string match -qr '^[A-Za-z]+$' -- "$pos1"; and string match -qr '^[0-9]{4}$' -- "$pos2"
+                # Month name + year form, e.g. june 2026
+                set -l parsed_name (env LC_ALL=en_US.UTF-8 date -d "1 $pos1 $pos2 00:00" +%s 2>/dev/null)
+                if test -z "$parsed_name"
+                    echo "❌ Invalid month name: '$pos1'" >&2
+                    echo "   Expected a month name and year, e.g. deb_installed month june 2026" >&2
+                    return 1
+                end
+                set canonical_ym (env LC_ALL=en_US.UTF-8 date -d @$parsed_name +%Y-%m)
+            else
+                echo "❌ Invalid format for 'month': '$pos1'" >&2
+                echo "   Expected YYYY-MM (e.g. 2026-06) or a month name and year (e.g. june 2026)" >&2
+                return 1
+            end
+
+            set -l parsed_month (env LC_ALL=en_US.UTF-8 date -d "$canonical_ym-01 00:00" +%s 2>/dev/null)
+            if test -z "$parsed_month"
+                echo "❌ Invalid date for 'month': $canonical_ym" >&2
+                return 1
+            end
+            set s $parsed_month
+            set e (env LC_ALL=en_US.UTF-8 date -d "$canonical_ym-01 +1 month 00:00" +%s)
+            set month_arg $canonical_ym
         case per-day
             printf "%s\n" $__deb_instlist_cache |
                 awk '{d=strftime("%Y-%m-%d",$1);c[d]++} END{for(d in c) print d,c[d]}' | sort
@@ -558,6 +599,8 @@ function deb_installed --description "List installed Debian/Ubuntu packages by i
         set -l heading (__deb_period_label "$arg")
         if test -n "$on_date"
             set heading "$on_date"
+        else if test -n "$month_arg"
+            set heading (env LC_ALL=en_US.UTF-8 date -d "$month_arg-01" +'%B %Y')
         else if test "$arg" = this-week
             set -l week_start_label (env LC_ALL=en_US.UTF-8 date -d @$this_week_start '+%a %Y-%m-%d')
             set -l today_label      (env LC_ALL=en_US.UTF-8 date '+%a %Y-%m-%d')
