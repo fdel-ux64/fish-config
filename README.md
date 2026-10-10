@@ -318,6 +318,8 @@ Backend for Debian-based systems. Equivalent of `rpm_installed`, reconstructing 
 deb_installed [OPTION]
 deb_installed days N
 deb_installed on DATE
+deb_installed month YYYY-MM
+deb_installed month NAME YEAR
 deb_installed this-week
 deb_installed count [OPTION]
 deb_installed since DATE [until DATE]
@@ -337,6 +339,7 @@ deb_installed [OPTION] --time
 | `last-week`         | `lw`  | Packages installed in the last 7 days                       |
 | `this-month`        | `tm`  | Packages installed this calendar month                      |
 | `last-month`        | `lm`  | Packages installed in the previous month                    |
+| `month YYYY-MM`     |       | Packages installed in a specific month — e.g. `month 2026-06` or `month june 2026` |
 | `per-day`           |       | Count packages per day                                      |
 | `per-week`          |       | Count packages per week                                     |
 | `package NAME`      |       | Full install history for an exact package name              |
@@ -359,10 +362,13 @@ deb_installed tw
 deb_installed lw
 deb_installed days 3
 deb_installed on 2026-05-15
+deb_installed month 2026-06
+deb_installed month june 2026
 deb_installed count this-week
 deb_installed count days 5
 deb_installed count on 2026-05-15
 deb_installed count this-month
+deb_installed count month 2026-06
 deb_installed since 2024-01-01 until 2024-02-01
 deb_installed package cups
 deb_installed package 'linux*'
