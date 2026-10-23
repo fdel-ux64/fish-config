@@ -44,6 +44,8 @@ Single portable entry point with full feature parity across all backends — `pa
 installed_packages [OPTION]
 installed_packages days N
 installed_packages on DATE
+installed_packages month YYYY-MM
+installed_packages month NAME YEAR
 installed_packages this-week
 installed_packages count [OPTION]
 installed_packages since DATE [until DATE]
@@ -63,6 +65,7 @@ installed_packages --backend
 | `last-week`         | `lw`  | Packages installed in the last 7 days                      |
 | `this-month`        | `tm`  | Packages installed this calendar month                     |
 | `last-month`        | `lm`  | Packages installed in the previous month                   |
+| `month YYYY-MM`     |       | Packages installed in a specific month — e.g. `month 2026-06` or `month june 2026` |
 | `per-day`           |       | Count packages per day                                     |
 | `per-week`          |       | Count packages per week                                    |
 | `package NAME`      |       | Full install history for an exact package name             |
@@ -83,9 +86,12 @@ installed_packages days 3
 installed_packages tw
 installed_packages lw
 installed_packages on 2026-05-15
+installed_packages month 2026-06
+installed_packages month june 2026
 installed_packages count this-week
 installed_packages count last-week
 installed_packages count on 2026-05-15
+installed_packages count month 2026-06
 installed_packages since 2026-02-01
 installed_packages package cups
 installed_packages package 'kern*'
@@ -241,6 +247,8 @@ If `expac` isn't installed, `arch_installed` prompts to install it via `sudo pac
 arch_installed [OPTION]
 arch_installed days N
 arch_installed on DATE
+arch_installed month YYYY-MM
+arch_installed month NAME YEAR
 arch_installed this-week
 arch_installed count [OPTION]
 arch_installed since DATE [until DATE]
@@ -260,6 +268,7 @@ arch_installed [OPTION] --time
 | `last-week`         | `lw`  | Packages installed in the last 7 days                       |
 | `this-month`        | `tm`  | Packages installed this calendar month                      |
 | `last-month`        | `lm`  | Packages installed in the previous month                    |
+| `month YYYY-MM`     |       | Packages installed in a specific month — e.g. `month 2026-06` or `month june 2026` |
 | `per-day`           |       | Count packages per day                                      |
 | `per-week`          |       | Count packages per week                                     |
 | `package NAME`      |       | Full install history for an exact package name              |
@@ -282,10 +291,13 @@ arch_installed tw
 arch_installed lw
 arch_installed days 3
 arch_installed on 2026-05-15
+arch_installed month 2026-06
+arch_installed month june 2026
 arch_installed count this-week
 arch_installed count days 5
 arch_installed count on 2026-05-15
 arch_installed count this-month
+arch_installed count month 2026-06
 arch_installed since 2024-01-01 until 2024-02-01
 arch_installed package linux
 arch_installed package 'linux*'
