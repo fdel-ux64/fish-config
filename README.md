@@ -55,21 +55,21 @@ installed_packages --refresh
 installed_packages --backend
 ```
 
-| Option              | Alias | Description                                                |
-| ------------------- | ----- | ---------------------------------------------------------- |
-| `today`             | `td`  | Packages installed today                                   |
-| `yesterday`         | `yd`  | Packages installed yesterday                               |
-| `days N`            |       | Packages installed in the last N days (today included)     |
-| `on DATE`           |       | Packages installed on an exact date — e.g. `on 2026-05-15` |
-| `this-week`         | `tw`  | Packages installed this calendar week (Mon → today)        |
-| `last-week`         | `lw`  | Packages installed in the last 7 days                      |
-| `this-month`        | `tm`  | Packages installed this calendar month                     |
-| `last-month`        | `lm`  | Packages installed in the previous month                   |
+| Option              | Alias | Description                                                                        |
+| ------------------- | ----- | ---------------------------------------------------------------------------------- |
+| `today`             | `td`  | Packages installed today                                                           |
+| `yesterday`         | `yd`  | Packages installed yesterday                                                       |
+| `days N`            |       | Packages installed in the last N days (today included)                             |
+| `on DATE`           |       | Packages installed on an exact date — e.g. `on 2026-05-15`                         |
+| `this-week`         | `tw`  | Packages installed this calendar week (Mon → today)                                |
+| `last-week`         | `lw`  | Packages installed in the last 7 days                                              |
+| `this-month`        | `tm`  | Packages installed this calendar month                                             |
+| `last-month`        | `lm`  | Packages installed in the previous month                                           |
 | `month YYYY-MM`     |       | Packages installed in a specific month — e.g. `month 2026-06` or `month june 2026` |
-| `per-day`           |       | Count packages per day                                     |
-| `per-week`          |       | Count packages per week                                    |
-| `package NAME`      |       | Full install history for an exact package name             |
-| `package 'PATTERN'` |       | Full install history with glob — e.g. `'kern*'`, `'*lib*'` |
+| `per-day`           |       | Count packages per day                                                             |
+| `per-week`          |       | Count packages per week                                                            |
+| `package NAME`      |       | Full install history for an exact package name                                     |
+| `package 'PATTERN'` |       | Full install history with glob — e.g. `'kern*'`, `'*lib*'`                         |
 
 Aliases are case-insensitive (TD, Td, etc.).
 
@@ -122,35 +122,39 @@ rpm_installed month NAME YEAR
 rpm_installed this-week
 rpm_installed count [OPTION]
 rpm_installed since DATE [until DATE]
+rpm_installed last N
 rpm_installed package NAME
 rpm_installed package 'PATTERN'
 rpm_installed --refresh | --cache on|off | --cache | --help
 rpm_installed [OPTION] --time
+rpm_installed [OPTION] --reverse
 ```
 
-| Option              | Alias | Description                                                |
-| ------------------- | ----- | ---------------------------------------------------------- |
-| `today`             | `td`  | Packages installed today                                   |
-| `yesterday`         | `yd`  | Packages installed yesterday                               |
-| `days N`            |       | Packages installed in the last N days (today included)     |
-| `on DATE`           |       | Packages installed on an exact date — e.g. `on 2026-05-15` |
-| `this-week`         | `tw`  | Packages installed this calendar week (Mon → today)        |
-| `last-week`         | `lw`  | Packages installed in the last 7 days                      |
-| `this-month`        | `tm`  | Packages installed this calendar month                     |
-| `last-month`        | `lm`  | Packages installed in the previous month                   |
+| Option              | Alias | Description                                                                        |
+| ------------------- | ----- | ---------------------------------------------------------------------------------- |
+| `today`             | `td`  | Packages installed today                                                           |
+| `yesterday`         | `yd`  | Packages installed yesterday                                                       |
+| `days N`            |       | Packages installed in the last N days (today included)                             |
+| `on DATE`           |       | Packages installed on an exact date — e.g. `on 2026-05-15`                         |
+| `this-week`         | `tw`  | Packages installed this calendar week (Mon → today)                                |
+| `last-week`         | `lw`  | Packages installed in the last 7 days                                              |
+| `this-month`        | `tm`  | Packages installed this calendar month                                             |
+| `last-month`        | `lm`  | Packages installed in the previous month                                           |
 | `month YYYY-MM`     |       | Packages installed in a specific month — e.g. `month 2026-06` or `month june 2026` |
-| `per-day`           |       | Count packages per day                                     |
-| `per-week`          |       | Count packages per week                                    |
-| `package NAME`      |       | Full install history for an exact package name             |
-| `package 'PATTERN'` |       | Full install history with glob — e.g. `'kern*'`, `'*lib*'` |
+| `last N`            |       | The N most recently installed packages, any date                                   |
+| `per-day`           |       | Count packages per day                                                             |
+| `per-week`          |       | Count packages per week                                                            |
+| `package NAME`      |       | Full install history for an exact package name                                     |
+| `package 'PATTERN'` |       | Full install history with glob — e.g. `'kern*'`, `'*lib*'`                         |
 
-| Flag          | Description                                                      |
-| ------------- | ---------------------------------------------------------------- |
-| `--refresh`   | Clear and rebuild the cache on next call (caching stays enabled) |
-| `--cache on`  | Enable caching (default)                                         |
-| `--cache off` | Disable caching — RPM is queried live on every call              |
-| `--cache`     | Show current cache status                                        |
-| `--time`, `-t`| Show install time (HH:MM TZ) next to each package on any date-based query. Can be placed anywhere in the arguments |
+| Flag              | Description                                                                                                               |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `--refresh`       | Clear and rebuild the cache on next call (caching stays enabled)                                                          |
+| `--cache on`      | Enable caching (default)                                                                                                  |
+| `--cache off`     | Disable caching — RPM is queried live on every call                                                                       |
+| `--cache`         | Show current cache status                                                                                                 |
+| `--time`, `-t`    | Show install time (HH:MM TZ) next to each package on any date-based query. Can be placed anywhere in the arguments        |
+| `--reverse`, `-r` | Show newest first. Works with date queries, `last N`, `package` and count output. Can be placed anywhere in the arguments |
 
 **Output — date range query:**
 
@@ -203,6 +207,8 @@ rpm_installed [OPTION] --time
 
 The filter label is always repeated in the footer, so it remains visible without scrolling up. Package search always shows install time to the minute; date-range and count queries only show it when `--time`/`-t` is passed. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
 
+`last N` shows the N most recently installed packages regardless of date. Combine it with `since`/`until` to get the N newest within a range. It cannot be combined with `count`.
+
 **Examples:**
 
 ```
@@ -225,6 +231,11 @@ rpm_installed --cache off
 rpm_installed today --time
 rpm_installed -t days 3
 rpm_installed since 2026-07-01 --time
+rpm_installed last 10
+rpm_installed last 10 --reverse
+rpm_installed days 7 -r
+rpm_installed package 'kernel*' -r
+rpm_installed count per-day -r
 ```
 
 As before, quote any pattern with `*` or Fish will expand it as a filesystem glob first. Plain names like `cups` don't need quotes.
@@ -258,29 +269,29 @@ arch_installed --refresh | --cache on|off | --cache | --help
 arch_installed [OPTION] --time
 ```
 
-| Option              | Alias | Description                                                 |
-| ------------------- | ----- | ----------------------------------------------------------- |
-| `today`             | `td`  | Packages installed today                                    |
-| `yesterday`         | `yd`  | Packages installed yesterday                                |
-| `days N`            |       | Packages installed in the last N days (today included)      |
-| `on DATE`           |       | Packages installed on an exact date — e.g. `on 2026-05-15`  |
-| `this-week`         | `tw`  | Packages installed this calendar week (Mon → today)         |
-| `last-week`         | `lw`  | Packages installed in the last 7 days                       |
-| `this-month`        | `tm`  | Packages installed this calendar month                      |
-| `last-month`        | `lm`  | Packages installed in the previous month                    |
+| Option              | Alias | Description                                                                        |
+| ------------------- | ----- | ---------------------------------------------------------------------------------- |
+| `today`             | `td`  | Packages installed today                                                           |
+| `yesterday`         | `yd`  | Packages installed yesterday                                                       |
+| `days N`            |       | Packages installed in the last N days (today included)                             |
+| `on DATE`           |       | Packages installed on an exact date — e.g. `on 2026-05-15`                         |
+| `this-week`         | `tw`  | Packages installed this calendar week (Mon → today)                                |
+| `last-week`         | `lw`  | Packages installed in the last 7 days                                              |
+| `this-month`        | `tm`  | Packages installed this calendar month                                             |
+| `last-month`        | `lm`  | Packages installed in the previous month                                           |
 | `month YYYY-MM`     |       | Packages installed in a specific month — e.g. `month 2026-06` or `month june 2026` |
-| `per-day`           |       | Count packages per day                                      |
-| `per-week`          |       | Count packages per week                                     |
-| `package NAME`      |       | Full install history for an exact package name              |
-| `package 'PATTERN'` |       | Full install history with glob — e.g. `'linux*'`, `'*lib*'` |
+| `per-day`           |       | Count packages per day                                                             |
+| `per-week`          |       | Count packages per week                                                            |
+| `package NAME`      |       | Full install history for an exact package name                                     |
+| `package 'PATTERN'` |       | Full install history with glob — e.g. `'linux*'`, `'*lib*'`                        |
 
-| Flag          | Description                                                      |
-| ------------- | ---------------------------------------------------------------- |
-| `--refresh`   | Clear and rebuild the cache on next call (caching stays enabled) |
-| `--cache on`  | Enable caching (default)                                         |
-| `--cache off` | Disable caching — expac is queried live on every call            |
-| `--cache`     | Show current cache status                                        |
-| `--time`, `-t`| Show install time (HH:MM TZ) next to each package on any date-based query. Can be placed anywhere in the arguments |
+| Flag           | Description                                                                                                        |
+| -------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `--refresh`    | Clear and rebuild the cache on next call (caching stays enabled)                                                   |
+| `--cache on`   | Enable caching (default)                                                                                           |
+| `--cache off`  | Disable caching — expac is queried live on every call                                                              |
+| `--cache`      | Show current cache status                                                                                          |
+| `--time`, `-t` | Show install time (HH:MM TZ) next to each package on any date-based query. Can be placed anywhere in the arguments |
 
 The filter label is always repeated in the footer, so it remains visible without scrolling up. Package search always shows install time to the minute; date-range and count queries only show it when `--time`/`-t` is passed. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
 
@@ -341,29 +352,29 @@ deb_installed --refresh | --cache on|off | --cache | --help
 deb_installed [OPTION] --time
 ```
 
-| Option              | Alias | Description                                                 |
-| ------------------- | ----- | ----------------------------------------------------------- |
-| `today`             | `td`  | Packages installed today                                    |
-| `yesterday`         | `yd`  | Packages installed yesterday                                |
-| `days N`            |       | Packages installed in the last N days (today included)      |
-| `on DATE`           |       | Packages installed on an exact date — e.g. `on 2026-05-15`  |
-| `this-week`         | `tw`  | Packages installed this calendar week (Mon → today)         |
-| `last-week`         | `lw`  | Packages installed in the last 7 days                       |
-| `this-month`        | `tm`  | Packages installed this calendar month                      |
-| `last-month`        | `lm`  | Packages installed in the previous month                    |
+| Option              | Alias | Description                                                                        |
+| ------------------- | ----- | ---------------------------------------------------------------------------------- |
+| `today`             | `td`  | Packages installed today                                                           |
+| `yesterday`         | `yd`  | Packages installed yesterday                                                       |
+| `days N`            |       | Packages installed in the last N days (today included)                             |
+| `on DATE`           |       | Packages installed on an exact date — e.g. `on 2026-05-15`                         |
+| `this-week`         | `tw`  | Packages installed this calendar week (Mon → today)                                |
+| `last-week`         | `lw`  | Packages installed in the last 7 days                                              |
+| `this-month`        | `tm`  | Packages installed this calendar month                                             |
+| `last-month`        | `lm`  | Packages installed in the previous month                                           |
 | `month YYYY-MM`     |       | Packages installed in a specific month — e.g. `month 2026-06` or `month june 2026` |
-| `per-day`           |       | Count packages per day                                      |
-| `per-week`          |       | Count packages per week                                     |
-| `package NAME`      |       | Full install history for an exact package name              |
-| `package 'PATTERN'` |       | Full install history with glob — e.g. `'linux*'`, `'*lib*'` |
+| `per-day`           |       | Count packages per day                                                             |
+| `per-week`          |       | Count packages per week                                                            |
+| `package NAME`      |       | Full install history for an exact package name                                     |
+| `package 'PATTERN'` |       | Full install history with glob — e.g. `'linux*'`, `'*lib*'`                        |
 
-| Flag          | Description                                                      |
-| ------------- | ---------------------------------------------------------------- |
-| `--refresh`   | Clear and rebuild the cache on next call (caching stays enabled) |
-| `--cache on`  | Enable caching (default)                                         |
-| `--cache off` | Disable caching — dpkg logs are queried live on every call       |
-| `--cache`     | Show current cache status                                        |
-| `--time`, `-t`| Show install time (HH:MM TZ) next to each package on any date-based query. Can be placed anywhere in the arguments |
+| Flag           | Description                                                                                                        |
+| -------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `--refresh`    | Clear and rebuild the cache on next call (caching stays enabled)                                                   |
+| `--cache on`   | Enable caching (default)                                                                                           |
+| `--cache off`  | Disable caching — dpkg logs are queried live on every call                                                         |
+| `--cache`      | Show current cache status                                                                                          |
+| `--time`, `-t` | Show install time (HH:MM TZ) next to each package on any date-based query. Can be placed anywhere in the arguments |
 
 The filter label is always repeated in the footer, so it remains visible without scrolling up. Package search always shows install time to the minute; date-range and count queries only show it when `--time`/`-t` is passed. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
 
@@ -435,11 +446,11 @@ Display the current kernel version and optionally compare with the latest stable
 kver [--compare] [--open]
 ```
 
-| Flag               | Description                                                     |
-| ------------------ | --------------------------------------------------------------- |
-| `-c, --compare`    | Fetch and compare with the latest stable kernel from kernel.org |
-| `-o, --open`       | Open kernel.org in the default browser and exit                 |
-| `-h, --help`       | Display help information                                        |
+| Flag            | Description                                                     |
+| --------------- | --------------------------------------------------------------- |
+| `-c, --compare` | Fetch and compare with the latest stable kernel from kernel.org |
+| `-o, --open`    | Open kernel.org in the default browser and exit                 |
+| `-h, --help`    | Display help information                                        |
 
 - Version comparison is numeric per segment (avoids lexicographic issues e.g. `6.9` vs `6.10`)
 - Requires `curl` — fetches from `kernel.org/finger_banner`
@@ -487,11 +498,11 @@ fisher_update_select owner
 fisher_update_select owner/repo --yes
 ```
 
-| Flag          | Description                                                  |
-| ------------- | -------------------------------------------------------------|
-| `--all`       | Update all installed plugins, with confirmation               |
-| `--yes`, `-y` | Skip confirmation prompt (works standalone, with `--all`, or with a plugin name) |
-| `--help`, `-h`| Show help                                                     |
+| Flag           | Description                                                                      |
+| -------------- | -------------------------------------------------------------------------------- |
+| `--all`        | Update all installed plugins, with confirmation                                  |
+| `--yes`, `-y`  | Skip confirmation prompt (works standalone, with `--all`, or with a plugin name) |
+| `--help`, `-h` | Show help                                                                        |
 
 - No arguments: presents a numbered list of installed plugins in `fisher list` order. Accepts single, multiple (space-separated), or all (`a`) selections. Safe exit without changes (`n` or `q`)
 - Plugin name argument: matches against installed plugins — full `owner/repo`, or just `owner` if it's unambiguous — and updates that one plugin directly, skipping the picker
@@ -552,9 +563,9 @@ generate_password 16 1 --clipboard --no-ambiguous
 
 ---
 
-## ️ Image Utilities
+## Image Utilities
 
-### ️ `resize_image`
+### `resize_image`
 
 Resize a single image or a batch of images in a directory by percentage or max dimension.
 
