@@ -111,9 +111,9 @@ function __display_rpm_packages
     set -l times
     set -l names
     for pkg in $packages
-        set -l ts   (string split --max 1 ' ' -- $pkg)[1]
+        set -l ts (string split --max 1 ' ' -- $pkg)[1]
         set -l name (string split --max 1 ' ' -- $pkg)[2]
-        set -l day  (env LC_ALL=en_US.UTF-8 date -d @$ts '+%a %Y-%m-%d' 2>/dev/null)
+        set -l day (env LC_ALL=en_US.UTF-8 date -d @$ts '+%a %Y-%m-%d' 2>/dev/null)
         if test -z "$day"
             set day unknown
         end
@@ -134,7 +134,7 @@ function __display_rpm_packages
         set -l i 1
         set -l total (count $names)
         while test $i -le $total
-            set -l day  $dates[$i]
+            set -l day $dates[$i]
             set -l name $names[$i]
 
             if test "$day" != "$current_date"
@@ -142,7 +142,7 @@ function __display_rpm_packages
                 set -l j $i
                 while test $j -le $total; and test $dates[$j] = $day
                     set run (math $run + 1)
-                    set j   (math $j + 1)
+                    set j (math $j + 1)
                 end
                 set current_date $day
                 printf " 📆 %s  \e[2m(%d package%s)\e[0m\n" \
@@ -181,9 +181,9 @@ end
 
 # ---- Package search display — shows time-to-the-minute, grouped by date ----
 function __display_rpm_package_search
-    set -l pattern      $argv[1]
+    set -l pattern $argv[1]
     set -l cache_status $argv[2]
-    set -l packages     $argv[3..-1]   # "<epoch> <nevra>" lines
+    set -l packages $argv[3..-1] # "<epoch> <nevra>" lines
 
     if test (count $packages) -eq 0
         echo
@@ -199,12 +199,12 @@ function __display_rpm_package_search
     set -l times
     set -l names
     for pkg in $packages
-        set -l ts   (string split --max 1 ' ' -- $pkg)[1]
+        set -l ts (string split --max 1 ' ' -- $pkg)[1]
         set -l name (string split --max 1 ' ' -- $pkg)[2]
-        set -l day  (env LC_ALL=en_US.UTF-8 date -d @$ts '+%a %Y-%m-%d'  2>/dev/null)
-        set -l hm   (env LC_ALL=en_US.UTF-8 date -d @$ts '+%H:%M %Z'     2>/dev/null)
+        set -l day (env LC_ALL=en_US.UTF-8 date -d @$ts '+%a %Y-%m-%d'  2>/dev/null)
+        set -l hm (env LC_ALL=en_US.UTF-8 date -d @$ts '+%H:%M %Z'     2>/dev/null)
         test -z "$day"; and set day unknown
-        test -z "$hm";  and set hm "??:??"
+        test -z "$hm"; and set hm "??:??"
         set -a dates $day
         set -a times $hm
         set -a names $name
@@ -222,8 +222,8 @@ function __display_rpm_package_search
         set -l i 1
         set -l total (count $names)
         while test $i -le $total
-            set -l day  $dates[$i]
-            set -l hm   $times[$i]
+            set -l day $dates[$i]
+            set -l hm $times[$i]
             set -l name $names[$i]
 
             if test "$day" != "$current_date"
@@ -232,7 +232,7 @@ function __display_rpm_package_search
                 set -l j $i
                 while test $j -le $total; and test $dates[$j] = $day
                     set run (math $run + 1)
-                    set j   (math $j + 1)
+                    set j (math $j + 1)
                 end
                 set current_date $day
                 printf " 📆 %s  \e[2m(%d package%s)\e[0m\n" \
@@ -399,7 +399,7 @@ function rpm_installed --description "List installed RPM packages by install dat
         set -l matched
         for line in $__rpm_instlist_cache
             # line format: "<epoch> <nevra>"
-            set -l ts   (string split --max 1 ' ' -- $line)[1]
+            set -l ts (string split --max 1 ' ' -- $line)[1]
             set -l nevra (string split --max 1 ' ' -- $line)[2]
             # Extract package NAME: capture everything before the first -<digit>
             set -l pkg_name (string match -r '^(.+?)-[0-9]' -- $nevra)[2]
@@ -451,16 +451,16 @@ function rpm_installed --description "List installed RPM packages by install dat
     end
 
     # ---- Time boundaries ----
-    set -l today_start      (env LC_ALL=en_US.UTF-8 date -d 'today 00:00'      +%s)
-    set -l tomorrow_start   (env LC_ALL=en_US.UTF-8 date -d 'tomorrow 00:00'   +%s)
-    set -l yesterday_start  (env LC_ALL=en_US.UTF-8 date -d 'yesterday 00:00'  +%s)
-    set -l last_week_start  (env LC_ALL=en_US.UTF-8 date -d '7 days ago 00:00' +%s)
+    set -l today_start (env LC_ALL=en_US.UTF-8 date -d 'today 00:00'      +%s)
+    set -l tomorrow_start (env LC_ALL=en_US.UTF-8 date -d 'tomorrow 00:00'   +%s)
+    set -l yesterday_start (env LC_ALL=en_US.UTF-8 date -d 'yesterday 00:00'  +%s)
+    set -l last_week_start (env LC_ALL=en_US.UTF-8 date -d '7 days ago 00:00' +%s)
     set -l this_month_start (env LC_ALL=en_US.UTF-8 date -d (date +%Y-%m-01)   +%s)
     set -l last_month_start (env LC_ALL=en_US.UTF-8 date -d (date +%Y-%m-01)' -1 month' +%s)
     # ISO week: Monday = weekday 1, so days_since_mon = %u - 1
     set -l _dow (date +%u)
     set -l _days_since_mon (math $_dow - 1)
-    set -l this_week_start  (env LC_ALL=en_US.UTF-8 date -d "$_days_since_mon days ago 00:00" +%s)
+    set -l this_week_start (env LC_ALL=en_US.UTF-8 date -d "$_days_since_mon days ago 00:00" +%s)
 
     # Normalise aliases that weren't caught by the count-mode block
     switch $arg
@@ -471,7 +471,7 @@ function rpm_installed --description "List installed RPM packages by install dat
     # ---- Resolve s/e from $arg ----
     set -l s 0
     set -l e ""
-    set -l n_days 0   # >0 when 'days N' was used; drives heading
+    set -l n_days 0 # >0 when 'days N' was used; drives heading
     set -l on_date "" # non-empty when 'on DATE' was used; drives heading
     set -l month_arg "" # non-empty when 'month YYYY-MM' was used; drives heading
 
@@ -636,7 +636,7 @@ function rpm_installed --description "List installed RPM packages by install dat
             set heading (env LC_ALL=en_US.UTF-8 date -d "$month_arg-01" +'%B %Y')
         else if test "$arg" = this-week
             set -l week_start_label (env LC_ALL=en_US.UTF-8 date -d @$this_week_start '+%a %Y-%m-%d')
-            set -l today_label      (env LC_ALL=en_US.UTF-8 date '+%a %Y-%m-%d')
+            set -l today_label (env LC_ALL=en_US.UTF-8 date '+%a %Y-%m-%d')
             set heading "$week_start_label → $today_label"
         else if test $n_days -gt 0
             set heading "last $n_days days"
