@@ -263,10 +263,12 @@ arch_installed month NAME YEAR
 arch_installed this-week
 arch_installed count [OPTION]
 arch_installed since DATE [until DATE]
+arch_installed last N
 arch_installed package NAME
 arch_installed package 'PATTERN'
 arch_installed --refresh | --cache on|off | --cache | --help
 arch_installed [OPTION] --time
+arch_installed [OPTION] --reverse
 ```
 
 | Option              | Alias | Description                                                                        |
@@ -280,6 +282,7 @@ arch_installed [OPTION] --time
 | `this-month`        | `tm`  | Packages installed this calendar month                                             |
 | `last-month`        | `lm`  | Packages installed in the previous month                                           |
 | `month YYYY-MM`     |       | Packages installed in a specific month — e.g. `month 2026-06` or `month june 2026` |
+| `last N`            |       | The N most recently installed packages, any date                                   |
 | `per-day`           |       | Count packages per day                                                             |
 | `per-week`          |       | Count packages per week                                                            |
 | `package NAME`      |       | Full install history for an exact package name                                     |
@@ -292,8 +295,11 @@ arch_installed [OPTION] --time
 | `--cache off`  | Disable caching — expac is queried live on every call                                                              |
 | `--cache`      | Show current cache status                                                                                          |
 | `--time`, `-t` | Show install time (HH:MM TZ) next to each package on any date-based query. Can be placed anywhere in the arguments |
+| `--reverse`, `-r` | Show newest first. Works with date queries, `last N`, `package` and count output. Can be placed anywhere in the arguments |
 
 The filter label is always repeated in the footer, so it remains visible without scrolling up. Package search always shows install time to the minute; date-range and count queries only show it when `--time`/`-t` is passed. Cache status is shown on every listing. Output is automatically paged with `less` when it exceeds the terminal height.
+
+`last N` shows the N most recently installed packages regardless of date. Combine it with `since`/`until` to get the N newest within a range. It cannot be combined with `count`.
 
 **Examples:**
 
@@ -310,7 +316,7 @@ arch_installed count on 2026-05-15
 arch_installed count this-month
 arch_installed count month 2026-06
 arch_installed since 2024-01-01 until 2024-02-01
-arch_installed package linux
+arch_installed package filesystem
 arch_installed package 'linux*'
 arch_installed package '*lib*'
 arch_installed --cache off
